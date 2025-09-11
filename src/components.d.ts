@@ -12,9 +12,11 @@ declare module 'vue' {
     HelloWorld: typeof import('./components/HelloWorld.vue')['default']
     ListCard: typeof import('./components/ListCard.vue')['default']
     ListGrid: typeof import('./components/ListGrid.vue')['default']
+    NavItem: typeof import('./components/NavItem.vue')['default']
     ProductCard: typeof import('./components/ProductCard.vue')['default']
     ProductGrid: typeof import('./components/ProductGrid.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    TestComponent: typeof import('./components/TestComponent.vue')['default']
   }
 }

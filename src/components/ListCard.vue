@@ -29,7 +29,7 @@ const props = defineProps<{
 <style scoped>
 .list-card {
   border: 2px solid #00C853;
-  border-radius: 12px;
+    border-radius: 16px;
   padding: 16px;
   display: flex;
   align-items: center;
@@ -55,3 +55,40 @@ const props = defineProps<{
   flex-shrink: 0;
 }
 </style>
+
+
+<!-- CODIGO TARJETAS DE LISTA -->
+<!--  <v-row dense>
+          <v-col
+            v-for="list in lists"
+            :key="list.title"
+            cols="12"
+            sm="6"
+            md="4"
+          >
+            <v-card outlined class="pa-4">
+              <div class="d-flex justify-space-between align-center">
+                <div class="d-flex align-center">
+                  <v-checkbox v-model="list.checked" hide-details class="me-2" />
+                  <v-icon class="me-1" :color="list.iconColor" size="20">{{ list.icon }}</v-icon>
+                  <span class="text-subtitle-1 font-weight-medium">{{ list.title }}</span>
+                </div>
+                <div class="d-flex align-center">
+                  <v-icon :color="list.favorite ? 'amber' : ''">mdi-star{{ list.favorite ? '' : '-outline' }}</v-icon>
+                  <v-menu>
+                    <template #activator="{ props }">
+                      <v-btn v-bind="props" icon variant="text">
+                        <v-icon>mdi-dots-horizontal</v-icon>
+                      </v-btn>
+                    </template>
+                    <v-list>
+                      <v-list-item title="Edit"></v-list-item>
+                      <v-list-item title="Delete"></v-list-item>
+                    </v-list>
+                  </v-menu>
+                </div>
+              </div>
+              <div class="mt-2 text-medium-emphasis">{{ list.items }} items</div>
+            </v-card>
+          </v-col>
+        </v-row> -->

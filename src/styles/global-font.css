@@ -1,0 +1,9 @@
+:root,
+html,
+body,
+#app,
+.v-application {
+  font-family: "Liberation Sans", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial,
+    "Noto Sans", sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}

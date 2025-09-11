@@ -31,7 +31,7 @@ const selected = ref(false);
 <style scoped>
 .product-card {
   border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  border-radius: 16px;
   padding: 12px;
   display: flex;
   align-items: center;
