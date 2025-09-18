@@ -5,11 +5,12 @@
  */
 
 import { createRouter, createWebHistory } from 'vue-router'
-import ListsView from '@/views/ListsView.vue'
 
 const routes = [
   { path: '/', redirect: '/lists' },
-  { path: '/lists', name: 'lists', component: ListsView },
+  { path: '/lists', name: 'lists', component: () => import('@/views/ListsView.vue') },
+  { path: '/products', name: 'products', component: () => import('@/views/ProductsView.vue') },
+  { path: '/settings', name: 'settings', component: () => import('@/views/SettingsView.vue') }
 ]
 
 const router = createRouter({

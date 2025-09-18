@@ -1,18 +1,21 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import NavBarButton from "@/components/NavBarButton.vue";
-import NavListItem from "@/components/NavListItem.vue";
-import NavBarTitle from "@/components/NavBarTitle.vue";
+    import { ref } from "vue";
+    import NavBarButton from "@/components/NavBarButton.vue";
+    import NavListItem from "@/components/NavListItem.vue";
+    import NavBarTitle from "@/components/NavBarTitle.vue";
+    import { useRoute } from 'vue-router'
 
-const selectedItem = ref("lists"); // Default selected item
+    const route = useRoute()
 
-const selectItem = (item: string) => {
-  selectedItem.value = item;
-};
+    const selectedItem = ref("lists"); // Default selected item
 
-const onProfileClick = () => {
-  console.log("profile clicked");
-};
+    const selectItem = (item: string) => {
+    selectedItem.value = item;
+    };
+
+    const onProfileClick = () => {
+    console.log("profile clicked");
+    };
 </script>
 
 <template>
@@ -35,7 +38,8 @@ const onProfileClick = () => {
         <NavListItem
           icon="mdi-format-list-bulleted"
           title="Lists"
-          :selected="selectedItem === 'lists'"
+          :to="{ name: 'lists' }"
+          :selected="route.name === 'lists'"
           @click="selectItem('lists')"
         />
 
@@ -43,7 +47,8 @@ const onProfileClick = () => {
         <NavListItem
           icon="mdi-food-apple-outline"
           title="Products"
-          :selected="selectedItem === 'products'"
+          :to="{ name: 'products' }"
+          :selected="route.name === 'products'"
           @click="selectItem('products')"
         />
       </v-list>
@@ -53,7 +58,8 @@ const onProfileClick = () => {
         <NavListItem
           icon="mdi-cog"
           title="Settings"
-          :selected="selectedItem === 'settings'"
+          :to="{ name: 'settings' }"
+          :selected="route.name === 'settings'"
           @click="selectItem('settings')"
         />
       </div>

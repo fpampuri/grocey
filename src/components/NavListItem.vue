@@ -1,15 +1,16 @@
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue'
+  import { defineProps, defineEmits } from 'vue'
 
-const props = defineProps({
-  icon: { type: String, required: true },
-  title: { type: String, required: true },
-  selected: { type: Boolean, default: false }
-})
+  const props = defineProps({
+    icon: { type: String, required: true },
+    title: { type: String, required: true },
+    selected: { type: Boolean, default: false },
+    to: { type: [String, Object], default: null }
+  })
 
-const emits = defineEmits(['click'])
+  const emits = defineEmits(['click'])
 
-const onClick = () => emits('click')
+  const onClick = () => emits('click')
 </script>
 
 <template>
@@ -19,6 +20,7 @@ const onClick = () => emits('click')
       link
       rounded="lg"
       @click="onClick"
+      :to="to"
       :class="['py-2 mx-2 my-3 nav-item', (selected || isHovering) ? 'bg-green text-white' : '']"
       :style="{ opacity: (isHovering && !selected) ? 0.7 : 1 }"
     >
