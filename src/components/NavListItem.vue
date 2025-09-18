@@ -1,0 +1,46 @@
+<script setup lang="ts">
+import { defineProps, defineEmits } from 'vue'
+
+const props = defineProps({
+  icon: { type: String, required: true },
+  title: { type: String, required: true },
+  selected: { type: Boolean, default: false }
+})
+
+const emits = defineEmits(['click'])
+
+const onClick = () => emits('click')
+</script>
+
+<template>
+  <v-hover v-slot="{ isHovering, props }">
+    <v-list-item
+      v-bind="props"
+      link
+      rounded="lg"
+      @click="onClick"
+      :class="['py-2 mx-2 my-3 nav-item', (selected || isHovering) ? 'bg-green text-white' : '']"
+      :style="{ opacity: (isHovering && !selected) ? 0.7 : 1 }"
+    >
+      <v-row align="center">
+        <v-icon :class="['text-h4 ma-4', (selected || isHovering) ? 'text-white' : 'text-green']">
+          {{ icon }}
+        </v-icon>
+        <v-list-item-title :class="['text-h5 font-weight-medium', (selected || isHovering) ? 'text-white' : '']">
+          {{ title }}
+        </v-list-item-title>
+      </v-row>
+    </v-list-item>
+  </v-hover>
+</template>
+
+
+<style scoped>
+.nav-item {
+  transition: background-color 150ms ease, color 150ms ease, opacity 150ms ease;
+}
+.nav-item .v-icon,
+.nav-item .v-list-item-title {
+  transition: color 150ms ease;
+}
+</style>

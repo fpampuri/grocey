@@ -6,19 +6,20 @@
 
 // Plugins
 import { registerPlugins } from '@/plugins'
-
 // Components
 import App from './App.vue'
-
 // Composables
 import { createApp } from 'vue'
-
 // Styles
 import 'unfonts.css'
 import '@/styles/global-font.css'
+// Router
+import router from '@/router'
 
 const app = createApp(App)
 
 registerPlugins(app)
+
+app.use(router)
 
 app.mount('#app')

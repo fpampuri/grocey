@@ -1,11 +1,13 @@
+<script lang="ts" setup>
+  import NavBar from './layouts/NavBar.vue'; 
+  import { RouterView } from 'vue-router';
+</script>
+
+
 <template>
   <v-app>
-    <WebLayout >
-      <router-view />
-    </WebLayout>
+    <NavBar />
+    <RouterView />
   </v-app>
 </template>
 
-<script lang="ts" setup>
-  import WebLayout from '@/layouts/WebLayout.vue'
-</script>

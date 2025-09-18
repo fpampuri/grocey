@@ -1,17 +1,20 @@
-/**
+/*
  * router/index.ts
  *
- * Automatic routes for `./src/pages/*.vue`
+ * Manual routes for the app.
  */
 
-// Composables
-import { createRouter, createWebHistory } from 'vue-router/auto'
-import { setupLayouts } from 'virtual:generated-layouts'
-import { routes } from 'vue-router/auto-routes'
+import { createRouter, createWebHistory } from 'vue-router'
+import ListsView from '@/views/ListsView.vue'
+
+const routes = [
+  { path: '/', redirect: '/lists' },
+  { path: '/lists', name: 'lists', component: ListsView },
+]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes: setupLayouts(routes),
+  routes,
 })
 
 // Workaround for https://github.com/vitejs/vite/issues/11804
