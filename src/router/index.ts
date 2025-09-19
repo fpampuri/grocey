@@ -8,9 +8,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
   { path: '/', redirect: '/lists' },
-  { path: '/lists', name: 'lists', component: () => import('@/views/ListsView.vue') },
-  { path: '/products', name: 'products', component: () => import('@/views/ProductsView.vue') },
-  { path: '/settings', name: 'settings', component: () => import('@/views/SettingsView.vue') }
+  { path: '/lists', name: 'lists', component: () => import('@/views/ListsView.vue'), meta: { title: 'Lists'} },
+  { path: '/products', name: 'products', component: () => import('@/views/ProductsView.vue'), meta: { title: 'Products'} },
+  { path: '/settings', name: 'settings', component: () => import('@/views/SettingsView.vue'), meta: { title: 'Settings'} }
 ]
 
 const router = createRouter({

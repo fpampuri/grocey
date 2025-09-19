@@ -1,21 +1,33 @@
 <script setup lang="ts">
-    import { ref } from "vue";
-    import NavBarButton from "@/components/NavBarButton.vue";
-    import NavListItem from "@/components/NavListItem.vue";
-    import NavBarTitle from "@/components/NavBarTitle.vue";
-    import { useRoute } from 'vue-router'
+import { ref, computed } from "vue";
+import NavBarButton from "@/components/NavBar/NavBarButton.vue";
+import NavListItem from "@/components/NavBar/NavListItem.vue";
+import NavBarTitle from "@/components/NavBar/NavBarTitle.vue";
+import { useRoute } from "vue-router";
 
-    const route = useRoute()
+const route = useRoute();
 
-    const selectedItem = ref("lists"); // Default selected item
+const selectedItem = ref("lists"); // Default selected item
 
-    const selectItem = (item: string) => {
-    selectedItem.value = item;
-    };
+const selectItem = (item: string) => {
+  selectedItem.value = item;
+};
 
-    const onProfileClick = () => {
-    console.log("profile clicked");
-    };
+const pageTitle = computed(() => {
+  const matched = route.matched
+    .slice()
+    .reverse()
+    .find((r) => r.meta && (r.meta as any).title);
+  if (matched) return (matched.meta as any).title;
+  // fallback to a nicer name based on route.name
+  return route.name
+    ? String(route.name).replace(/^\w/, (c) => c.toUpperCase())
+    : "Grocey";
+});
+
+const onProfileClick = () => {
+  console.log("profile clicked");
+};
 </script>
 
 <template>
@@ -68,7 +80,9 @@
 
   <!-- Topbar: z-index menor para quedar debajo de la sidebar -->
   <v-app-bar height="72" style="z-index: 100">
-    <v-toolbar-title></v-toolbar-title>
+    <v-toolbar-title class="text-h5 font-weight-bold">{{
+      pageTitle
+    }}</v-toolbar-title>
     <v-spacer></v-spacer>
     <NavBarButton icon="mdi-account-circle" @click="onProfileClick" />
   </v-app-bar>
