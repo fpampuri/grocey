@@ -8,21 +8,11 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    AppFooter: typeof import('./components/AppFooter.vue')['default']
-    HelloWorld: typeof import('./components/HelloWorld.vue')['default']
     ListCard: typeof import('./components/List/ListCard.vue')['default']
-    ListGrid: typeof import('./components/ListGrid.vue')['default']
-    NavBar: typeof import('./components/NavBar.vue')['default']
     NavBarButton: typeof import('./components/NavBar/NavBarButton.vue')['default']
-    NavBarCard: typeof import('./components/NavBar.vue')['default']
     NavBarTitle: typeof import('./components/NavBar/NavBarTitle.vue')['default']
-    NavItem: typeof import('./components/NavItem.vue')['default']
     NavListItem: typeof import('./components/NavBar/NavListItem.vue')['default']
-    NavVarCard: typeof import('./components/NavBar.vue')['default']
-    ProductCard: typeof import('./components/ProductCard.vue')['default']
-    ProductGrid: typeof import('./components/ProductGrid.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    TestComponent: typeof import('./components/TestComponent.vue')['default']
   }
 }

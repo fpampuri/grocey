@@ -78,16 +78,17 @@ const onProfileClick = () => {
     </div>
   </v-navigation-drawer>
 
-  <!-- Topbar: z-index menor para quedar debajo de la sidebar -->
-  <v-app-bar height="72" style="z-index: 100">
-    <v-toolbar-title class="text-h5 font-weight-bold">{{
-      pageTitle
-    }}</v-toolbar-title>
+
+  <v-app-bar height="72" >
+    <v-toolbar-title class="text-h4 font-weight-bold">
+      {{
+      pageTitle}}
+    </v-toolbar-title>
     <v-spacer></v-spacer>
     <NavBarButton icon="mdi-account-circle" @click="onProfileClick" />
   </v-app-bar>
 
   <v-main>
-    <slot />
+    <slot/>
   </v-main>
 </template>
