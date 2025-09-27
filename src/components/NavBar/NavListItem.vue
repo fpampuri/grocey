@@ -28,7 +28,7 @@
         <v-icon :class="['text-h4 ma-4', (selected || isHovering) ? 'text-white' : 'text-green']">
           {{ icon }}
         </v-icon>
-        <v-list-item-title :class="['text-h5 font-weight-medium', (selected || isHovering) ? 'text-white' : '']">
+        <v-list-item-title :class="['text-h5 font-weight-bold', (selected || isHovering) ? 'text-white' : '']">
           {{ title }}
         </v-list-item-title>
       </v-row>
@@ -45,4 +45,5 @@
 .nav-item .v-list-item-title {
   transition: color 150ms ease;
 }
+
 </style>

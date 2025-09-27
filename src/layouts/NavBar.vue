@@ -43,7 +43,7 @@ const onProfileClick = () => {
       <!-- Main navigation bar -->
       <v-list
         nav
-        class="d-flex flex-column flex-grow-1 overflow-hidden"
+        class="d-flex flex-column flex-grow-1 overflow-hidden nav-list"
         style="min-height: 0"
       >
         <!-- Lists Button -->
@@ -81,8 +81,7 @@ const onProfileClick = () => {
 
   <v-app-bar height="72" >
     <v-toolbar-title class="text-h4 font-weight-bold">
-      {{
-      pageTitle}}
+      {{ pageTitle }}
     </v-toolbar-title>
     <v-spacer></v-spacer>
     <NavBarButton icon="mdi-account-circle" @click="onProfileClick" />
@@ -92,3 +91,27 @@ const onProfileClick = () => {
     <slot/>
   </v-main>
 </template>
+
+<style scoped>
+/* Target the specific issue - v-list-item height constraints */
+.nav-list :deep(.v-list-item) {
+  min-height: auto !important;
+  height: auto !important;
+}
+
+/* The content wrapper inside v-list-item that's constraining the text */
+.nav-list :deep(.v-list-item__content) {
+  min-height: auto !important;
+  height: auto !important;
+  padding: 0 !important;
+}
+
+/* Make sure the title can expand vertically */
+.nav-list :deep(.v-list-item-title) {
+  white-space: normal !important;
+  line-height: normal !important;
+  height: auto !important;
+}
+
+
+</style>
