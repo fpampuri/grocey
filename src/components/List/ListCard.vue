@@ -62,10 +62,8 @@
           <v-spacer />
 
           <div class="actions no-shrink">
-            <v-btn
-              icon
-              small
-              class="no-shrink"
+            <button
+              class="action-btn star-btn"
               @click.stop="toggleStar()"
               :aria-pressed="localStarred"
               aria-label="toggle star"
@@ -73,26 +71,39 @@
               <v-icon :class="localStarred ? 'text-yellow' : ''">{{
                 localStarred ? 'mdi-star' : 'mdi-star-outline'
               }}</v-icon>
-            </v-btn>
+            </button>
 
             <v-menu offset-y>
               <template #activator="{ props: activator }">
-                <v-btn v-bind="activator" icon class="no-shrink" aria-label="more actions">
-                  <v-icon>mdi-dots-vertical</v-icon>
-                </v-btn>
+                <button v-bind="activator" class="action-btn dots-btn" aria-label="more actions">
+                  <v-icon>mdi-dots-horizontal</v-icon>
+                </button>
               </template>
-            <v-list>
-              <v-list-item @click="$emit('share')">
-                <v-list-item-title>Share</v-list-item-title>
-              </v-list-item>
-              <v-list-item @click="$emit('edit')">
-                <v-list-item-title>Edit</v-list-item-title>
-              </v-list-item>
-              <v-list-item @click="$emit('delete')">
-                <v-list-item-title>Delete</v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
+              <v-list class="action-menu">
+
+                <v-list-item @click="$emit('edit')" class="menu-item">
+                  <template #prepend>
+                    <v-icon class="menu-icon">mdi-pencil</v-icon>
+                  </template>
+                  <v-list-item-title class="menu-title">Edit</v-list-item-title>
+                </v-list-item>
+
+                <v-list-item @click="$emit('share')" class="menu-item">
+                  <template #prepend>
+                    <v-icon class="menu-icon">mdi-share-variant</v-icon>
+                  </template>
+                  <v-list-item-title class="menu-title">Share</v-list-item-title>
+                </v-list-item>
+
+                <v-list-item @click="$emit('delete')" class="menu-item delete-item">
+                  <template #prepend>
+                    <v-icon class="menu-icon">mdi-delete</v-icon>
+                  </template>
+                  <v-list-item-title class="menu-title">Delete list</v-list-item-title>
+                </v-list-item>
+
+              </v-list>
+            </v-menu>
           </div>
         </v-row>
 
@@ -133,13 +144,6 @@
   flex: 0 0 auto; /* prevent icon/buttons from shrinking */
 }
 
-.actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex: 0 0 auto;
-}
-
 .list-icon {
   font-size: 26px;
 }
@@ -155,10 +159,67 @@
 .list-count {
   margin-top: 18px;
   color: rgba(0, 0, 0, 0.6);
+  font-weight: 600;
 }
 
 .green-border-checkbox :deep(.mdi-checkbox-blank-outline):before {
-  color: green !important;
+  color: rgb(7, 138, 7) !important;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  border-radius: 6px;
+  padding: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+  color: black;
+}
+
+.action-btn:hover {
+  background-color: rgb(7, 138, 7);
+  color: white;
+}
+
+.star-btn .v-icon.text-yellow {
+  color: #e0d041 !important; /* Muted gold color instead of bright yellow */
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.action-menu {
+  min-width: 150px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.menu-item {
+  padding: 12px 16px;
+  color: black;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.menu-icon {
+  margin-right: 12px;
+  transition: color 0.2s ease;
+  color: rgba(0, 0, 0, 1) !important;
+}
+
+.menu-item:hover {
+  background-color: rgb(7, 138, 7);
+  color: white;
+}
+
+.menu-title {
+  font-weight: 600;
 }
 
 </style>
