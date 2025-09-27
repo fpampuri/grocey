@@ -9,7 +9,7 @@
       selected: { type: Boolean, default: false },
     });
 
-    const emits = defineEmits(["click", "toggle-star", "edit", "delete", "share"]);
+    const emits = defineEmits(["click", "toggle-star", "toggle-selection", "edit", "delete", "share"]);
 
     // local reactive starred state so UI updates immediately
     const localStarred = ref(props.starred);
@@ -28,13 +28,15 @@
 
     function toggleSelection() {
       selectedForAction.value = !selectedForAction.value;
+      emits("toggle-selection", selectedForAction.value);
     }
 
 </script>
 
 <template>
-  <v-card class="list-card" outlined>
-    <v-row class="card-row" align="center" no-gutters>
+  <v-card class="list-card" outlined @click="$emit('click')">
+    <!-- Main content row with all elements in one line -->
+    <v-row class="card-main-row" align="center" no-gutters>
       <v-col cols="auto">
         <v-checkbox
           v-model="selectedForAction"
@@ -43,71 +45,72 @@
           color="green"
           class="green-border-checkbox"
           aria-label="select list"
+          @click.stop="toggleSelection"
         />
       </v-col>
 
+      <v-col cols="auto">
+        <v-icon class="list-icon text-green">{{ icon }}</v-icon>
+      </v-col>
+
       <v-col>
-        <v-row class="card-main-row" align="center" no-gutters>
-          <v-icon class="list-icon mr-3 text-green no-shrink">{{ icon }}</v-icon>
+        <div class="list-body">
+          <div class="list-title">{{ title }}</div>
+        </div>
+      </v-col>
 
-          <div
-            class="list-body"
-            @click="$emit('click')"
-            role="button"
-            tabindex="0"
+      <v-col cols="auto">
+        <div class="actions" @click.stop>
+          <button
+            class="action-btn star-btn"
+            @click.stop="toggleStar()"
+            :aria-pressed="localStarred"
+            aria-label="toggle star"
           >
-            <div class="list-title">{{ title }}</div>
-          </div>
+            <v-icon :class="localStarred ? 'text-star-gold' : ''">
+              {{ localStarred ? 'mdi-star' : 'mdi-star-outline' }}
+            </v-icon>
+          </button>
 
-          <v-spacer />
+          <v-menu offset-y>
+            <template #activator="{ props: activator }">
+              <button v-bind="activator" class="action-btn dots-btn" aria-label="more actions" @click.stop>
+                <v-icon>mdi-dots-horizontal</v-icon>
+              </button>
+            </template>
+            <v-list class="action-menu">
 
-          <div class="actions no-shrink">
-            <button
-              class="action-btn star-btn"
-              @click.stop="toggleStar()"
-              :aria-pressed="localStarred"
-              aria-label="toggle star"
-            >
-              <v-icon :class="localStarred ? 'text-star-gold' : ''">{{
-                localStarred ? 'mdi-star' : 'mdi-star-outline'
-              }}</v-icon>
-            </button>
+              <v-list-item @click="$emit('edit')" class="menu-item">
+                <template #prepend>
+                  <v-icon class="menu-icon">mdi-pencil</v-icon>
+                </template>
+                <v-list-item-title class="menu-title">Edit</v-list-item-title>
+              </v-list-item>
 
-            <v-menu offset-y>
-              <template #activator="{ props: activator }">
-                <button v-bind="activator" class="action-btn dots-btn" aria-label="more actions">
-                  <v-icon>mdi-dots-horizontal</v-icon>
-                </button>
-              </template>
-              <v-list class="action-menu">
+              <v-list-item @click="$emit('share')" class="menu-item">
+                <template #prepend>
+                  <v-icon class="menu-icon">mdi-share-variant</v-icon>
+                </template>
+                <v-list-item-title class="menu-title">Share</v-list-item-title>
+              </v-list-item>
 
-                <v-list-item @click="$emit('edit')" class="menu-item">
-                  <template #prepend>
-                    <v-icon class="menu-icon">mdi-pencil</v-icon>
-                  </template>
-                  <v-list-item-title class="menu-title">Edit</v-list-item-title>
-                </v-list-item>
+              <v-list-item @click="$emit('delete')" class="menu-item delete-item">
+                <template #prepend>
+                  <v-icon class="menu-icon">mdi-delete</v-icon>
+                </template>
+                <v-list-item-title class="menu-title">Delete list</v-list-item-title>
+              </v-list-item>
 
-                <v-list-item @click="$emit('share')" class="menu-item">
-                  <template #prepend>
-                    <v-icon class="menu-icon">mdi-share-variant</v-icon>
-                  </template>
-                  <v-list-item-title class="menu-title">Share</v-list-item-title>
-                </v-list-item>
+            </v-list>
+          </v-menu>
+        </div>
+      </v-col>
+    </v-row>
 
-                <v-list-item @click="$emit('delete')" class="menu-item delete-item">
-                  <template #prepend>
-                    <v-icon class="menu-icon">mdi-delete</v-icon>
-                  </template>
-                  <v-list-item-title class="menu-title">Delete list</v-list-item-title>
-                </v-list-item>
-
-              </v-list>
-            </v-menu>
-          </div>
-        </v-row>
-
-        <div class="list-count text-center">
+    <!-- Item count row spanning full width -->
+    <v-row no-gutters>
+      <v-col cols="12">
+        <div class="list-count">
           {{ itemsCount }} {{ itemsCount === 1 ? "item" : "items" }}
         </div>
       </v-col>
@@ -123,24 +126,23 @@
   background: var(--v-surface, #fff);
   border: 2px solid var(--primary-green-light);
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, transform 0.1s ease;
 }
 
-.card-row {
-  gap: 8px;
+.list-card:hover {
+  box-shadow: 0 2px 8px var(--primary-green-light);
+  transform: translateY(-1px);
 }
 
 .card-main-row {
-  flex-wrap: nowrap; /* prevent wrapping */
-  gap: 8px;
+  gap: 12px;
+  margin-bottom: 18px;
 }
 
 .list-body {
-  flex: 1 1 auto; /* allow body to grow and take available space */
-  min-width: 0; /* allow truncation */
-}
-
-.no-shrink {
-  flex: 0 0 auto; /* prevent icon/buttons from shrinking */
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .list-icon {
@@ -157,9 +159,10 @@
 }
 
 .list-count {
-  margin-top: 18px;
+  text-align: center;
   color: var(--text-secondary);
   font-weight: 600;
+  width: 100%;
 }
 
 .green-border-checkbox :deep(.mdi-checkbox-blank-outline):before {
@@ -196,7 +199,6 @@
   display: flex;
   gap: 8px;
   align-items: center;
-  flex: 0 0 auto;
 }
 
 .action-menu {

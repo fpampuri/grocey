@@ -1,33 +1,33 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import NavBarButton from "@/components/NavBar/NavBarButton.vue";
-import NavListItem from "@/components/NavBar/NavListItem.vue";
-import NavBarTitle from "@/components/NavBar/NavBarTitle.vue";
-import { useRoute } from "vue-router";
+  import { ref, computed } from "vue";
+  import NavBarButton from "@/components/NavBar/NavBarButton.vue";
+  import NavListItem from "@/components/NavBar/NavListItem.vue";
+  import NavBarTitle from "@/components/NavBar/NavBarTitle.vue";
+  import { useRoute } from "vue-router";
 
-const route = useRoute();
+  const route = useRoute();
 
-const selectedItem = ref("lists"); // Default selected item
+  const selectedItem = ref("lists"); // Default selected item
 
-const selectItem = (item: string) => {
-  selectedItem.value = item;
-};
+  const selectItem = (item: string) => {
+    selectedItem.value = item;
+  };
 
-const pageTitle = computed(() => {
-  const matched = route.matched
-    .slice()
-    .reverse()
-    .find((r) => r.meta && (r.meta as any).title);
-  if (matched) return (matched.meta as any).title;
-  // fallback to a nicer name based on route.name
-  return route.name
-    ? String(route.name).replace(/^\w/, (c) => c.toUpperCase())
-    : "Grocey";
-});
+  const pageTitle = computed(() => {
+    const matched = route.matched
+      .slice()
+      .reverse()
+      .find((r) => r.meta && (r.meta as any).title);
+    if (matched) return (matched.meta as any).title;
+    // fallback to a nicer name based on route.name
+    return route.name
+      ? String(route.name).replace(/^\w/, (c) => c.toUpperCase())
+      : "Grocey";
+  });
 
-const onProfileClick = () => {
-  console.log("profile clicked");
-};
+  const onProfileClick = () => {
+    console.log("profile clicked");
+  };
 </script>
 
 <template>

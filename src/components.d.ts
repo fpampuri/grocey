@@ -9,6 +9,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     ListCard: typeof import('./components/List/ListCard.vue')['default']
+    ListItemCard: typeof import('./components/List/ListItemCard.vue')['default']
     NavBarButton: typeof import('./components/NavBar/NavBarButton.vue')['default']
     NavBarTitle: typeof import('./components/NavBar/NavBarTitle.vue')['default']
     NavListItem: typeof import('./components/NavBar/NavListItem.vue')['default']
