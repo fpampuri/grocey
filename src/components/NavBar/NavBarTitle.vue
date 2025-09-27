@@ -18,3 +18,9 @@ const { icon, title } = defineProps({
     <v-divider class="mb-2" />
   </div>
 </template>
+
+<style scoped>
+.text-green {
+  color: var(--primary-green) !important;
+}
+</style>

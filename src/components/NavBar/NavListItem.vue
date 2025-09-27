@@ -36,7 +36,6 @@
   </v-hover>
 </template>
 
-
 <style scoped>
 .nav-item {
   transition: background-color 150ms ease, color 150ms ease, opacity 150ms ease;
@@ -46,4 +45,16 @@
   transition: color 150ms ease;
 }
 
+/* Define color classes using CSS custom properties */
+.bg-green {
+  background-color: var(--primary-green-dark) !important;
+}
+
+.text-green {
+  color: var(--primary-green) !important;
+}
+
+.text-white {
+  color: white !important;
+}
 </style>

@@ -30,3 +30,18 @@ const props = defineProps({
   hoverOpacity: { type: Number, default: 0.75 }
 })
 </script>
+
+<style scoped>
+/* Define color classes using CSS custom properties */
+.bg-green {
+  background-color: var(--primary-green) !important;
+}
+
+.text-green {
+  color: var(--primary-green) !important;
+}
+
+.text-white {
+  color: white !important;
+}
+</style>

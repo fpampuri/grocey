@@ -68,7 +68,7 @@
               :aria-pressed="localStarred"
               aria-label="toggle star"
             >
-              <v-icon :class="localStarred ? 'text-yellow' : ''">{{
+              <v-icon :class="localStarred ? 'text-star-gold' : ''">{{
                 localStarred ? 'mdi-star' : 'mdi-star-outline'
               }}</v-icon>
             </button>
@@ -121,8 +121,7 @@
   padding: 12px;
   box-sizing: border-box;
   background: var(--v-surface, #fff);
-  border: 2px solid green;
-  /* subtle inner shadow to match card look */
+  border: 2px solid var(--primary-green-light);
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.02);
 }
 
@@ -154,16 +153,17 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  color: var(--text-primary);
 }
 
 .list-count {
   margin-top: 18px;
-  color: rgba(0, 0, 0, 0.6);
+  color: var(--text-secondary);
   font-weight: 600;
 }
 
 .green-border-checkbox :deep(.mdi-checkbox-blank-outline):before {
-  color: rgb(7, 138, 7) !important;
+  color: var(--primary-green) !important;
 }
 
 .action-btn {
@@ -176,16 +176,20 @@
   align-items: center;
   justify-content: center;
   transition: background-color 0.2s ease;
-  color: black;
+  color: var(--text-primary);
 }
 
 .action-btn:hover {
-  background-color: rgb(7, 138, 7);
+  background-color: var(--primary-green);
   color: white;
 }
 
-.star-btn .v-icon.text-yellow {
-  color: #e0d041 !important; /* Muted gold color instead of bright yellow */
+.text-star-gold {
+  color: var(--star-gold) !important; 
+}
+
+.text-green {
+  color: var(--primary-green) !important;
 }
 
 .actions {
@@ -203,18 +207,18 @@
 
 .menu-item {
   padding: 12px 16px;
-  color: black;
+  color: var(--text-primary);
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .menu-icon {
   margin-right: 12px;
   transition: color 0.2s ease;
-  color: rgba(0, 0, 0, 1) !important;
+  color: var(--text-primary) !important;
 }
 
 .menu-item:hover {
-  background-color: rgb(7, 138, 7);
+  background-color: var(--primary-green);
   color: white;
 }
 

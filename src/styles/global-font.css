@@ -1,9 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&display=swap');
+
+/* CSS Custom Properties (Constants) */
+:root {
+  /* Colors */
+  --primary-green: rgb(7, 138, 7);
+  --primary-green-light: rgb(76, 175, 80);
+  --primary-green-dark: rgb(5, 100, 5);
+
+  --star-gold: #e0d041;
+  --star-gold-hover: #d4c730;
+
+  --error-red: #f44336;
+
+  --text-primary: rgba(0, 0, 0, 0.87);
+  --text-secondary: rgba(0, 0, 0, 0.5);
+  --text-terciary: rgba(0, 0, 0, 0.38);
+
+}
+
+/* Global Font Settings */
 :root,
 html,
 body,
 #app,
 .v-application {
-  font-family: "Liberation Sans", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Arial,
-    "Noto Sans", sans-serif, "Apple Color Emoji",
-    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Override Vuetify components to use our font */
+.v-list-item-title,
+.v-btn,
+.v-card-title,
+.v-card-text {
+  font-family: inherit !important;
 }
