@@ -93,25 +93,23 @@
 </template>
 
 <style scoped>
-/* Target the specific issue - v-list-item height constraints */
-.nav-list :deep(.v-list-item) {
-  min-height: auto !important;
-  height: auto !important;
-}
+  /* Target the specific issue - v-list-item height constraints */
+  .nav-list :deep(.v-list-item) {
+    min-height: auto !important;
+    height: auto !important;
+  }
 
-/* The content wrapper inside v-list-item that's constraining the text */
-.nav-list :deep(.v-list-item__content) {
-  min-height: auto !important;
-  height: auto !important;
-  padding: 0 !important;
-}
+  /* The content wrapper inside v-list-item that's constraining the text */
+  .nav-list :deep(.v-list-item__content) {
+    min-height: auto !important;
+    height: auto !important;
+    padding: 0 !important;
+  }
 
-/* Make sure the title can expand vertically */
-.nav-list :deep(.v-list-item-title) {
-  white-space: normal !important;
-  line-height: normal !important;
-  height: auto !important;
-}
-
-
+  /* Make sure the title can expand vertically */
+  .nav-list :deep(.v-list-item-title) {
+    white-space: normal !important;
+    line-height: normal !important;
+    height: auto !important;
+  }
 </style>

@@ -22,7 +22,7 @@
       @click="onClick"
       :to="to"
       :class="['py-2 mx-2 my-3 nav-item', (selected || isHovering) ? 'bg-green text-white' : '']"
-      :style="{ opacity: (isHovering && !selected) ? 0.7 : 1 }"
+      :style="{ opacity: (isHovering && !selected) ? 0.6 : 1 }"
     >
       <v-row align="center">
         <v-icon :class="['text-h4 ma-4', (selected || isHovering) ? 'text-white' : 'text-green']">
@@ -47,7 +47,7 @@
 
 /* Define color classes using CSS custom properties */
 .bg-green {
-  background-color: var(--primary-green-dark) !important;
+  background-color: var(--primary-green) !important;
 }
 
 .text-green {

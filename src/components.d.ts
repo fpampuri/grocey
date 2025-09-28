@@ -8,6 +8,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AddButton: typeof import('./components/StandardButton.vue')['default']
     ListCard: typeof import('./components/List/ListCard.vue')['default']
     ListItemCard: typeof import('./components/List/ListItemCard.vue')['default']
     NavBarButton: typeof import('./components/NavBar/NavBarButton.vue')['default']
@@ -15,5 +16,7 @@ declare module 'vue' {
     NavListItem: typeof import('./components/NavBar/NavListItem.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SearchBar: typeof import('./components/SearchBar.vue')['default']
+    StandardButton: typeof import('./components/StandardButton.vue')['default']
   }
 }

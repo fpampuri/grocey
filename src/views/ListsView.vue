@@ -1,13 +1,26 @@
 <script setup lang="ts">
   import ListCard from "@/components/List/ListCard.vue";
+  import StandardButton from "@/components/StandardButton.vue";
+  import SearchBar from "@/components/SearchBar.vue";
   import { useRouter } from 'vue-router';
-  import { ref, onMounted } from 'vue';
+  import { ref, onMounted, computed } from 'vue';
+
 
   const router = useRouter();
 
   // Real data from API
   const lists = ref([]);
   const isLoading = ref(true);
+  const searchQuery = ref('');
+  const sortBy = ref('Date');
+
+  // Computed property for filtered lists
+  const filteredLists = computed(() => {
+    if (!searchQuery.value) return lists.value;
+    return lists.value.filter(list => 
+      list.title.toLowerCase().includes(searchQuery.value.toLowerCase())
+    );
+  });
 
   // Fetch lists from JSONPlaceholder
   async function fetchLists() {
@@ -84,11 +97,58 @@
     console.log('📤 Share clicked - Opening share options...');
   }
 
+  function handleAddList() {
+    console.log('➕ Add List clicked - Opening create list dialog...');
+    // Here you would typically open a dialog or navigate to a create list page
+  }
+
 </script>
 
 <template>
   <div class="pa-3">
     <v-container fluid>
+
+      <!-- Search and Add List Section -->
+      <v-row class="mb-6" align="center">
+        <v-col cols="12" md="8">
+          <SearchBar 
+            v-model="searchQuery"
+            placeholder="Search lists..."
+          />
+        </v-col>
+        <v-col cols="12" md="4" class="text-md-right">
+          <StandardButton 
+            title="Add List"
+            icon="mdi-plus"
+            @click="handleAddList"
+          />
+        </v-col>
+      </v-row>
+
+      <!-- Favorites and Sort Section -->
+      <v-row class="mb-4" align="center">
+        <v-col cols="auto">
+          <div class="d-flex align-center">
+            <v-icon icon="mdi-star-outline" class="mr-2" />
+            <span class="text-h6 font-weight-medium">Favorites</span>
+          </div>
+        </v-col>
+        <v-spacer />
+        <v-col cols="auto">
+          <div class="d-flex align-center">
+            <span class="mr-3 text-medium-emphasis">Sort by:</span>
+            <v-select
+              v-model="sortBy"
+              :items="['Date', 'Name', 'Items']"
+              variant="outlined"
+              hide-details
+              density="compact"
+              style="min-width: 100px;"
+            />
+          </div>
+        </v-col>
+      </v-row>
+
       <!-- Loading state -->
       <div v-if="isLoading" class="text-center pa-8">
         <v-progress-circular indeterminate size="64" />
@@ -101,7 +161,7 @@
           cols="12"
           md="6"
           lg="4"
-          v-for="item in lists"
+          v-for="item in filteredLists"
           :key="item.id"
         >
           <ListCard
@@ -117,6 +177,30 @@
           />
         </v-col>
       </v-row>
+
+      <!-- No results message -->
+      <div v-if="!isLoading && filteredLists.length === 0 && searchQuery" class="text-center pa-8">
+        <v-icon icon="mdi-magnify" size="64" color="grey-lighten-1" />
+        <p class="mt-2 text-h6 text-medium-emphasis">No lists found</p>
+        <p class="text-body-2 text-medium-emphasis">Try adjusting your search terms</p>
+      </div>
     </v-container>
   </div>
 </template>
+
+<style scoped>
+
+
+.add-list-btn {
+  border-radius: 12px;
+  text-transform: none;
+  font-weight: 600;
+  min-width: 120px;
+}
+
+@media (max-width: 960px) {
+  .text-md-right {
+    text-align: left !important;
+  }
+}
+</style>
