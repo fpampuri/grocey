@@ -1,12 +1,26 @@
 <script lang="ts" setup>
-  import NavBar from "./layouts/NavBar.vue";
-  import { RouterView } from "vue-router";
+  import { computed } from 'vue'
+  import { RouterView, useRoute } from 'vue-router'
+  import NavBar from './layouts/NavBar.vue'
+
+  const route = useRoute()
+  const useNavLayout = computed(() => (route.meta?.layout as string | undefined) !== 'plain')
 </script>
 
 <template>
   <v-app>
-    <NavBar>
+    <NavBar v-if="useNavLayout">
       <RouterView />
     </NavBar>
+    <v-main v-else class="plain-layout">
+      <RouterView />
+    </v-main>
   </v-app>
 </template>
+
+<style scoped>
+  .plain-layout {
+    min-height: 100vh;
+    background-color: #fff;
+  }
+</style>
