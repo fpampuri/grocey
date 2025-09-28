@@ -2,6 +2,7 @@
   import ListCard from "@/components/List/ListCard.vue";
   import StandardButton from "@/components/StandardButton.vue";
   import SearchBar from "@/components/SearchBar.vue";
+  import CreateListDialog from "@/components/CreateListDialog.vue";
   import { useRouter } from 'vue-router';
   import { ref, onMounted, computed } from 'vue';
 
@@ -13,6 +14,7 @@
   const isLoading = ref(true);
   const searchQuery = ref('');
   const sortBy = ref('Date');
+  const showCreateDialog = ref(false);
 
   // Computed property for filtered lists
   const filteredLists = computed(() => {
@@ -99,7 +101,27 @@
 
   function handleAddList() {
     console.log('➕ Add List clicked - Opening create list dialog...');
-    // Here you would typically open a dialog or navigate to a create list page
+    showCreateDialog.value = true;
+  }
+
+  function handleCreateList(listData: { name: string; icon: string }) {
+    console.log('📝 Creating new list:', listData);
+    
+    // Create new list object
+    const newList = {
+      id: Date.now(), // Use timestamp as temporary ID
+      title: listData.name,
+      icon: listData.icon,
+      itemsCount: 0,
+      userName: 'Current User',
+      userEmail: 'user@example.com'
+    };
+
+    // Add to lists
+    lists.value.unshift(newList);
+    
+    // Close dialog
+    showCreateDialog.value = false;
   }
 
 </script>
@@ -185,6 +207,12 @@
         <p class="text-body-2 text-medium-emphasis">Try adjusting your search terms</p>
       </div>
     </v-container>
+
+    <!-- Create List Dialog -->
+    <CreateListDialog 
+      v-model="showCreateDialog"
+      @create-list="handleCreateList"
+    />
   </div>
 </template>
 

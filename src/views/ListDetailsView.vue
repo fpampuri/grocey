@@ -2,6 +2,7 @@
     import { useRoute, useRouter } from 'vue-router';
     import { computed, ref, onMounted } from 'vue';
     import ListItemCard from '@/components/List/ListItemCard.vue';
+    import StandardButton from '@/components/StandardButton.vue';
 
     const route = useRoute();
     const router = useRouter();
@@ -99,6 +100,11 @@
         listItems.value = listItems.value.filter(item => item.id !== itemId);
         console.log(`Deleted item ${itemId}`);
     }
+
+    function handleAddProduct() {
+        console.log('➕ Add Product clicked - Opening create product dialog...');
+        // Here you would typically open a dialog or navigate to a create product page
+    }
 </script>
 
 <template>
@@ -134,15 +140,11 @@
       <!-- Add Item Button -->
       <v-row class="mb-4" v-if="listData">
         <v-col cols="12">
-          <v-btn 
-            color="success"
-            prepend-icon="mdi-plus"
-            size="large"
-            variant="flat"
-            class="add-item-btn"
-          >
-            Add Item
-          </v-btn>
+          <StandardButton 
+            title="Add Product"
+            icon="mdi-plus"
+            @click="handleAddProduct"
+          />
         </v-col>
       </v-row>
 
