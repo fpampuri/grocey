@@ -22,6 +22,7 @@
     }>;
     createdBy: number;
     createdAt: string;
+    isFavorite?: boolean; // Add favorite flag
   }
 
   // Properly type the ref
@@ -31,14 +32,28 @@
   const searchQuery = ref('');
   const sortBy = ref('Date');
   const showCreateDialog = ref(false);
+  const showFavoritesOnly = ref(false);
 
-  // Filtered list by search
+  // Filtered list by search and favorites
   const filteredLists = computed(() => {
-    if (!searchQuery.value) return lists.value;
-    return lists.value.filter(list => 
-      list.title.toLowerCase().includes(searchQuery.value.toLowerCase())
-    );
+    let filtered = lists.value;
+    
+    // Filter by favorites if enabled
+    if (showFavoritesOnly.value) {
+      filtered = filtered.filter(list => list.isFavorite);
+    }
+    
+    // Filter by search query
+    if (searchQuery.value) {
+      filtered = filtered.filter(list =>
+        list.title.toLowerCase().includes(searchQuery.value.toLowerCase())
+      );
+    }
+    
+    return filtered;
   });
+
+
 
   // Fetch lists from local mock API
   async function fetchLists() {
@@ -66,7 +81,7 @@
       const items = await response.json();
 
       // Count unique items per list
-      const countsByListId = items.reduce((acc, item) => {
+      const countsByListId = items.reduce((acc: Record<number, number>, item: any) => {
         acc[item.listId] = (acc[item.listId] || 0) + 1;
         return acc;
       }, {});
@@ -93,8 +108,13 @@
     router.push(`/lists/${listItem.id}`);
   }
 
-  function handleStarToggle(isStarred: boolean) {
-    console.log('⭐ Star toggled:', isStarred ? 'STARRED' : 'UNSTARRED');
+  function handleStarToggle(isStarred: boolean, listId: number) {
+
+    // Update the list's favorite status in the data
+    const listIndex = lists.value.findIndex(list => list.id === listId);
+    if (listIndex !== -1) {
+      lists.value[listIndex].isFavorite = isStarred;
+    }
   }
 
   function handleSelectionToggle(isSelected: boolean) {
@@ -103,6 +123,10 @@
 
   function handleEdit() {
     console.log('✏️ Edit clicked - Opening edit dialog...');
+  }
+
+  function handleFavoritesToggle() {
+    showFavoritesOnly.value = !showFavoritesOnly.value;
   }
 
   function handleDelete() {
@@ -122,13 +146,22 @@
     console.log('📝 Creating new list:', listData);
     
     // Create new list object
-    const newList = {
+    const newList: List = {
       id: Date.now(), // Use timestamp as temporary ID
       title: listData.name,
       icon: listData.icon,
       itemsCount: 0,
-      userName: 'Current User',
-      userEmail: 'user@example.com'
+      isFavorite: false, // Default to not favorite
+      users: [
+        {
+          id: 1,
+          name: 'Current User',
+          email: 'user@example.com',
+          role: 'owner'
+        }
+      ],
+      createdBy: 1,
+      createdAt: new Date().toISOString()
     };
 
     // Add to lists
@@ -164,10 +197,15 @@
       <!-- Favorites and Sort Section -->
       <v-row class="mb-4" align="center">
         <v-col cols="auto">
-          <div class="d-flex align-center">
-            <v-icon icon="mdi-star-outline" class="mr-2" />
-            <span class="text-h6 font-weight-medium">Favorites</span>
-          </div>
+          <v-btn
+            variant="elevated"
+            @click="handleFavoritesToggle"
+            :class="showFavoritesOnly ? 'favorites-btn-active' : 'favorites-btn'"
+          >
+            <v-icon :icon="showFavoritesOnly ? 'mdi-star' : 'mdi-star-outline'" class="mr-2" />
+            Favorites
+          </v-btn>
+        
         </v-col>
         <v-spacer />
         <v-col cols="auto">
@@ -204,8 +242,9 @@
             :title="item.title"
             :icon="item.icon"
             :itemsCount="item.itemsCount"
+            :starred="item.isFavorite || false"
             @click="() => handleListClick(item)"
-            @toggle-star="handleStarToggle"
+            @toggle-star="(isStarred) => handleStarToggle(isStarred, item.id)"
             @toggle-selection="handleSelectionToggle"
             @edit="handleEdit"
             @delete="handleDelete"
@@ -232,6 +271,31 @@
 
 <style scoped>
 
+.favorites-btn-active {
+  border-radius: 12px;
+  text-transform: none;
+  font-weight: 600;
+  min-width: 120px;
+  min-height: 40px;
+  color: white !important;
+  background-color: var(--primary-green-light)  !important;
+}
+
+.favorites-btn {
+  border-radius: 12px;
+  text-transform: none;
+  font-weight: 600;
+  min-width: 120px;
+  min-height: 40px;
+  color: var(--text-primary) !important;
+  background-color: white !important;
+}
+
+.favorites-btn:hover {
+  color: white !important;
+  background-color: var(--primary-green-light) !important;
+  opacity: 0.7 !important;
+}
 
 .add-list-btn {
   border-radius: 12px;
