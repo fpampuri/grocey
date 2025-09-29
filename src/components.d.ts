@@ -25,6 +25,10 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SearchBar: typeof import('./components/SearchBar.vue')['default']
+    SettingRowAction: typeof import('./components/Settings/SettingRowAction.vue')['default']
+    SettingRowActionSecondary: typeof import('./components/Settings/SettingRowActionSecondary.vue')['default']
+    SettingRowToggle: typeof import('./components/Settings/SettingRowToggle.vue')['default']
+    SettingsSectionCard: typeof import('./components/Settings/SettingsSectionCard.vue')['default']
     StandardButton: typeof import('./components/StandardButton.vue')['default']
   }
 }
