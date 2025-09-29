@@ -6,17 +6,33 @@
   import { useRouter } from 'vue-router';
   import { ref, onMounted, computed } from 'vue';
 
-
   const router = useRouter();
 
-  // Real data from API
-  const lists = ref([]);
+  // Define the List type
+  interface List {
+    id: number;
+    title: string;
+    icon: string;
+    itemsCount: number;
+    users: Array<{
+      id: number;
+      name: string;
+      email: string;
+      role: string;
+    }>;
+    createdBy: number;
+    createdAt: string;
+  }
+
+  // Properly type the ref
+  const lists = ref<List[]>([]);
+
   const isLoading = ref(true);
   const searchQuery = ref('');
   const sortBy = ref('Date');
   const showCreateDialog = ref(false);
 
-  // Computed property for filtered lists
+  // Filtered list by search
   const filteredLists = computed(() => {
     if (!searchQuery.value) return lists.value;
     return lists.value.filter(list => 
@@ -24,43 +40,41 @@
     );
   });
 
-  // Fetch lists from JSONPlaceholder
+  // Fetch lists from local mock API
   async function fetchLists() {
     try {
-      const response = await fetch('https://jsonplaceholder.typicode.com/users');
-      const users = await response.json();
+      const response = await fetch('/api/lists.json');
+
+      if (!response.ok) throw new Error('Error fetching lists');
+
+      const lists = await response.json();
       
-      // Transform users into list format
-      return users.map(user => ({
-        id: user.id,
-        title: `${user.name}'s List`,
-        icon: user.id % 2 === 0 ? "mdi-apple" : "mdi-broom", // Alternate icons
-        itemsCount: Math.floor(Math.random() * 12) + 1, // We'll get real count later
-        userName: user.name,
-        userEmail: user.email
-      }));
+      // Lists already have the correct structure, just return them
+      return lists;
     } catch (error) {
       console.error('Error fetching lists:', error);
       return [];
     }
   }
 
-  // Fetch real item counts for each list
+  // Fetch real item counts for each list from list-items.json
   async function fetchItemCounts() {
     try {
-      const todosResponse = await fetch('https://jsonplaceholder.typicode.com/todos');
-      const todos = await todosResponse.json();
+      const response = await fetch('/api/list-items.json');
+      if (!response.ok) throw new Error('Error fetching list items');
       
-      // Count todos per user
-      const countsByUserId = todos.reduce((acc, todo) => {
-        acc[todo.userId] = (acc[todo.userId] || 0) + 1;
+      const items = await response.json();
+
+      // Count unique items per list
+      const countsByListId = items.reduce((acc, item) => {
+        acc[item.listId] = (acc[item.listId] || 0) + 1;
         return acc;
       }, {});
 
       // Update lists with real counts
       lists.value = lists.value.map(list => ({
-        ...list,
-        itemsCount: countsByUserId[list.id] || 0
+        ...list,                                    // Keep existing properties
+        itemsCount: countsByListId[list.id] || 0    // Update with real count or 0
       }));
     } catch (error) {
       console.error('Error fetching item counts:', error);

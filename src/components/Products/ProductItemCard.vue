@@ -108,7 +108,7 @@ function cancelEdit() {
 
           <button class="add-list-btn" @click="addToList" aria-label="Add to list">
             <v-icon icon="mdi-plus" size="small" class="mr-1" />
-            + Add to List
+            Add to List
           </button>
 
           <button class="delete-btn" @click="deleteItem" aria-label="delete item">

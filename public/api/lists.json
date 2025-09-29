@@ -1,0 +1,184 @@
+[
+  {
+    "id": 1,
+    "title": "Weekly Shopping",
+    "icon": "mdi-cart",
+    "itemsCount": 8,
+    "users": [
+      {
+        "id": 1,
+        "name": "John Doe",
+        "email": "john@example.com",
+        "role": "owner"
+      },
+      {
+        "id": 2,
+        "name": "Jane Smith",
+        "email": "jane@example.com",
+        "role": "editor"
+      }
+    ],
+    "createdBy": 1,
+    "createdAt": "2024-09-20T10:30:00Z"
+  },
+  {
+    "id": 2,
+    "title": "Party Supplies",
+    "icon": "mdi-party-popper",
+    "itemsCount": 5,
+    "users": [
+      {
+        "id": 2,
+        "name": "Jane Smith",
+        "email": "jane@example.com",
+        "role": "owner"
+      },
+      {
+        "id": 3,
+        "name": "Mike Johnson",
+        "email": "mike@example.com",
+        "role": "viewer"
+      }
+    ],
+    "createdBy": 2,
+    "createdAt": "2024-09-22T14:15:00Z"
+  },
+  {
+    "id": 3,
+    "title": "Breakfast Items",
+    "icon": "mdi-coffee",
+    "itemsCount": 6,
+    "users": [
+      {
+        "id": 3,
+        "name": "Mike Johnson",
+        "email": "mike@example.com",
+        "role": "owner"
+      }
+    ],
+    "createdBy": 3,
+    "createdAt": "2024-09-23T08:00:00Z"
+  },
+  {
+    "id": 4,
+    "title": "Dinner Tonight",
+    "icon": "mdi-silverware-fork-knife",
+    "itemsCount": 4,
+    "users": [
+      {
+        "id": 4,
+        "name": "Sarah Wilson",
+        "email": "sarah@example.com",
+        "role": "owner"
+      },
+      {
+        "id": 1,
+        "name": "John Doe",
+        "email": "john@example.com",
+        "role": "editor"
+      }
+    ],
+    "createdBy": 4,
+    "createdAt": "2024-09-25T16:45:00Z"
+  },
+  {
+    "id": 5,
+    "title": "Healthy Options",
+    "icon": "mdi-leaf",
+    "itemsCount": 7,
+    "users": [
+      {
+        "id": 5,
+        "name": "Alex Brown",
+        "email": "alex@example.com",
+        "role": "owner"
+      },
+      {
+        "id": 6,
+        "name": "Emily Davis",
+        "email": "emily@example.com",
+        "role": "editor"
+      },
+      {
+        "id": 7,
+        "name": "David Martinez",
+        "email": "david@example.com",
+        "role": "viewer"
+      }
+    ],
+    "createdBy": 5,
+    "createdAt": "2024-09-26T11:20:00Z"
+  },
+  {
+    "id": 6,
+    "title": "Baking Essentials",
+    "icon": "mdi-cupcake",
+    "itemsCount": 9,
+    "users": [
+      {
+        "id": 6,
+        "name": "Emily Davis",
+        "email": "emily@example.com",
+        "role": "owner"
+      }
+    ],
+    "createdBy": 6,
+    "createdAt": "2024-09-27T13:10:00Z"
+  },
+  {
+    "id": 7,
+    "title": "Quick Snacks",
+    "icon": "mdi-food-apple",
+    "itemsCount": 3,
+    "users": [
+      {
+        "id": 7,
+        "name": "David Martinez",
+        "email": "david@example.com",
+        "role": "owner"
+      },
+      {
+        "id": 1,
+        "name": "John Doe",
+        "email": "john@example.com",
+        "role": "editor"
+      }
+    ],
+    "createdBy": 7,
+    "createdAt": "2024-09-28T09:30:00Z"
+  },
+  {
+    "id": 8,
+    "title": "BBQ Weekend",
+    "icon": "mdi-grill",
+    "itemsCount": 10,
+    "users": [
+      {
+        "id": 8,
+        "name": "Lisa Garcia",
+        "email": "lisa@example.com",
+        "role": "owner"
+      },
+      {
+        "id": 1,
+        "name": "John Doe",
+        "email": "john@example.com",
+        "role": "editor"
+      },
+      {
+        "id": 2,
+        "name": "Jane Smith",
+        "email": "jane@example.com",
+        "role": "editor"
+      },
+      {
+        "id": 5,
+        "name": "Alex Brown",
+        "email": "alex@example.com",
+        "role": "viewer"
+      }
+    ],
+    "createdBy": 8,
+    "createdAt": "2024-09-28T18:00:00Z"
+  }
+]

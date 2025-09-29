@@ -1,0 +1,278 @@
+[
+  {
+    "id": 101,
+    "name": "Organic Apples",
+    "categoryId": 1,
+    "category": "Fruits"
+  },
+  {
+    "id": 102,
+    "name": "Bananas",
+    "categoryId": 1,
+    "category": "Fruits"
+  },
+  {
+    "id": 103,
+    "name": "Avocados",
+    "categoryId": 1,
+    "category": "Fruits"
+  },
+  {
+    "id": 104,
+    "name": "Fresh Blueberries",
+    "categoryId": 1,
+    "category": "Fruits"
+  },
+  {
+    "id": 105,
+    "name": "Strawberries",
+    "categoryId": 1,
+    "category": "Fruits"
+  },
+
+  {
+    "id": 201,
+    "name": "Tomatoes",
+    "categoryId": 2,
+    "category": "Vegetables"
+  },
+  {
+    "id": 202,
+    "name": "Lettuce",
+    "categoryId": 2,
+    "category": "Vegetables"
+  },
+  {
+    "id": 203,
+    "name": "Yellow Onions",
+    "categoryId": 2,
+    "category": "Vegetables"
+  },
+  {
+    "id": 204,
+    "name": "Bell Peppers",
+    "categoryId": 2,
+    "category": "Vegetables"
+  },
+  {
+    "id": 205,
+    "name": "Fresh Spinach",
+    "categoryId": 2,
+    "category": "Vegetables"
+  },
+
+  {
+    "id": 301,
+    "name": "2% Milk",
+    "categoryId": 3,
+    "category": "Dairy"
+  },
+  {
+    "id": 302,
+    "name": "Large Eggs",
+    "categoryId": 3,
+    "category": "Dairy"
+  },
+  {
+    "id": 303,
+    "name": "Greek Yogurt",
+    "categoryId": 3,
+    "category": "Dairy"
+  },
+  {
+    "id": 304,
+    "name": "Unsalted Butter",
+    "categoryId": 3,
+    "category": "Dairy"
+  },
+
+  {
+    "id": 401,
+    "name": "Whole Wheat Bread",
+    "categoryId": 4,
+    "category": "Bakery"
+  },
+  {
+    "id": 402,
+    "name": "Birthday Cake",
+    "categoryId": 4,
+    "category": "Bakery"
+  },
+  {
+    "id": 403,
+    "name": "Everything Bagels",
+    "categoryId": 4,
+    "category": "Bakery"
+  },
+
+  {
+    "id": 501,
+    "name": "Ground Beef",
+    "categoryId": 5,
+    "category": "Meat & Seafood"
+  },
+  {
+    "id": 502,
+    "name": "Turkey Bacon",
+    "categoryId": 5,
+    "category": "Meat & Seafood"
+  },
+  {
+    "id": 503,
+    "name": "Chicken Breast",
+    "categoryId": 5,
+    "category": "Meat & Seafood"
+  },
+  {
+    "id": 504,
+    "name": "Atlantic Salmon",
+    "categoryId": 5,
+    "category": "Meat & Seafood"
+  },
+
+  {
+    "id": 601,
+    "name": "Extra Virgin Olive Oil",
+    "categoryId": 6,
+    "category": "Pantry"
+  },
+  {
+    "id": 602,
+    "name": "Jasmine Rice",
+    "categoryId": 6,
+    "category": "Pantry"
+  },
+  {
+    "id": 603,
+    "name": "Quinoa",
+    "categoryId": 6,
+    "category": "Pantry"
+  },
+
+  {
+    "id": 701,
+    "name": "Tortilla Chips",
+    "categoryId": 7,
+    "category": "Snacks"
+  },
+  {
+    "id": 702,
+    "name": "Raw Almonds",
+    "categoryId": 7,
+    "category": "Snacks"
+  },
+  {
+    "id": 703,
+    "name": "Granola Bars",
+    "categoryId": 7,
+    "category": "Snacks"
+  },
+
+  {
+    "id": 801,
+    "name": "Cola",
+    "categoryId": 8,
+    "category": "Beverages"
+  },
+  {
+    "id": 802,
+    "name": "Fresh Orange Juice",
+    "categoryId": 8,
+    "category": "Beverages"
+  },
+  {
+    "id": 803,
+    "name": "Sparkling Water",
+    "categoryId": 8,
+    "category": "Beverages"
+  },
+
+  {
+    "id": 901,
+    "name": "Vanilla Ice Cream",
+    "categoryId": 9,
+    "category": "Frozen"
+  },
+  {
+    "id": 902,
+    "name": "Frozen Pizza",
+    "categoryId": 9,
+    "category": "Frozen"
+  },
+  {
+    "id": 903,
+    "name": "Frozen Berries",
+    "categoryId": 9,
+    "category": "Frozen"
+  },
+
+  {
+    "id": 1001,
+    "name": "Toothpaste",
+    "categoryId": 10,
+    "category": "Personal Care"
+  },
+  {
+    "id": 1002,
+    "name": "Shampoo",
+    "categoryId": 10,
+    "category": "Personal Care"
+  },
+
+  {
+    "id": 1101,
+    "name": "Whole Grain Cereal",
+    "categoryId": 11,
+    "category": "Breakfast"
+  },
+  {
+    "id": 1102,
+    "name": "Oatmeal",
+    "categoryId": 11,
+    "category": "Breakfast"
+  },
+
+  {
+    "id": 1201,
+    "name": "Coffee Beans",
+    "categoryId": 12,
+    "category": "Coffee & Tea"
+  },
+  {
+    "id": 1202,
+    "name": "Earl Grey Tea",
+    "categoryId": 12,
+    "category": "Coffee & Tea"
+  },
+
+  {
+    "id": 1301,
+    "name": "All-Purpose Flour",
+    "categoryId": 13,
+    "category": "Baking"
+  },
+  {
+    "id": 1302,
+    "name": "Baking Powder",
+    "categoryId": 13,
+    "category": "Baking"
+  },
+  {
+    "id": 1303,
+    "name": "Pure Vanilla Extract",
+    "categoryId": 13,
+    "category": "Baking"
+  },
+  {
+    "id": 1304,
+    "name": "Brown Sugar",
+    "categoryId": 13,
+    "category": "Baking"
+  },
+  {
+    "id": 1305,
+    "name": "Semi-Sweet Chocolate Chips",
+    "categoryId": 13,
+    "category": "Baking"
+  }
+]

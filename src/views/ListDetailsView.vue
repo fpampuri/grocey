@@ -16,25 +16,26 @@
     const isLoading = ref(true);
     const itemsLoading = ref(true);
 
-    function goBack() {
-        router.push('/lists');
-    }
-
-    // Fetch list (user) data from JSONPlaceholder
+    // Fetch list data from local mock API
     async function fetchListData(id: string) {
         try {
-            const response = await fetch(`https://jsonplaceholder.typicode.com/users/${id}`);
-            if (!response.ok) throw new Error('List not found');
+            const response = await fetch('/api/lists.json');
+            if (!response.ok) throw new Error('Lists not found');
             
-            const user = await response.json();
+            const lists = await response.json();
+            const list = lists.find(list => list.id == id);
+            
+            if (!list) {
+                throw new Error('List not found');
+            }
+            
             return {
-                id: user.id,
-                title: `${user.name}`,
-                icon: user.id % 2 === 0 ? "mdi-apple" : "mdi-broom",
-                userName: user.name,
-                userEmail: user.email,
-                userWebsite: user.website,
-                userCompany: user.company.name
+                id: list.id,
+                title: list.title,
+                icon: list.icon,
+                users: list.users,
+                createdBy: list.createdBy,
+                createdAt: list.createdAt
             };
         } catch (error) {
             console.error('Error fetching list data:', error);
@@ -42,19 +43,26 @@
         }
     }
 
-    // Fetch list items (todos) for this user
-    async function fetchListItems(userId: string) {
+    // Fetch list items for the given list ID
+    async function fetchListItems(listID: string) {
         try {
-            const response = await fetch(`https://jsonplaceholder.typicode.com/todos?userId=${userId}`);
-            const todos = await response.json();
+            const response = await fetch('/api/list-items.json');
+            if (!response.ok) throw new Error('Items of list not found');
+
+            const items = await response.json();
             
-            return todos.map(todo => ({
-                id: todo.id,
-                title: todo.title,
-                completed: todo.completed,
-                userId: todo.userId,
-                quantity: Math.floor(Math.random() * 5) + 1 // Add random quantity for demo
-            }));
+            // Filter items by listId and return the correct structure
+            return items
+                .filter(item => item.listId == listID)
+                .map(item => ({
+                    id: item.id,
+                    title: item.productName, // Use productName as title for display
+                    completed: item.completed,
+                    quantity: item.quantity,
+                    productId: item.productId,
+                    productName: item.productName,
+                    category: item.category
+                }));
         } catch (error) {
             console.error('Error fetching list items:', error);
             return [];
@@ -79,12 +87,16 @@
         itemsLoading.value = false;
     });
 
+    // Navigate back to the lists overview
+    function goBack() {
+        router.push('/lists');
+    }
+
     // Handle list item actions
     function handleUpdateQuantity(itemId: number, newQuantity: number) {
         const item = listItems.value.find(item => item.id === itemId);
         if (item) {
             item.quantity = newQuantity;
-            console.log(`Updated item ${itemId} quantity to ${newQuantity}`);
         }
     }
 
@@ -93,15 +105,14 @@
         if (item) {
             item.completed = completed;
         }
-        console.log(`Toggled item ${itemId} completion to ${completed}`);
     }
 
     function handleDeleteItem(itemId: number) {
         listItems.value = listItems.value.filter(item => item.id !== itemId);
-        console.log(`Deleted item ${itemId}`);
     }
 
     function handleAddProduct() {
+
         console.log('➕ Add Product clicked - Opening create product dialog...');
         // Here you would typically open a dialog or navigate to a create product page
     }

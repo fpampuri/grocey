@@ -1,0 +1,182 @@
+[
+  {
+    "id": 1,
+    "title": "Fruits",
+    "icon": "mdi-food-apple",
+    "products": [
+      { "id": 101, "name": "Organic Apples" },
+      { "id": 102, "name": "Bananas" },
+      { "id": 103, "name": "Avocados" },
+      { "id": 104, "name": "Fresh Blueberries" },
+      { "id": 105, "name": "Strawberries" },
+      { "id": 106, "name": "Oranges" },
+      { "id": 107, "name": "Grapes" },
+      { "id": 108, "name": "Pineapple" }
+    ]
+  },
+  {
+    "id": 2,
+    "title": "Vegetables",
+    "icon": "mdi-food-variant",
+    "products": [
+      { "id": 201, "name": "Tomatoes" },
+      { "id": 202, "name": "Lettuce" },
+      { "id": 203, "name": "Yellow Onions" },
+      { "id": 204, "name": "Bell Peppers" },
+      { "id": 205, "name": "Fresh Spinach" },
+      { "id": 206, "name": "Fresh Kale" },
+      { "id": 207, "name": "Sweet Potatoes" },
+      { "id": 208, "name": "Broccoli" },
+      { "id": 209, "name": "Carrots" },
+      { "id": 210, "name": "Cucumbers" }
+    ]
+  },
+  {
+    "id": 3,
+    "title": "Dairy",
+    "icon": "mdi-cheese",
+    "products": [
+      { "id": 301, "name": "2% Milk" },
+      { "id": 302, "name": "Large Eggs" },
+      { "id": 303, "name": "Greek Yogurt" },
+      { "id": 304, "name": "Unsalted Butter" },
+      { "id": 305, "name": "Heavy Whipping Cream" },
+      { "id": 306, "name": "String Cheese" },
+      { "id": 307, "name": "Cheddar Cheese" },
+      { "id": 308, "name": "Cream Cheese" }
+    ]
+  },
+  {
+    "id": 4,
+    "title": "Bakery",
+    "icon": "mdi-bread-slice",
+    "products": [
+      { "id": 401, "name": "Whole Wheat Bread" },
+      { "id": 402, "name": "Birthday Cake" },
+      { "id": 403, "name": "Everything Bagels" },
+      { "id": 404, "name": "Croissants" },
+      { "id": 405, "name": "Muffins" },
+      { "id": 406, "name": "Sourdough Bread" },
+      { "id": 407, "name": "Dinner Rolls" }
+    ]
+  },
+  {
+    "id": 5,
+    "title": "Meat & Seafood",
+    "icon": "mdi-food-steak",
+    "products": [
+      { "id": 501, "name": "Ground Beef" },
+      { "id": 502, "name": "Turkey Bacon" },
+      { "id": 503, "name": "Chicken Breast" },
+      { "id": 504, "name": "Atlantic Salmon" },
+      { "id": 505, "name": "Pork Chops" },
+      { "id": 506, "name": "Shrimp" },
+      { "id": 507, "name": "Ground Turkey" }
+    ]
+  },
+  {
+    "id": 6,
+    "title": "Pantry",
+    "icon": "mdi-archive",
+    "products": [
+      { "id": 601, "name": "Extra Virgin Olive Oil" },
+      { "id": 602, "name": "Jasmine Rice" },
+      { "id": 603, "name": "Quinoa" },
+      { "id": 604, "name": "Pasta" },
+      { "id": 605, "name": "Canned Beans" },
+      { "id": 606, "name": "Tomato Sauce" },
+      { "id": 607, "name": "Honey" },
+      { "id": 608, "name": "Sea Salt" },
+      { "id": 609, "name": "Black Pepper" }
+    ]
+  },
+  {
+    "id": 7,
+    "title": "Snacks",
+    "icon": "mdi-cookie",
+    "products": [
+      { "id": 701, "name": "Tortilla Chips" },
+      { "id": 702, "name": "Raw Almonds" },
+      { "id": 703, "name": "Granola Bars" },
+      { "id": 704, "name": "Mixed Nuts Trail Mix" },
+      { "id": 705, "name": "Pretzels" },
+      { "id": 706, "name": "Crackers" },
+      { "id": 707, "name": "Popcorn" }
+    ]
+  },
+  {
+    "id": 8,
+    "title": "Beverages",
+    "icon": "mdi-cup-water",
+    "products": [
+      { "id": 801, "name": "Cola" },
+      { "id": 802, "name": "Fresh Orange Juice" },
+      { "id": 803, "name": "Sparkling Water" },
+      { "id": 804, "name": "Green Tea" },
+      { "id": 805, "name": "Energy Drink" },
+      { "id": 806, "name": "Coconut Water" }
+    ]
+  },
+  {
+    "id": 9,
+    "title": "Frozen",
+    "icon": "mdi-snowflake",
+    "products": [
+      { "id": 901, "name": "Vanilla Ice Cream" },
+      { "id": 902, "name": "Frozen Pizza" },
+      { "id": 903, "name": "Frozen Berries" },
+      { "id": 904, "name": "Frozen Vegetables" },
+      { "id": 905, "name": "Ice Cream Sandwiches" },
+      { "id": 906, "name": "Frozen Waffles" }
+    ]
+  },
+  {
+    "id": 10,
+    "title": "Personal Care",
+    "icon": "mdi-toothbrush",
+    "products": [
+      { "id": 1001, "name": "Toothpaste" },
+      { "id": 1002, "name": "Shampoo" },
+      { "id": 1003, "name": "Body Soap" },
+      { "id": 1004, "name": "Deodorant" },
+      { "id": 1005, "name": "Toilet Paper" }
+    ]
+  },
+  {
+    "id": 11,
+    "title": "Breakfast",
+    "icon": "mdi-coffee",
+    "products": [
+      { "id": 1101, "name": "Whole Grain Cereal" },
+      { "id": 1102, "name": "Oatmeal" },
+      { "id": 1103, "name": "Pancake Mix" },
+      { "id": 1104, "name": "Maple Syrup" }
+    ]
+  },
+  {
+    "id": 12,
+    "title": "Coffee & Tea",
+    "icon": "mdi-coffee-outline",
+    "products": [
+      { "id": 1201, "name": "Coffee Beans" },
+      { "id": 1202, "name": "Earl Grey Tea" },
+      { "id": 1203, "name": "Herbal Tea" },
+      { "id": 1204, "name": "Instant Coffee" }
+    ]
+  },
+  {
+    "id": 13,
+    "title": "Baking",
+    "icon": "mdi-cupcake",
+    "products": [
+      { "id": 1301, "name": "All-Purpose Flour" },
+      { "id": 1302, "name": "Baking Powder" },
+      { "id": 1303, "name": "Pure Vanilla Extract" },
+      { "id": 1304, "name": "Brown Sugar" },
+      { "id": 1305, "name": "Semi-Sweet Chocolate Chips" },
+      { "id": 1306, "name": "Powdered Sugar" },
+      { "id": 1307, "name": "Food Coloring Set" },
+      { "id": 1308, "name": "Baking Soda" }
+    ]
+  }
+]
