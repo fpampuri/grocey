@@ -11,6 +11,7 @@ const routes = [
   { path: '/login', name: 'login', component: () => import('@/views/LoginView.vue'), meta: { title: 'Iniciar sesión', layout: 'plain' } },
   { path: '/lists', name: 'lists', component: () => import('@/views/ListsView.vue'), meta: { title: 'Lists'} },
   { path: '/products', name: 'products', component: () => import('@/views/ProductsView.vue'), meta: { title: 'Products'} },
+  { path: '/products/category/:id', name: 'category-details', component: () => import('@/views/CategoryDetailsView.vue'), meta: { title: 'Category Details'} },
   { path: '/settings', name: 'settings', component: () => import('@/views/SettingsView.vue'), meta: { title: 'Settings'} },
   { path: '/lists/:id', name: 'list-details', component: () => import('@/views/ListDetailsView.vue'), meta: { title: 'List Details'} },
   { path: '/products/:id', name: 'product-details', component: () => import('@/views/ProductDetailsView.vue'), meta: { title: 'Product Details'} },

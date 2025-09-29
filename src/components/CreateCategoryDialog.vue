@@ -7,11 +7,11 @@ const props = defineProps({
   modelValue: { type: Boolean, default: false },
 });
 
-const emit = defineEmits(['update:modelValue', 'create-list']);
+const emit = defineEmits(['update:modelValue', 'create-category']);
 
 // Form data
-const listName = ref('');
-const selectedIcon = ref('mdi-cart');
+const categoryName = ref('');
+const selectedIcon = ref('mdi-tag-outline');
 
 // Available icons for selection
 const iconOptions = [
@@ -26,18 +26,18 @@ const iconOptions = [
 function closeDialog() {
   emit('update:modelValue', false);
   // Reset form
-  listName.value = '';
-  selectedIcon.value = 'mdi-cart';
+  categoryName.value = '';
+  selectedIcon.value = 'mdi-tag-outline';
   iconOptionsOpen.value = false;
 }
 
-function createList() {
-  if (!listName.value.trim()) {
+function createCategory() {
+  if (!categoryName.value.trim()) {
     return; // Don't create if name is empty
   }
 
-  emit('create-list', {
-    name: listName.value.trim(),
+  emit('create-category', {
+    name: categoryName.value.trim(),
     icon: selectedIcon.value,
   });
 
@@ -60,7 +60,7 @@ const iconOptionsOpen = ref(false);
     <div class="dialog-container" @click.stop>
       <!-- Dialog Header -->
       <div class="dialog-header">
-        <h2 class="dialog-title">Create New List</h2>
+  <h2 class="dialog-title">Create New Category</h2>
         <button class="close-button" @click="closeDialog">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
             <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
@@ -71,15 +71,15 @@ const iconOptionsOpen = ref(false);
       <!-- Dialog Body -->
       <div class="dialog-body">
         
-        <!-- List Name Field -->
+        <!-- Category Name Field -->
         <div class="form-field">
-          <label class="field-label">List Name</label>
+          <label class="field-label">Category Name</label>
           <input
-            v-model="listName"
+            v-model="categoryName"
             type="text"
-            placeholder="Enter list name"
+            placeholder="Enter category name"
             class="text-input"
-            @keyup.enter="createList"
+            @keyup.enter="createCategory"
           />
         </div>
 
@@ -120,9 +120,9 @@ const iconOptionsOpen = ref(false);
           Cancel
         </button>
         <StandardButton
-          title="Create List"
+          title="Create Category"
           icon="mdi-plus"
-          @click="createList"
+          @click="createCategory"
         />
       </div>
     </div>
