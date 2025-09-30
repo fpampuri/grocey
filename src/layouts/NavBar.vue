@@ -3,11 +3,13 @@
   import NavBarButton from "@/components/NavBar/NavBarButton.vue";
   import NavListItem from "@/components/NavBar/NavListItem.vue";
   import NavBarTitle from "@/components/NavBar/NavBarTitle.vue";
+  import ProfilePanel from "@/components/Profile/ProfilePanel.vue";
   import { useRoute } from "vue-router";
 
   const route = useRoute();
 
   const selectedItem = ref("lists"); // Default selected item
+  const showProfilePanel = ref(false);
 
   const selectItem = (item: string) => {
     selectedItem.value = item;
@@ -26,7 +28,7 @@
   });
 
   const onProfileClick = () => {
-    console.log("profile clicked");
+    showProfilePanel.value = true;
   };
 </script>
 
@@ -90,6 +92,11 @@
   <v-main>
     <slot/>
   </v-main>
+
+  <!-- Profile Panel -->
+  <ProfilePanel 
+    v-model="showProfilePanel"
+  />
 </template>
 
 <style scoped>

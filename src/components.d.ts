@@ -22,6 +22,7 @@ declare module 'vue' {
     NavListItem: typeof import('./components/NavBar/NavListItem.vue')['default']
     ProductCard: typeof import('./components/Products/ProductCard.vue')['default']
     ProductItemCard: typeof import('./components/Products/ProductItemCard.vue')['default']
+    ProfilePanel: typeof import('./components/Profile/ProfilePanel.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SearchBar: typeof import('./components/SearchBar.vue')['default']
