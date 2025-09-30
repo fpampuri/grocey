@@ -12,7 +12,7 @@
     
     // Store the fetched list data and items
     const listData = ref(null);
-    const listItems = ref([]);
+    const listItems = ref([] as any[]);
     const isLoading = ref(true);
     const itemsLoading = ref(true);
 

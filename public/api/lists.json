@@ -4,6 +4,7 @@
     "title": "Weekly Shopping",
     "icon": "mdi-cart",
     "itemsCount": 8,
+    "isFavorite": true,
     "users": [
       {
         "id": 1,
@@ -26,6 +27,7 @@
     "title": "Party Supplies",
     "icon": "mdi-party-popper",
     "itemsCount": 5,
+    "isFavorite": false,
     "users": [
       {
         "id": 2,
@@ -48,6 +50,7 @@
     "title": "Breakfast Items",
     "icon": "mdi-coffee",
     "itemsCount": 6,
+    "isFavorite": true,
     "users": [
       {
         "id": 3,
@@ -64,6 +67,7 @@
     "title": "Dinner Tonight",
     "icon": "mdi-silverware-fork-knife",
     "itemsCount": 4,
+    "isFavorite": false,
     "users": [
       {
         "id": 4,
@@ -86,6 +90,7 @@
     "title": "Healthy Options",
     "icon": "mdi-leaf",
     "itemsCount": 7,
+    "isFavorite": true,
     "users": [
       {
         "id": 5,
@@ -114,6 +119,7 @@
     "title": "Baking Essentials",
     "icon": "mdi-cupcake",
     "itemsCount": 9,
+    "isFavorite": false,
     "users": [
       {
         "id": 6,
@@ -130,6 +136,7 @@
     "title": "Quick Snacks",
     "icon": "mdi-food-apple",
     "itemsCount": 3,
+    "isFavorite": false,
     "users": [
       {
         "id": 7,
@@ -152,6 +159,7 @@
     "title": "BBQ Weekend",
     "icon": "mdi-grill",
     "itemsCount": 10,
+    "isFavorite": true,
     "users": [
       {
         "id": 8,
