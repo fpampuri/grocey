@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from "vue-router";
 import { computed, ref, onMounted } from "vue";
-import ProductItemCard from "@/components/Products/ProductItemCard.vue";
+import Card from "@/components/Products/ProductItemCard.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -131,17 +131,6 @@ function handleRenameProduct(payload: { id: number; name: string }) {
             size="large"
           />
         </v-col>
-        <v-col>
-          <div v-if="isLoading">
-            <h1 class="text-h4">Loading...</h1>
-          </div>
-          <div v-else-if="categoryData">
-            <h1 class="text-h4">{{ categoryData.title }}</h1>
-          </div>
-          <div v-else>
-            <h1 class="text-h4">{{ isFromPantry ? 'Pantry Category' : 'Category' }} Not Found</h1>
-          </div>
-        </v-col>
       </v-row>
 
       <v-row>
@@ -156,7 +145,7 @@ function handleRenameProduct(payload: { id: number; name: string }) {
           </div>
           <div v-else-if="categoryData">
             <div v-if="products.length > 0">
-              <ProductItemCard
+              <Card
                 v-for="item in products"
                 :key="item.id"
                 :id="item.id"

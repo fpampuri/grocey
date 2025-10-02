@@ -173,17 +173,7 @@
             size="large"
           />
         </v-col>
-        <v-col cols="auto">
-          <div v-if="isLoading">
-            <h1 class="text-h4">Loading...</h1>
-          </div>
-          <div v-else-if="listData">
-            <h1 class="text-h4 inline">{{ listData.title }}</h1>
-          </div>
-          <div v-else>
-            <h1 class="text-h4">List Not Found</h1>
-          </div>
-        </v-col>
+        
         <v-col class="d-flex justify-end">
           <StandardButton 
             title="Add Item"
