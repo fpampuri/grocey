@@ -97,7 +97,7 @@ onMounted(async () => {
 });
 
 function handleCategoryClick(cat: Category) {
-  router.push(`/products/category/${cat.id}`);
+  router.push(`/categories/${cat.id}`);
 }
 
 function handleSelectionToggle(isSelected: boolean) {
@@ -139,7 +139,6 @@ function handleRenameCategory(catId: number, newTitle: string) {
 }
 
 function handleAddProduct() {
-  console.log("Add Product");
   showCreateProductDialog.value = true;
 }
 
