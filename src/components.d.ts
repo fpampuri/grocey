@@ -38,6 +38,7 @@ declare module 'vue' {
     SettingRowActionSecondary: typeof import('./components/Settings/SettingRowActionSecondary.vue')['default']
     SettingRowToggle: typeof import('./components/Settings/SettingRowToggle.vue')['default']
     SettingsSectionCard: typeof import('./components/Settings/SettingsSectionCard.vue')['default']
+    ShareListDialog: typeof import('./components/dialog/ShareListDialog.vue')['default']
     StandardButton: typeof import('./components/StandardButton.vue')['default']
   }
 }

@@ -4,13 +4,16 @@
     const props = defineProps({
       title: { type: String, required: true },
       icon: { type: String, default: "mdi-plus" },
+      disabled: { type: Boolean, default: false },
     });
     
     const emits = defineEmits(["click"]);
 
 
   function handleClick() {
-    emits("click");
+    if (!props.disabled) {
+      emits("click");
+    }
   }
 </script>
 
@@ -18,6 +21,7 @@
   <button
     @click="handleClick"
     class="standard-button"
+    :disabled="disabled"
   >
     <v-icon v-if="icon" :icon="icon" class="button-icon" />
     <span class="button-text">{{ title }}</span>
@@ -59,5 +63,16 @@
   font-size: 22px;
 }
 
+.standard-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
 
+.standard-button:disabled:hover {
+  background-color: #ccc;
+  transform: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
 </style>

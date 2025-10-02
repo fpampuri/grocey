@@ -4,6 +4,7 @@
   import SearchBar from "@/components/SearchBar.vue";
   import CreateListDialog from "@/components/dialog/CreateListDialog.vue";
   import ConfirmDeleteDialog from "@/components/dialog/ConfirmDeleteDialog.vue";
+  import ShareListDialog from "@/components/dialog/ShareListDialog.vue";
   import { useRouter } from "vue-router";
   import { ref, onMounted, computed } from "vue";
 
@@ -34,6 +35,8 @@
   const showCreateDialog = ref(false);
   const showFavoritesOnly = ref(false);
   const showDeleteDialog = ref(false);
+  const showShareDialog = ref(false);
+  const listToShare = ref<List | null>(null);
 
   // Filtered list by search and favorites
   const filteredLists = computed(() => {
@@ -164,18 +167,34 @@
     toDeleteList.value = null;
   }
 
-  function handleShare() {
-    console.log("📤 Share clicked - Opening share options...");
+  function handleShare(listId: number) {
+    const shareList = lists.value.find((list) => list.id === listId);
+    
+    if (!shareList) {
+      console.error("List not found for sharing");
+      return;
+    }
+    
+    listToShare.value = shareList;
+    showShareDialog.value = true;
+  }
+
+  function handleShareList(data: { emails: string[] }) {
+    if (!listToShare.value) return;
+    
+    
+    // TODO: Implement actual sharing logic here
+    // This would typically make an API call to share the list with multiple users
+    
+    
+    listToShare.value = null;
   }
 
   function handleAddList() {
-    console.log("➕ Add List clicked - Opening create list dialog...");
     showCreateDialog.value = true;
   }
 
   function handleCreateList(listData: { name: string; icon: string }) {
-    console.log("📝 Creating new list:", listData);
-
     // Create new list object
     const newList: List = {
       id: Date.now(), // Use timestamp as temporary ID
@@ -278,7 +297,7 @@
             @toggle-selection="handleSelectionToggle"
             @edit="handleEdit"
             @delete="() => handleDeleteList(item.id)"
-            @share="handleShare"
+            @share="() => handleShare(item.id)"
           />
         </v-col>
       </v-row>
@@ -309,6 +328,14 @@
       :item-name="toDeleteList?.title"
       description="This action cannot be undone. All items in this list will be permanently deleted."
       @confirm="confirmDelete"
+    />
+
+    <!-- Share List Dialog -->
+    <ShareListDialog
+      v-model="showShareDialog"
+      :list-name="listToShare?.title"
+      :list-id="listToShare?.id"
+      @share-list="handleShareList"
     />
   </div>
 </template>

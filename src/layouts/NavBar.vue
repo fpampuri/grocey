@@ -1,35 +1,35 @@
 <script setup lang="ts">
-  import { ref, computed } from "vue";
-  import NavBarButton from "@/components/NavBar/NavBarButton.vue";
-  import NavListItem from "@/components/NavBar/NavListItem.vue";
-  import NavBarTitle from "@/components/NavBar/NavBarTitle.vue";
-  import ProfilePanel from "@/components/Profile/ProfilePanel.vue";
-  import { useRoute } from "vue-router";
+import { ref, computed } from "vue";
+import NavBarButton from "@/components/NavBar/NavBarButton.vue";
+import NavListItem from "@/components/NavBar/NavListItem.vue";
+import NavBarTitle from "@/components/NavBar/NavBarTitle.vue";
+import ProfilePanel from "@/components/Profile/ProfilePanel.vue";
+import { useRoute } from "vue-router";
 
-  const route = useRoute();
+const route = useRoute();
 
-  const selectedItem = ref("lists"); // Default selected item
-  const showProfilePanel = ref(false);
+const selectedItem = ref("lists"); // Default selected item
+const showProfilePanel = ref(false);
 
-  const selectItem = (item: string) => {
-    selectedItem.value = item;
-  };
+const selectItem = (item: string) => {
+  selectedItem.value = item;
+};
 
-  const pageTitle = computed(() => {
-    const matched = route.matched
-      .slice()
-      .reverse()
-      .find((r) => r.meta && (r.meta as any).title);
-    if (matched) return (matched.meta as any).title;
-    // fallback to a nicer name based on route.name
-    return route.name
-      ? String(route.name).replace(/^\w/, (c) => c.toUpperCase())
-      : "Grocey";
-  });
+const pageTitle = computed(() => {
+  const matched = route.matched
+    .slice()
+    .reverse()
+    .find((r) => r.meta && (r.meta as any).title);
+  if (matched) return (matched.meta as any).title;
+  // fallback to a nicer name based on route.name
+  return route.name
+    ? String(route.name).replace(/^\w/, (c) => c.toUpperCase())
+    : "Grocey";
+});
 
-  const onProfileClick = () => {
-    showProfilePanel.value = true;
-  };
+const onProfileClick = () => {
+  showProfilePanel.value = true;
+};
 </script>
 
 <template>
@@ -57,13 +57,22 @@
           @click="selectItem('lists')"
         />
 
-        <!-- Products Button -->
+        <!-- Categories Button -->
         <NavListItem
           icon="mdi-food-apple-outline"
-          title="Products"
-          :to="{ name: 'products' }"
-          :selected="route.name === 'products'"
-          @click="selectItem('products')"
+          title="Categories"
+          :to="{ name: 'categories' }"
+          :selected="route.name === 'categories'"
+          @click="selectItem('categories')"
+        />
+
+        <!-- Pantry Button -->
+        <NavListItem
+          icon="mdi-fridge-outline"
+          title="Pantry"
+          :to="{ name: 'pantry' }"
+          :selected="route.name === 'pantry'"
+          @click="selectItem('pantry')"
         />
       </v-list>
 
@@ -80,8 +89,7 @@
     </div>
   </v-navigation-drawer>
 
-
-  <v-app-bar height="72" >
+  <v-app-bar height="72">
     <v-toolbar-title class="text-h4 font-weight-bold">
       {{ pageTitle }}
     </v-toolbar-title>
@@ -90,33 +98,31 @@
   </v-app-bar>
 
   <v-main>
-    <slot/>
+    <slot />
   </v-main>
 
   <!-- Profile Panel -->
-  <ProfilePanel 
-    v-model="showProfilePanel"
-  />
+  <ProfilePanel v-model="showProfilePanel" />
 </template>
 
 <style scoped>
-  /* Target the specific issue - v-list-item height constraints */
-  .nav-list :deep(.v-list-item) {
-    min-height: auto !important;
-    height: auto !important;
-  }
+/* Target the specific issue - v-list-item height constraints */
+.nav-list :deep(.v-list-item) {
+  min-height: auto !important;
+  height: auto !important;
+}
 
-  /* The content wrapper inside v-list-item that's constraining the text */
-  .nav-list :deep(.v-list-item__content) {
-    min-height: auto !important;
-    height: auto !important;
-    padding: 0 !important;
-  }
+/* The content wrapper inside v-list-item that's constraining the text */
+.nav-list :deep(.v-list-item__content) {
+  min-height: auto !important;
+  height: auto !important;
+  padding: 0 !important;
+}
 
-  /* Make sure the title can expand vertically */
-  .nav-list :deep(.v-list-item-title) {
-    white-space: normal !important;
-    line-height: normal !important;
-    height: auto !important;
-  }
+/* Make sure the title can expand vertically */
+.nav-list :deep(.v-list-item-title) {
+  white-space: normal !important;
+  line-height: normal !important;
+  height: auto !important;
+}
 </style>
