@@ -5,6 +5,30 @@
     import StandardButton from '@/components/StandardButton.vue';
     import AddItemDialog from '@/components/dialog/AddItemDialog.vue';
 
+    // Define the expected List type
+    interface List {
+        id: string;
+        title: string;
+        icon: string;
+        itemsCount: number;
+        isFavorite: boolean;
+        users: any[];
+        createdBy: string;
+        createdAt: string;
+    }
+
+    interface ListItem {
+        id: string;
+        listId: string;
+        productId: string;
+        title: string;
+        productName: string;
+        quantity: number;
+        completed: boolean;
+        category: string;
+    }
+
+
     const route = useRoute();
     const router = useRouter();
 
@@ -12,8 +36,8 @@
     const listId = computed(() => route.params.id);
     
     // Store the fetched list data and items
-    const listData = ref(null);
-    const listItems = ref([] as any[]);
+    const listData = ref<List | null>(null);
+    const listItems = ref<ListItem[]>([]);
     const isLoading = ref(true);
     const itemsLoading = ref(true);
 
@@ -25,8 +49,8 @@
             const response = await fetch('/api/lists.json');
             if (!response.ok) throw new Error('Lists not found');
             
-            const lists = await response.json();
-            const list = lists.find(list => list.id == id);
+            const lists = await response.json() as List[];
+            const list = lists.find((list: List) => list.id == id);
             
             if (!list) {
                 throw new Error('List not found');
@@ -52,8 +76,8 @@
             const response = await fetch('/api/list-items.json');
             if (!response.ok) throw new Error('Items of list not found');
 
-            const items = await response.json();
-            
+            const items = await response.json() as ListItem[];
+
             // Filter items by listId and return the correct structure
             return items
                 .filter(item => item.listId == listID)
@@ -96,26 +120,26 @@
     }
 
     // Handle list item actions
-    function handleUpdateQuantity(itemId: number, newQuantity: number) {
+    function handleUpdateQuantity(itemId: string, newQuantity: number) {
         const item = listItems.value.find(item => item.id === itemId);
         if (item) {
             item.quantity = newQuantity;
         }
     }
 
-    function handleToggleComplete(itemId: number, completed: boolean) {
+    function handleToggleComplete(itemId: string, completed: boolean) {
         const item = listItems.value.find(item => item.id === itemId);
         if (item) {
             item.completed = completed;
         }
     }
 
-    function handleDeleteItem(itemId: number) {
+    function handleDeleteItem(itemId: string) {
         listItems.value = listItems.value.filter(item => item.id !== itemId);
     }
 
     function handleAddItem(itemData: { name: string }) {
-        const newId = Math.max(...listItems.value.map(item => item.id), 0) + 1;
+        const newId = Date.now();
   
         // Create new item object
         const newItem = {
@@ -149,26 +173,18 @@
             size="large"
           />
         </v-col>
-        <v-col>
+        <v-col cols="auto">
           <div v-if="isLoading">
             <h1 class="text-h4">Loading...</h1>
           </div>
           <div v-else-if="listData">
-            <h1 class="text-h4">{{ listData.title }}</h1>
+            <h1 class="text-h4 inline">{{ listData.title }}</h1>
           </div>
           <div v-else>
             <h1 class="text-h4">List Not Found</h1>
           </div>
         </v-col>
-        <v-col cols="auto" v-if="listData">
-          <v-btn icon="mdi-star-outline" variant="text" size="large" />
-          <v-btn icon="mdi-share-variant" variant="text" size="large" />
-        </v-col>
-      </v-row>
-
-      <!-- Add Item Button -->
-      <v-row class="mb-4" v-if="listData">
-        <v-col cols="12">
+        <v-col class="d-flex justify-end">
           <StandardButton 
             title="Add Item"
             icon="mdi-plus"

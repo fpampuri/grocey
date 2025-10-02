@@ -1,219 +1,93 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { defineProps, defineEmits } from 'vue';
-import StandardButton from '@/components/StandardButton.vue';
+  import { ref } from "vue";
+  import { defineProps, defineEmits } from "vue";
+  import StandardButton from "@/components/StandardButton.vue";
+  import BaseDialog from "@/components/dialog/BaseDialog.vue";
 
-const props = defineProps({
-  modelValue: { type: Boolean, default: false },
-});
-
-const emit = defineEmits(['update:modelValue', 'create-list']);
-
-function deleteList() {
-    
-}
-
-function closeDialog() {
-  emit('update:modelValue', false);
-  // Reset form
-  listName.value = '';
-  selectedIcon.value = 'mdi-cart';
-  iconOptionsOpen.value = false;
-}
-
-function createList() {
-  if (!listName.value.trim()) {
-    return; // Don't create if name is empty
+  interface List {
+    id: number;
+    title: string;
+    icon: string;
+    itemsCount: number;
+    users: Array<{
+      id: number;
+      name: string;
+      email: string;
+      role: string;
+    }>;
+    createdBy: number;
+    createdAt: string;
+    isFavorite?: boolean;
   }
 
-  emit('create-list', {
-    name: listName.value.trim(),
-    icon: selectedIcon.value,
+  const props = defineProps({
+    modelValue: { type: Boolean, default: false },
+    listToDelete: { type: Object as () => List | null, default: null },
   });
 
-  closeDialog();
-}
+  const emit = defineEmits(["update:modelValue", "confirm"]);
 
-function selectIcon(iconValue: string) {
-  selectedIcon.value = iconValue;
-  iconOptionsOpen.value = false;
-}
+  function handleModelValueUpdate(value: boolean) {
+    emit("update:modelValue", value);
+  }
 
-// Toggle icon options on click instead of hover
-const iconOptionsOpen = ref(false);
+  function closeDialog() {
+    emit("update:modelValue", false);
+  }
+
+  function deleteList() {
+    emit("confirm");
+    closeDialog();
+  }
+
 </script>
 
 <template>
-  <!-- Dialog Backdrop -->
-  <div v-if="modelValue" class="dialog-backdrop" @click="closeDialog">
-    <!-- Dialog Content -->
-    <div class="dialog-container" @click.stop>
-      <!-- Dialog Header -->
-      <div class="dialog-header">
-        <h2 class="dialog-title">Create New List</h2>
-        <button class="close-button" @click="closeDialog">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
-          </svg>
-        </button>
-      </div>
-
-      <!-- Dialog Body -->
-      <div class="dialog-body">
-        
-        <!-- List Name Field -->
-        <div class="form-field">
-          <label class="field-label">List Name</label>
-          <input
-            v-model="listName"
-            type="text"
-            placeholder="Enter list name"
-            class="text-input"
-            @keyup.enter="createList"
+  <BaseDialog
+    :model-value="modelValue"
+    @update:model-value="handleModelValueUpdate"
+  >
+    <!-- Dialog Header -->
+    <div class="dialog-header">
+      <h2 class="dialog-title">Delete List</h2>
+      <button class="close-button" @click="closeDialog">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path
+            d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
           />
-        </div>
+        </svg>
+      </button>
+    </div>
 
-        <!-- Icon Selection -->
-        <div class="form-field">
-          <label class="field-label">Icon</label>
-          <div class="icon-selector">
-            <div class="selected-icon" @click="iconOptionsOpen = !iconOptionsOpen">
-              <v-icon :icon="selectedIcon" size="24" />
-              <span class="selected-label">
-                {{ iconOptions.find(opt => opt.value === selectedIcon)?.label }}
-              </span>
-              <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <path d="M7,10L12,15L17,10H7Z" />
-              </svg>
-            </div>
-            
-            <!-- Icon Grid -->
-            <div class="icon-options" v-if="iconOptionsOpen">
-              <button
-                v-for="option in iconOptions"
-                :key="option.value"
-                @click="selectIcon(option.value)"
-                class="icon-option"
-                :class="{ active: selectedIcon === option.value }"
-              >
-                <v-icon :icon="option.icon" size="20" />
-                <span>{{ option.label }}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Dialog Footer -->
-      <div class="dialog-footer">
-        <button @click="closeDialog" class="cancel-button">
-          Cancel
-        </button>
-        <StandardButton
-          title="Create List"
-          icon="mdi-plus"
-          @click="createList"
-        />
+    <!-- Dialog Body -->
+    <div class="dialog-body">
+      <div class="form-field">
+        <p class="text-body-1 mb-3">
+          Are you sure you want to delete 
+          <strong v-if="listToDelete">"{{ listToDelete.title }}"</strong><span v-else>this list</span>?
+        </p>
+        <p class="text-body-2 text-medium-emphasis">
+          This action cannot be undone. All items in this list will be permanently deleted.
+        </p>
       </div>
     </div>
-  </div>
+
+    <!-- Dialog Footer -->
+    <div class="dialog-footer">
+      <button @click="closeDialog" class="cancel-button">Cancel</button>
+      <StandardButton title="Delete List" icon="mdi-delete" @click="deleteList" class="red-button" />
+    </div>
+  </BaseDialog>
 </template>
 
 <style scoped>
-.dialog-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
+
+::v-deep .red-button {
+  background-color: red !important;
 }
 
-.dialog-container {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  width: 90%;
-  max-width: 480px;
-  max-height: 90vh;
-  overflow: hidden;
-}
-
-.dialog-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px 24px;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.dialog-title {
-  font-size: 20px;
-  font-weight: 600;
-  margin: 0;
-  color: #333;
-}
-
-.close-button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.2s ease;
-}
-
-.close-button:hover {
-  background-color: #f5f5f5;
-}
-
-.close-button svg {
-  width: 20px;
-  height: 20px;
-  fill: #666;
-}
-
-.dialog-body {
-  padding: 24px;
-}
-
-.dialog-description {
+.text-medium-emphasis {
   color: #666;
-  margin-bottom: 24px;
-  line-height: 1.5;
-}
-
-.form-field {
-  margin-bottom: 20px;
-}
-
-.field-label {
-  display: block;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: #333;
-}
-
-.text-input {
-  width: 100%;
-  padding: 12px 16px;
-  border: 2px solid #4CAF50;
-  border-radius: 8px;
-  font-size: 16px;
-  outline: none;
-  transition: border-color 0.2s ease;
-}
-
-.text-input:focus {
-  border-color: #388E3C;
-  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
 }
 
 .icon-selector {
@@ -233,7 +107,7 @@ const iconOptionsOpen = ref(false);
 }
 
 .selected-icon:hover {
-  border-color: #4CAF50;
+  border-color: var(--primary-green);
 }
 
 .selected-label {
@@ -281,7 +155,7 @@ const iconOptionsOpen = ref(false);
 
 .icon-option.active {
   background-color: #e8f5e8;
-  color: #4CAF50;
+  color: var(--primary-green);
 }
 
 .dialog-footer {
@@ -291,7 +165,7 @@ const iconOptionsOpen = ref(false);
   gap: 12px;
   padding: 20px 24px;
   border-top: 1px solid #e0e0e0;
-  background-color: #fafafa;
+  background-color: white;
 }
 
 .cancel-button {
@@ -306,7 +180,7 @@ const iconOptionsOpen = ref(false);
 }
 
 .cancel-button:hover {
-  background-color: #f5f5f5;
+  background-color: white;
   border-color: #999;
 }
 </style>
