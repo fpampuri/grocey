@@ -14,7 +14,7 @@ declare module 'vue' {
     AddToListDialog: typeof import('./components/dialog/AddToListDialog.vue')['default']
     BaseDialog: typeof import('./components/dialog/BaseDialog.vue')['default']
     ConfirDeleteListDialog: typeof import('./components/dialog/ConfirmDeleteListDialog.vue')['default']
-    ConfirmDeleteDialog: typeof import('./components/ConfirmDeleteDialog.vue')['default']
+    ConfirmDeleteDialog: typeof import('./components/dialog/ConfirmDeleteDialog.vue')['default']
     ConfirmDeleteListDialog: typeof import('./components/dialog/ConfirmDeleteListDialog.vue')['default']
     copy: typeof import('./components/CreateListDialog copy.vue')['default']
     CreateCategoryDialog: typeof import('./components/dialog/CreateCategoryDialog.vue')['default']

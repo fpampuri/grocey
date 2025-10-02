@@ -3,7 +3,7 @@
   import StandardButton from "@/components/StandardButton.vue";
   import SearchBar from "@/components/SearchBar.vue";
   import CreateListDialog from "@/components/dialog/CreateListDialog.vue";
-  import ConfirmDeleteListDialog from "@/components/dialog/ConfirmDeleteListDialog.vue";
+  import ConfirmDeleteDialog from "@/components/dialog/ConfirmDeleteDialog.vue";
   import { useRouter } from "vue-router";
   import { ref, onMounted, computed } from "vue";
 
@@ -303,9 +303,11 @@
     />
 
     <!-- Delete Confirmation Dialog -->
-    <ConfirmDeleteListDialog
+    <ConfirmDeleteDialog
       v-model="showDeleteDialog"
-      :list-to-delete="toDeleteList"
+      item-type="list"
+      :item-name="toDeleteList?.title"
+      description="This action cannot be undone. All items in this list will be permanently deleted."
       @confirm="confirmDelete"
     />
   </div>

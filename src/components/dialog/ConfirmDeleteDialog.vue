@@ -1,31 +1,42 @@
 <script setup lang="ts">
-  import { ref } from "vue";
-  import { defineProps, defineEmits } from "vue";
+  import { defineProps, defineEmits, computed } from "vue";
   import StandardButton from "@/components/StandardButton.vue";
   import BaseDialog from "@/components/dialog/BaseDialog.vue";
 
-  interface List {
-    id: number;
-    title: string;
-    icon: string;
-    itemsCount: number;
-    users: Array<{
-      id: number;
-      name: string;
-      email: string;
-      role: string;
-    }>;
-    createdBy: number;
-    createdAt: string;
-    isFavorite?: boolean;
+  interface Props {
+    modelValue: boolean;
+    itemType?: string;           // "list", "category", "pantry", etc.
+    itemName?: string;           // Name/title of the item to delete
+    title?: string;              // Custom dialog title
+    description?: string;        // Custom description text
+    confirmText?: string;        // Custom confirm button text
+    loading?: boolean;           // Loading state during deletion
   }
 
-  const props = defineProps({
-    modelValue: { type: Boolean, default: false },
-    listToDelete: { type: Object as () => List | null, default: null },
+  const props = withDefaults(defineProps<Props>(), {
+    itemType: 'item',
+    itemName: '',
+    title: '',
+    description: 'This action cannot be undone.',
+    confirmText: 'Delete',
+    loading: false,
   });
 
-  const emit = defineEmits(["update:modelValue", "confirm"]);
+  const emit = defineEmits<{
+    'update:modelValue': [value: boolean];
+    'confirm': [];
+  }>();
+
+  // Computed properties for dynamic content
+  const dialogTitle = computed(() => {
+    if (props.title) return props.title;
+    return `Delete ${props.itemType.charAt(0).toUpperCase() + props.itemType.slice(1)}`;
+  });
+
+  const confirmButtonText = computed(() => {
+    if (props.confirmText !== 'Delete') return props.confirmText;
+    return `Delete ${props.itemType.charAt(0).toUpperCase() + props.itemType.slice(1)}`;
+  });
 
   function handleModelValueUpdate(value: boolean) {
     emit("update:modelValue", value);
@@ -35,7 +46,7 @@
     emit("update:modelValue", false);
   }
 
-  function deleteList() {
+  function confirmDelete() {
     emit("confirm");
     closeDialog();
   }
@@ -49,7 +60,7 @@
   >
     <!-- Dialog Header -->
     <div class="dialog-header">
-      <h2 class="dialog-title">Delete List</h2>
+      <h2 class="dialog-title">{{ dialogTitle }}</h2>
       <button class="close-button" @click="closeDialog">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
           <path
@@ -63,19 +74,29 @@
     <div class="dialog-body">
       <div class="form-field">
         <p class="text-body-1 mb-3">
-          Are you sure you want to delete 
-          <strong v-if="listToDelete">"{{ listToDelete.title }}"</strong><span v-else>this list</span>?
+          Are you sure you want to delete
+          <strong v-if="itemName">"{{ itemName }}"</strong>
+          <span v-else>this {{ itemType }}</span>?
         </p>
         <p class="text-body-2 text-medium-emphasis">
-          This action cannot be undone. All items in this list will be permanently deleted.
+          {{ description }}
         </p>
       </div>
     </div>
 
     <!-- Dialog Footer -->
     <div class="dialog-footer">
-      <button @click="closeDialog" class="cancel-button">Cancel</button>
-      <StandardButton title="Delete List" icon="mdi-delete" @click="deleteList" class="red-button" />
+      <button @click="closeDialog" class="cancel-button" :disabled="loading">
+        Cancel
+      </button>
+      <StandardButton 
+        :title="confirmButtonText" 
+        icon="mdi-delete" 
+        @click="confirmDelete" 
+        class="red-button"
+        :loading="loading"
+        :disabled="loading"
+      />
     </div>
   </BaseDialog>
 </template>

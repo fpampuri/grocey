@@ -4,6 +4,7 @@ import StandardButton from "@/components/StandardButton.vue";
 import SearchBar from "@/components/SearchBar.vue";
 import CreateCategoryDialog from "@/components/dialog/CreateCategoryDialog.vue";
 import CreateProductDialog from "@/components/dialog/CreateProductDialog.vue";
+import ConfirmDeleteDialog from "@/components/dialog/ConfirmDeleteDialog.vue";
 import { useRouter } from "vue-router";
 import { ref, onMounted, computed } from "vue";
 
@@ -24,6 +25,8 @@ const searchQuery = ref("");
 const sortBy = ref("Name");
 const showCreateDialog = ref(false);
 const showCreateProductDialog = ref(false);
+const showDeleteDialog = ref(false);
+const categoryToDelete = ref<Category | null>(null);
 
 const filteredCategories = computed<Category[]>(() => {
   const q = searchQuery.value.trim().toLowerCase();
@@ -105,8 +108,29 @@ function handleEdit() {
   console.log("Edit category");
 }
 
-function handleDelete() {
-  console.log("Delete category");
+function handleDelete(categoryId: number) {
+  const category = categories.value.find(c => c.id === categoryId);
+  if (!category) return;
+  
+  categoryToDelete.value = category;
+  showDeleteDialog.value = true;
+}
+
+function confirmDelete() {
+  if (!categoryToDelete.value) return;
+  
+  console.log('🗑️ Deleting category:', categoryToDelete.value.title);
+  
+  // Remove the category from the list
+  categories.value = categories.value.filter(
+    category => category.id !== categoryToDelete.value!.id
+  );
+  
+  console.log('✅ Category deleted successfully');
+  
+  // Reset state
+  showDeleteDialog.value = false;
+  categoryToDelete.value = null;
 }
 
 function handleRenameCategory(catId: number, newTitle: string) {
@@ -206,7 +230,7 @@ function handleCreateProduct(data: { name: string; categoryId: number }) {
             :itemsCount="cat.products.length"
             @click="() => handleCategoryClick(cat)"
             @edit="handleEdit"
-            @delete="handleDelete"
+            @delete="() => handleDelete(cat.id)"
             @rename="(newTitle) => handleRenameCategory(cat.id, newTitle)"
           />
         </v-col>
@@ -238,6 +262,15 @@ function handleCreateProduct(data: { name: string; categoryId: number }) {
       v-model="showCreateProductDialog"
       :categories="categoryOptions"
       @create-product="handleCreateProduct"
+    />
+
+    <!-- Delete Confirmation Dialog -->
+    <ConfirmDeleteDialog
+      v-model="showDeleteDialog"
+      item-type="category"
+      :item-name="categoryToDelete?.title"
+      description="This action cannot be undone. All products in this category will be moved to 'Uncategorized'."
+      @confirm="confirmDelete"
     />
   </div>
 </template>
