@@ -1,192 +1,231 @@
 <script setup lang="ts">
-  import ListCard from "@/components/List/ListCard.vue";
-  import StandardButton from "@/components/StandardButton.vue";
-  import SearchBar from "@/components/SearchBar.vue";
-  import CreateListDialog from "@/components/CreateListDialog.vue";
-  import { useRouter } from 'vue-router';
-  import { ref, onMounted, computed } from 'vue';
+import ListCard from "@/components/List/ListCard.vue";
+import StandardButton from "@/components/StandardButton.vue";
+import SearchBar from "@/components/SearchBar.vue";
+import CreateListDialog from "@/components/dialog/CreateListDialog.vue";
+// import ConfirmDeleteListDialog from "@/components/dialog/ConfirmDeleteListDialog.vue";
+import { useRouter } from "vue-router";
+import { ref, onMounted, computed } from "vue";
 
-  const router = useRouter();
+const router = useRouter();
 
-  // Define the List type
-  interface List {
+// Define the List type
+interface List {
+  id: number;
+  title: string;
+  icon: string;
+  itemsCount: number;
+  users: Array<{
     id: number;
-    title: string;
-    icon: string;
-    itemsCount: number;
-    users: Array<{
-      id: number;
-      name: string;
-      email: string;
-      role: string;
-    }>;
-    createdBy: number;
-    createdAt: string;
-    isFavorite?: boolean; // Add favorite flag
+    name: string;
+    email: string;
+    role: string;
+  }>;
+  createdBy: number;
+  createdAt: string;
+  isFavorite?: boolean;
+}
+
+const lists = ref<List[]>([]);
+const toDeleteList = ref<List | null>(null);
+const isLoading = ref(true);
+const searchQuery = ref("");
+const sortBy = ref("Date");
+const showCreateDialog = ref(false);
+const showFavoritesOnly = ref(false);
+const showDeleteDialog = ref(false);
+
+// Filtered list by search and favorites
+const filteredLists = computed(() => {
+  let filtered = lists.value;
+
+  // Filter by favorites if enabled
+  if (showFavoritesOnly.value) {
+    filtered = filtered.filter((list) => list.isFavorite);
   }
 
-  // Properly type the ref
-  const lists = ref<List[]>([]);
-
-  const isLoading = ref(true);
-  const searchQuery = ref('');
-  const sortBy = ref('Date');
-  const showCreateDialog = ref(false);
-  const showFavoritesOnly = ref(false);
-
-  // Filtered list by search and favorites
-  const filteredLists = computed(() => {
-    let filtered = lists.value;
-    
-    // Filter by favorites if enabled
-    if (showFavoritesOnly.value) {
-      filtered = filtered.filter(list => list.isFavorite);
-    }
-    
-    // Filter by search query
-    if (searchQuery.value) {
-      filtered = filtered.filter(list =>
-        list.title.toLowerCase().includes(searchQuery.value.toLowerCase())
-      );
-    }
-    
-    return filtered;
-  });
-
-
-
-  // Fetch lists from local mock API
-  async function fetchLists() {
-    try {
-      const response = await fetch('/api/lists.json');
-
-      if (!response.ok) throw new Error('Error fetching lists');
-
-      const lists = await response.json();
-      
-      // Lists already have the correct structure, just return them
-      return lists;
-    } catch (error) {
-      console.error('Error fetching lists:', error);
-      return [];
-    }
+  // Filter by search query
+  if (searchQuery.value) {
+    filtered = filtered.filter((list) =>
+      list.title.toLowerCase().includes(searchQuery.value.toLowerCase())
+    );
   }
 
-  // Fetch real item counts for each list from list-items.json
-  async function fetchItemCounts() {
-    try {
-      const response = await fetch('/api/list-items.json');
-      if (!response.ok) throw new Error('Error fetching list items');
-      
-      const items = await response.json();
+  return filtered;
+});
 
-      // Count unique items per list
-      const countsByListId = items.reduce((acc: Record<number, number>, item: any) => {
+// Fetch lists from local mock API
+async function fetchLists() {
+  try {
+    const response = await fetch("/api/lists.json");
+
+    if (!response.ok) throw new Error("Error fetching lists");
+
+    const lists = await response.json();
+
+    // Lists already have the correct structure, just return them
+    return lists;
+  } catch (error) {
+    console.error("Error fetching lists:", error);
+    return [];
+  }
+}
+
+// Fetch real item counts for each list from list-items.json
+async function fetchItemCounts() {
+  try {
+    const response = await fetch("/api/list-items.json");
+    if (!response.ok) throw new Error("Error fetching list items");
+
+    const items = await response.json();
+
+    // Count unique items per list
+    const countsByListId = items.reduce(
+      (acc: Record<number, number>, item: any) => {
         acc[item.listId] = (acc[item.listId] || 0) + 1;
         return acc;
-      }, {});
+      },
+      {}
+    );
 
-      // Update lists with real counts
-      lists.value = lists.value.map(list => ({
-        ...list,                                    // Keep existing properties
-        itemsCount: countsByListId[list.id] || 0    // Update with real count or 0
-      }));
-    } catch (error) {
-      console.error('Error fetching item counts:', error);
-    }
+    // Update lists with real counts
+    lists.value = lists.value.map((list) => ({
+      ...list, // Keep existing properties
+      itemsCount: countsByListId[list.id] || 0, // Update with real count or 0
+    }));
+  } catch (error) {
+    console.error("Error fetching item counts:", error);
+  }
+}
+
+onMounted(async () => {
+  isLoading.value = true;
+  lists.value = await fetchLists();
+  await fetchItemCounts(); // Get real item counts
+  isLoading.value = false;
+});
+
+function handleListClick(listItem: any) {
+  console.log("✅ List clicked - Navigating to list:", listItem.id);
+  router.push(`/lists/${listItem.id}`);
+}
+
+function handleStarToggle(isStarred: boolean, listId: number) {
+  // Update the list's favorite status in the data
+  const listIndex = lists.value.findIndex((list) => list.id === listId);
+  if (listIndex !== -1) {
+    lists.value[listIndex].isFavorite = isStarred;
+  }
+}
+
+function handleSelectionToggle(isSelected: boolean) {
+  console.log("☑️ Selection toggled:", isSelected ? "SELECTED" : "UNSELECTED");
+}
+
+function handleEdit() {
+  console.log("✏️ Edit clicked - Opening edit dialog...");
+}
+
+function handleFavoritesToggle() {
+  showFavoritesOnly.value = !showFavoritesOnly.value;
+}
+
+function handleDelete(listId: number) {
+  const deleteList = lists.value.find((list) => list.id === listId);
+
+  if (!deleteList) {
+    return;
   }
 
-  onMounted(async () => {
-    isLoading.value = true;
-    lists.value = await fetchLists();
-    await fetchItemCounts(); // Get real item counts
-    isLoading.value = false;
-  });
+  toDeleteList.value = deleteList;
+  showDeleteDialog.value = true;
+}
 
-  function handleListClick(listItem: any) {
-    console.log("✅ List clicked - Navigating to list:", listItem.id);
-    router.push(`/lists/${listItem.id}`);
+function confirmDelete() {
+  if (!toDeleteList.value) {
+    return;
   }
 
-  function handleStarToggle(isStarred: boolean, listId: number) {
+  // Show confirmation dialog
+  const confirmed = confirm(
+    `Are you sure you want to delete "${toDeleteList.title}"? This action cannot be undone.`
+  );
 
-    // Update the list's favorite status in the data
-    const listIndex = lists.value.findIndex(list => list.id === listId);
-    if (listIndex !== -1) {
-      lists.value[listIndex].isFavorite = isStarred;
-    }
+  if (!confirmed) {
+    return;
   }
 
-  function handleSelectionToggle(isSelected: boolean) {
-    console.log('☑️ Selection toggled:', isSelected ? 'SELECTED' : 'UNSELECTED');
+  try {
+    console.log("🗑️ Deleting list:", toDeleteList.value.id);
+
+    // Remove the list from the local state
+    lists.value = lists.value.filter(
+      (list) => list.id !== toDeleteList.value.id
+    );
+
+    console.log("✅ List deleted successfully");
+  } catch (error) {
+    console.error("❌ Error deleting list:", error);
   }
 
-  function handleEdit() {
-    console.log('✏️ Edit clicked - Opening edit dialog...');
-  }
+  showDeleteDialog.value = false;
+  toDeleteList.value = null;
+}
 
-  function handleFavoritesToggle() {
-    showFavoritesOnly.value = !showFavoritesOnly.value;
-  }
+function cancelDelete() {
+  showDeleteDialog.value = false;
+  toDeleteList.value = null;
+}
 
-  function handleDelete() {
-    console.log('🗑️ Delete clicked - Confirming deletion...');
-  }
+function handleShare() {
+  console.log("📤 Share clicked - Opening share options...");
+}
 
-  function handleShare() {
-    console.log('📤 Share clicked - Opening share options...');
-  }
+function handleAddList() {
+  console.log("➕ Add List clicked - Opening create list dialog...");
+  showCreateDialog.value = true;
+}
 
-  function handleAddList() {
-    console.log('➕ Add List clicked - Opening create list dialog...');
-    showCreateDialog.value = true;
-  }
+function handleCreateList(listData: { name: string; icon: string }) {
+  console.log("📝 Creating new list:", listData);
 
-  function handleCreateList(listData: { name: string; icon: string }) {
-    console.log('📝 Creating new list:', listData);
-    
-    // Create new list object
-    const newList: List = {
-      id: Date.now(), // Use timestamp as temporary ID
-      title: listData.name,
-      icon: listData.icon,
-      itemsCount: 0,
-      isFavorite: false, // Default to not favorite
-      users: [
-        {
-          id: 1,
-          name: 'Current User',
-          email: 'user@example.com',
-          role: 'owner'
-        }
-      ],
-      createdBy: 1,
-      createdAt: new Date().toISOString()
-    };
+  // Create new list object
+  const newList: List = {
+    id: Date.now(), // Use timestamp as temporary ID
+    title: listData.name,
+    icon: listData.icon,
+    itemsCount: 0,
+    isFavorite: false, // Default to not favorite
+    users: [
+      {
+        id: 1,
+        name: "Current User",
+        email: "user@example.com",
+        role: "owner",
+      },
+    ],
+    createdBy: 1,
+    createdAt: new Date().toISOString(),
+  };
 
-    // Add to lists
-    lists.value.unshift(newList);
-    
-    // Close dialog
-    showCreateDialog.value = false;
-  }
+  // Add to lists
+  lists.value.unshift(newList);
 
+  // Close dialog
+  showCreateDialog.value = false;
+}
 </script>
 
 <template>
   <div class="pa-3">
     <v-container fluid>
-
       <!-- Search and Add List Section -->
       <v-row class="mb-6" align="center">
         <v-col cols="12" md="8">
-          <SearchBar 
-            v-model="searchQuery"
-            placeholder="Search lists..."
-          />
+          <SearchBar v-model="searchQuery" placeholder="Search lists..." />
         </v-col>
         <v-col cols="12" md="4" class="text-md-right">
-          <StandardButton 
+          <StandardButton
             title="Add List"
             icon="mdi-plus"
             @click="handleAddList"
@@ -200,12 +239,16 @@
           <v-btn
             variant="elevated"
             @click="handleFavoritesToggle"
-            :class="showFavoritesOnly ? 'favorites-btn-active' : 'favorites-btn'"
+            :class="
+              showFavoritesOnly ? 'favorites-btn-active' : 'favorites-btn'
+            "
           >
-            <v-icon :icon="showFavoritesOnly ? 'mdi-star' : 'mdi-star-outline'" class="mr-2" />
+            <v-icon
+              :icon="showFavoritesOnly ? 'mdi-star' : 'mdi-star-outline'"
+              class="mr-2"
+            />
             Favorites
           </v-btn>
-        
         </v-col>
         <v-spacer />
         <v-col cols="auto">
@@ -217,7 +260,7 @@
               variant="outlined"
               hide-details
               density="compact"
-              style="min-width: 100px;"
+              style="min-width: 100px"
             />
           </div>
         </v-col>
@@ -228,7 +271,7 @@
         <v-progress-circular indeterminate size="64" />
         <p class="mt-4 text-h6">Loading lists...</p>
       </div>
-      
+
       <!-- Lists grid -->
       <v-row v-else>
         <v-col
@@ -247,30 +290,76 @@
             @toggle-star="(isStarred) => handleStarToggle(isStarred, item.id)"
             @toggle-selection="handleSelectionToggle"
             @edit="handleEdit"
-            @delete="handleDelete"
+            @delete="() => handleDelete(item.id)"
             @share="handleShare"
           />
         </v-col>
       </v-row>
 
       <!-- No results message -->
-      <div v-if="!isLoading && filteredLists.length === 0 && searchQuery" class="text-center pa-8">
+      <div
+        v-if="!isLoading && filteredLists.length === 0 && searchQuery"
+        class="text-center pa-8"
+      >
         <v-icon icon="mdi-magnify" size="64" color="grey-lighten-1" />
         <p class="mt-2 text-h6 text-medium-emphasis">No lists found</p>
-        <p class="text-body-2 text-medium-emphasis">Try adjusting your search terms</p>
+        <p class="text-body-2 text-medium-emphasis">
+          Try adjusting your search terms
+        </p>
       </div>
     </v-container>
 
     <!-- Create List Dialog -->
-    <CreateListDialog 
+    <CreateListDialog
       v-model="showCreateDialog"
       @create-list="handleCreateList"
     />
+
+    <!-- Delete Confirmation Dialog -->
+    <ConfirmDeleteListDialog />
+    <v-dialog v-model="showDeleteDialog" max-width="400" persistent>
+      <v-card class="delete-dialog">
+        <v-card-title class="d-flex align-center">
+          <v-icon
+            icon="mdi-delete-alert"
+            color="error"
+            class="mr-3"
+            size="28"
+          />
+          <span class="text-h6">Delete List</span>
+        </v-card-title>
+
+        <v-card-text class="pb-2">
+          <p class="text-body-1 mb-3">
+            Are you sure you want to delete
+            <strong>"{{ toDeleteList?.title }}"</strong>?
+          </p>
+          <p class="text-body-2 text-medium-emphasis">
+            This action cannot be undone. All items in this list will be
+            permanently deleted.
+          </p>
+        </v-card-text>
+
+        <v-card-actions class="px-6 pb-4">
+          <v-spacer />
+          <v-btn variant="text" @click="cancelDelete" class="text-capitalize">
+            Cancel
+          </v-btn>
+          <v-btn
+            variant="flat"
+            color="error"
+            @click="confirmDelete"
+            class="text-capitalize ml-2"
+          >
+            Delete
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
 <style scoped>
-
 .favorites-btn-active {
   border-radius: 12px;
   text-transform: none;
@@ -278,7 +367,7 @@
   min-width: 120px;
   min-height: 40px;
   color: white !important;
-  background-color: var(--primary-green-light)  !important;
+  background-color: var(--primary-green-light) !important;
 }
 
 .favorites-btn {

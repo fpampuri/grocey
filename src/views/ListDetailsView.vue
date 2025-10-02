@@ -3,6 +3,7 @@
     import { computed, ref, onMounted } from 'vue';
     import ListItemCard from '@/components/List/ListItemCard.vue';
     import StandardButton from '@/components/StandardButton.vue';
+    import AddItemDialog from '@/components/dialog/AddItemDialog.vue';
 
     const route = useRoute();
     const router = useRouter();
@@ -15,6 +16,8 @@
     const listItems = ref([] as any[]);
     const isLoading = ref(true);
     const itemsLoading = ref(true);
+
+    const showAddItemDialog = ref(false);
 
     // Fetch list data from local mock API
     async function fetchListData(id: string) {
@@ -111,10 +114,25 @@
         listItems.value = listItems.value.filter(item => item.id !== itemId);
     }
 
-    function handleAddProduct() {
+    function handleAddItem(itemData: { name: string }) {
+        const newId = Math.max(...listItems.value.map(item => item.id), 0) + 1;
+  
+        // Create new item object
+        const newItem = {
+          id: newId,
+          listId: parseInt(listId.value as string), 
+          productId: newId, // Probaly we'll need to change this
+          title: itemData.name,
+          quantity: 1,
+          completed: false,
+          category: "Other", // Default category
+        };
+        // Add to the list
+        listItems.value.push(newItem);
+    }
 
-        console.log('➕ Add Product clicked - Opening create product dialog...');
-        // Here you would typically open a dialog or navigate to a create product page
+    function openAddItemDialog() {
+        showAddItemDialog.value = true;
     }
 </script>
 
@@ -152,9 +170,9 @@
       <v-row class="mb-4" v-if="listData">
         <v-col cols="12">
           <StandardButton 
-            title="Add Product"
+            title="Add Item"
             icon="mdi-plus"
-            @click="handleAddProduct"
+            @click="openAddItemDialog"
           />
         </v-col>
       </v-row>
@@ -213,6 +231,11 @@
         </v-col>
       </v-row>
     </v-container>
+
+    <AddItemDialog 
+      v-model="showAddItemDialog"
+      @add-item="handleAddItem"
+    />
   </div>
 </template>
 

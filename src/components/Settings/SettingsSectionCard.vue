@@ -2,6 +2,7 @@
 import { defineProps } from 'vue';
 
 const props = defineProps<{ title: string; subtitle?: string }>();
+
 </script>
 
 <template>

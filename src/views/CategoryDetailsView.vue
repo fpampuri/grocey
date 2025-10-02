@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { useRoute, useRouter } from 'vue-router';
-import { computed, ref, onMounted, nextTick, watch } from 'vue';
-import ProductItemCard from '@/components/Products/ProductItemCard.vue';
-import StandardButton from '@/components/StandardButton.vue';
-import MoveToCategoryDialog from '@/components/MoveToCategoryDialog.vue';
-import AddToListDialog from '@/components/AddToListDialog.vue';
+import { useRoute, useRouter } from "vue-router";
+import { computed, ref, onMounted, nextTick, watch } from "vue";
+import ProductItemCard from "@/components/Products/ProductItemCard.vue";
+import StandardButton from "@/components/StandardButton.vue";
+import MoveToCategoryDialog from "@/components/dialog/MoveToCategoryDialog.vue";
+import AddToListDialog from "@/components/dialog/AddToListDialog.vue";
 
 type Product = { id: number; name: string; completed: boolean };
 type Category = { id: number; title: string; icon: string };
@@ -24,27 +24,27 @@ const productToActOn = ref<number | null>(null);
 
 // Inline rename state for category title
 const editingTitle = ref(false);
-const localTitle = ref('');
+const localTitle = ref("");
 const titleInputRef = ref<HTMLInputElement | null>(null);
 
 function goBack() {
-  router.push('/products');
+  router.push("/products");
 }
 
 function getMockCategory(id: number): Category | null {
   const map: Record<number, Category> = {
-    1: { id: 1, title: 'Fruits', icon: 'mdi-food-apple' },
-    2: { id: 2, title: 'Vegetables', icon: 'mdi-food-variant' },
-    3: { id: 3, title: 'Dairy', icon: 'mdi-cheese' },
+    1: { id: 1, title: "Fruits", icon: "mdi-food-apple" },
+    2: { id: 2, title: "Vegetables", icon: "mdi-food-variant" },
+    3: { id: 3, title: "Dairy", icon: "mdi-cheese" },
   };
   return map[id] ?? null;
 }
 
 function getMockProducts(id: number): Product[] {
   const byCat: Record<number, string[]> = {
-    1: ['Apples', 'Bananas', 'Strawberries'],
-    2: ['Tomatoes', 'Lettuce'],
-    3: ['Milk', 'Cheese', 'Yogurt', 'Butter'],
+    1: ["Apples", "Bananas", "Strawberries"],
+    2: ["Tomatoes", "Lettuce"],
+    3: ["Milk", "Cheese", "Yogurt", "Butter"],
   };
   const names = byCat[id] ?? [];
   return names.map((name, idx) => ({
@@ -59,7 +59,7 @@ onMounted(async () => {
   productsLoading.value = true;
   const cat = getMockCategory(categoryId.value);
   categoryData.value = cat;
-  localTitle.value = cat?.title ?? '';
+  localTitle.value = cat?.title ?? "";
   isLoading.value = false;
   if (cat) {
     products.value = getMockProducts(categoryId.value);
@@ -68,24 +68,24 @@ onMounted(async () => {
 });
 
 function handleToggleComplete(itemId: number, completed: boolean) {
-  const item = products.value.find(p => p.id === itemId);
+  const item = products.value.find((p) => p.id === itemId);
   if (item) item.completed = completed;
 }
 
 function handleDeleteItem(itemId: number) {
-  products.value = products.value.filter(p => p.id !== itemId);
+  products.value = products.value.filter((p) => p.id !== itemId);
 }
 
 function handleAddProduct() {
-  console.log('Add product to category', categoryId.value);
+  console.log("Add product to category", categoryId.value);
 }
 
 // Mock options aligned with ProductsView demo data
-const categoryOptions = computed(() => ([
-  { value: 1, label: 'Fruits' },
-  { value: 2, label: 'Vegetables' },
-  { value: 3, label: 'Dairy' },
-]));
+const categoryOptions = computed(() => [
+  { value: 1, label: "Fruits" },
+  { value: 2, label: "Vegetables" },
+  { value: 3, label: "Dairy" },
+]);
 
 function openMoveDialog(id: number) {
   productToActOn.value = id;
@@ -94,18 +94,18 @@ function openMoveDialog(id: number) {
 
 function confirmMoveToCategory(payload: { categoryId: number }) {
   if (productToActOn.value == null) return;
-  const prod = products.value.find(p => p.id === productToActOn.value);
-  products.value = products.value.filter(p => p.id !== productToActOn.value);
+  const prod = products.value.find((p) => p.id === productToActOn.value);
+  products.value = products.value.filter((p) => p.id !== productToActOn.value);
   // TODO: push prod into target category via shared store
-  console.log('Moved product', prod?.id, 'to category', payload.categoryId);
+  console.log("Moved product", prod?.id, "to category", payload.categoryId);
   productToActOn.value = null;
 }
 
-const listOptions = computed(() => ([
+const listOptions = computed(() => [
   { value: 11, label: "Alice's List" },
   { value: 22, label: "Bob's List" },
-  { value: 33, label: 'Groceries Weekly' },
-]));
+  { value: 33, label: "Groceries Weekly" },
+]);
 
 function openAddToListDialog(id: number) {
   productToActOn.value = id;
@@ -114,16 +114,21 @@ function openAddToListDialog(id: number) {
 
 function confirmAddToList(payload: { listId: number }) {
   if (productToActOn.value == null) return;
-  console.log('Added product', productToActOn.value, 'to list', payload.listId);
+  console.log("Added product", productToActOn.value, "to list", payload.listId);
   productToActOn.value = null;
 }
 
 function handleRenameProduct(payload: { id: number; name: string }) {
-  const item = products.value.find(p => p.id === payload.id);
+  const item = products.value.find((p) => p.id === payload.id);
   if (item) item.name = payload.name;
 }
 
-watch(() => categoryData.value?.title, (v) => { if (!editingTitle.value) localTitle.value = v ?? ''; });
+watch(
+  () => categoryData.value?.title,
+  (v) => {
+    if (!editingTitle.value) localTitle.value = v ?? "";
+  }
+);
 
 function startEditTitle() {
   editingTitle.value = true;
@@ -138,7 +143,7 @@ function commitTitle() {
   editingTitle.value = false;
 }
 function cancelTitle() {
-  localTitle.value = categoryData.value?.title ?? '';
+  localTitle.value = categoryData.value?.title ?? "";
   editingTitle.value = false;
 }
 </script>
@@ -148,8 +153,8 @@ function cancelTitle() {
     <v-container fluid>
       <v-row class="mb-4" align="center">
         <v-col cols="auto">
-          <v-btn 
-            icon="mdi-arrow-left" 
+          <v-btn
+            icon="mdi-arrow-left"
             @click="goBack"
             variant="text"
             size="large"
@@ -174,7 +179,11 @@ function cancelTitle() {
               </template>
               <template v-else>
                 <h1 class="text-h4 mb-0">{{ categoryData.title }}</h1>
-                <button class="icon-btn edit-btn" @click="startEditTitle" aria-label="Rename category">
+                <button
+                  class="icon-btn edit-btn"
+                  @click="startEditTitle"
+                  aria-label="Rename category"
+                >
                   <v-icon icon="mdi-pencil" />
                 </button>
               </template>
@@ -188,7 +197,7 @@ function cancelTitle() {
 
       <v-row class="mb-4" v-if="categoryData">
         <v-col cols="12">
-          <StandardButton 
+          <StandardButton
             title="Add Product"
             icon="mdi-plus"
             @click="handleAddProduct"
@@ -218,7 +227,9 @@ function cancelTitle() {
                 :id="item.id"
                 :title="item.name"
                 :completed="item.completed"
-                @toggle-complete="(completed) => handleToggleComplete(item.id, completed)"
+                @toggle-complete="
+                  (completed) => handleToggleComplete(item.id, completed)
+                "
                 @move="openMoveDialog"
                 @add-to-list="openAddToListDialog"
                 @delete="(id) => handleDeleteItem(id)"
@@ -227,15 +238,21 @@ function cancelTitle() {
             </div>
             <div v-else class="text-center pa-8">
               <v-icon icon="mdi-inbox" size="64" color="grey-lighten-1" />
-              <p class="mt-2 text-h6 text-medium-emphasis">This category is empty</p>
-              <p class="text-body-2 text-medium-emphasis">Add your first product to get started</p>
+              <p class="mt-2 text-h6 text-medium-emphasis">
+                This category is empty
+              </p>
+              <p class="text-body-2 text-medium-emphasis">
+                Add your first product to get started
+              </p>
             </div>
           </div>
           <div v-else>
             <v-card class="pa-4">
               <v-card-title>Category Not Found</v-card-title>
               <v-card-text>
-                <p>No category found with ID: <strong>{{ categoryId }}</strong></p>
+                <p>
+                  No category found with ID: <strong>{{ categoryId }}</strong>
+                </p>
                 <v-btn @click="goBack" color="primary" class="mt-2">
                   Back to Products
                 </v-btn>
@@ -258,7 +275,6 @@ function cancelTitle() {
       @add-to-list="confirmAddToList"
     />
   </div>
-  
 </template>
 
 <style scoped>
@@ -296,6 +312,12 @@ function cancelTitle() {
   transition: all 0.2s ease;
   color: var(--text-primary);
 }
-.icon-btn:hover { background-color: var(--primary-green); color: white; border-color: var(--primary-green); }
-.edit-btn { border-color: var(--v-border-color, #e0e0e0); }
+.icon-btn:hover {
+  background-color: var(--primary-green);
+  color: white;
+  border-color: var(--primary-green);
+}
+.edit-btn {
+  border-color: var(--v-border-color, #e0e0e0);
+}
 </style>
