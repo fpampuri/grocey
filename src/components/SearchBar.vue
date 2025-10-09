@@ -55,14 +55,14 @@
         position: relative;
         display: flex;
         align-items: center;
-        background-color: rgb(201, 245, 193);
+        background-color: var(--primary-lightgrey);
         border: 2px solid var(--primary-green-light);
         border-radius: 24px;
         transition: all 0.2s ease-in-out;
     }
 
     .search-input-wrapper:focus-within {
-        background-color: rgb(201, 245, 193);
+        background-color: var(--primary-lightgrey);
         border-color: var(--primary-green);
         box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
     }
@@ -72,7 +72,7 @@
         left: 16px;
         width: 20px;
         height: 20px;
-        fill: black;
+        fill: var(--text-primary);
         pointer-events: none;
         z-index: 1;
     }
@@ -84,12 +84,12 @@
         outline: none;
         background: transparent;
         font-size: 16px;
-        color: black;
+        color: var(--text-primary);
         border-radius: 24px;
     }
 
     .search-input::placeholder {
-        color: #999;
+        color: var(--text-secondary);
     }
 
     .clear-button {
@@ -113,6 +113,6 @@
     .clear-button svg {
         width: 16px;
         height: 16px;
-        fill: black;
+        fill: var(--text-primary);
     }
 </style>

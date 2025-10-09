@@ -41,9 +41,18 @@
   const listToShare = ref<List | null>(null);
   const listToEdit = ref<List | null>(null);
   const selectedListIds = ref<Set<number>>(new Set());
+  const isDeletingSelected = ref(false);
 
   // Computed property to check if any list is selected
   const hasSelectedLists = computed(() => selectedListIds.value.size > 0);
+
+  // Computed property to get names of selected lists
+  const selectedListsNames = computed(() => {
+    return lists.value
+      .filter(list => selectedListIds.value.has(list.id))
+      .map(list => list.title)
+      .join(', ');
+  });
 
   // Filtered list by search and favorites
   const filteredLists = computed(() => {
@@ -160,12 +169,9 @@
   }
 
   function deleteSelectedLists() {
-    // Remove all selected lists
-    lists.value = lists.value.filter(
-      (list) => !selectedListIds.value.has(list.id)
-    );
-    // Clear selection
-    selectedListIds.value.clear();
+    // Mark that we're deleting multiple lists
+    isDeletingSelected.value = true;
+    showDeleteDialog.value = true;
   }
 
   function handleEdit(listId: number) {
@@ -204,27 +210,33 @@
   }
 
   function confirmDelete() {
-    if (!toDeleteList.value) {
-      return;
-    }
-    
     try {
-
-      // Remove the list from the local state
-      lists.value = lists.value.filter(
-        (list) => list.id !== toDeleteList.value!.id
-      );
-      
-      } catch (error) {
+      if (isDeletingSelected.value) {
+        // Remove all selected lists
+        lists.value = lists.value.filter(
+          (list) => !selectedListIds.value.has(list.id)
+        );
+        // Clear selection
+        selectedListIds.value.clear();
+        isDeletingSelected.value = false;
+      } else if (toDeleteList.value) {
+        // Remove the single list from the local state
+        lists.value = lists.value.filter(
+          (list) => list.id !== toDeleteList.value!.id
+        );
+        toDeleteList.value = null;
+      }
+    } catch (error) {
+      console.error('Error deleting list(s):', error);
     }
 
     showDeleteDialog.value = false;
-    toDeleteList.value = null;
   }
 
   function cancelDelete() {
     showDeleteDialog.value = false;
     toDeleteList.value = null;
+    isDeletingSelected.value = false;
   }
 
   function handleShare(listId: number) {
@@ -412,9 +424,9 @@
     <!-- Delete Confirmation Dialog -->
     <ConfirmDeleteDialog
       v-model="showDeleteDialog"
-      item-type="list"
-      :item-name="toDeleteList?.title"
-      description="This action cannot be undone. All items in this list will be permanently deleted."
+      :item-type="isDeletingSelected ? (selectedListIds.size > 1 ? 'lists' : 'list') : 'list'"
+      :item-name="isDeletingSelected ? selectedListsNames : toDeleteList?.title"
+      :description="isDeletingSelected ? 'This action cannot be undone. All items in these lists will be permanently deleted.' : 'This action cannot be undone. All items in this list will be permanently deleted.'"
       @confirm="confirmDelete"
     />
 

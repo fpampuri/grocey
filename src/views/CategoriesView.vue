@@ -193,11 +193,13 @@ function handleCreateProduct(data: { name: string; categoryId: number }) {
             class="mb-2 mb-sm-0 mr-sm-3"
             title="Add Product"
             icon="mdi-plus"
+            color="light-green"
             @click="handleAddProduct"
           />
           <StandardButton
             title="Add Category"
             icon="mdi-plus"
+            color="light-green"
             @click="showCreateDialog = true"
           />
         </v-col>

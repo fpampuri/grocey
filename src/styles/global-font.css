@@ -21,8 +21,8 @@
 /* Dark Mode Variables */
 .v-theme--dark {
   /* Colors - Dark Mode */
-  --primary-green: rgb(102, 187, 106);        /* Verde más claro y visible */
-  --primary-green-light: rgb(129, 199, 132);  /* Verde aún más claro */
+  --primary-green: rgb(76, 175, 80);        /* Verde más claro y visible */
+  --primary-green-light: rgb(76, 175, 80);  /* Verde aún más claro */
   --primary-green-dark: rgb(76, 175, 80);     /* Verde medio para contraste */
 
   --primary-lightgrey: rgb(48, 48, 48);       /* Gris oscuro en lugar de claro */
