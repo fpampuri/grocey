@@ -1,38 +1,144 @@
-import { defineStore } from 'pinia'
+import { defineStore } from 'pinia';
+import apiClient, { setAuthToken } from '@/services/api';
 
-export interface User {
-  firstName: string
-  lastName: string
-  email: string
-  memberSince: string
-  listsCreated: number
+export interface UserProfile {
+  firstName: string;
+  lastName: string;
+  email: string;
+  memberSince: string;
+  listsCreated: number;
+  metadata?: Record<string, any>;
+}
+
+type SaveChangesInput = Partial<Pick<UserProfile, 'firstName' | 'lastName'>>;
+
+const TOKEN_STORAGE_KEY = 'grocey.authToken';
+
+function formatDate(value?: string | null): string {
+  if (!value) return '';
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString();
+}
+
+function mapServerUser(data: any): UserProfile {
+  return {
+    firstName: data?.name ?? '',
+    lastName: data?.surname ?? '',
+    email: data?.email ?? '',
+    memberSince: formatDate(data?.createdAt),
+    listsCreated:
+      data?.metadata?.listsCreated ??
+      data?.metadata?.lists ??
+      data?.metadata?.lists_count ??
+      0,
+    metadata: data?.metadata ?? {},
+  };
+}
+
+function defaultUser(): UserProfile {
+  return {
+    firstName: '',
+    lastName: '',
+    email: '',
+    memberSince: '',
+    listsCreated: 0,
+    metadata: {},
+  };
 }
 
 export const useUserStore = defineStore('user', {
   state: () => ({
-    user: {
-      firstName: 'Juan',
-      lastName: 'Pérez',
-      email: 'juan@example.com',
-      memberSince: 'January 2024',
-      listsCreated: 3
-    } as User,
-    isLoggedIn: true,
+    user: defaultUser() as UserProfile,
+    token: null as string | null,
+    loading: false,
+    error: null as string | null,
+    profileLoaded: false,
   }),
-  
+
   actions: {
-    updateProfile(userData: Partial<User>) {
-      this.user = { ...this.user, ...userData }
+    init() {
+      if (typeof window === 'undefined') return;
+      const storedToken = window.localStorage.getItem(TOKEN_STORAGE_KEY);
+      if (storedToken) {
+        this.setToken(storedToken);
+        this.fetchUserProfile();
+      }
     },
-    
-    logout() {
-      this.isLoggedIn = false
-      // Here you would typically clear user data and redirect to login
+
+    setToken(token: string | null) {
+      this.token = token;
+      setAuthToken(token);
+      if (typeof window !== 'undefined') {
+        if (token) {
+          window.localStorage.setItem(TOKEN_STORAGE_KEY, token);
+        } else {
+          window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+        }
+      }
     },
-    
-    saveChanges() {
-      // Here you would typically make an API call to save the user data
-      console.log('Saving user changes:', this.user)
-    }
+
+    updateProfile(userData: Partial<UserProfile>) {
+      this.user = { ...this.user, ...userData };
+    },
+
+    async fetchUserProfile() {
+      if (!this.token) return;
+      this.loading = true;
+      this.error = null;
+      try {
+        const { data } = await apiClient.get('/users/profile');
+        this.user = mapServerUser(data);
+        this.profileLoaded = true;
+      } catch (err: any) {
+        this.error =
+          typeof err === 'string'
+            ? err
+            : err?.message ?? 'Unable to load profile';
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async saveChanges(changes?: SaveChangesInput) {
+      if (!this.token) return;
+      this.loading = true;
+      this.error = null;
+
+      const payload = {
+        name: changes?.firstName ?? this.user.firstName,
+        surname: changes?.lastName ?? this.user.lastName,
+        metadata: this.user.metadata ?? {},
+      };
+
+      try {
+        const { data } = await apiClient.put('/users/profile', payload);
+        this.user = mapServerUser(data);
+        this.profileLoaded = true;
+      } catch (err: any) {
+        this.error =
+          typeof err === 'string'
+            ? err
+            : err?.message ?? 'Unable to update profile';
+        throw err;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async logout() {
+      try {
+        if (this.token) {
+          await apiClient.post('/users/logout', {});
+        }
+      } catch (err) {
+        // Failing to call logout shouldn't block clearing the session
+        console.warn('Logout request failed', err);
+      } finally {
+        this.setToken(null);
+        this.user = defaultUser();
+        this.profileLoaded = false;
+        this.error = null;
+      }
+    },
   },
-})
+});

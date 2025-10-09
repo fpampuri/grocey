@@ -1,10 +1,17 @@
 <script lang="ts" setup>
-  import { computed } from 'vue'
+  import { computed, onBeforeMount } from 'vue'
   import { RouterView, useRoute } from 'vue-router'
   import NavBar from './layouts/NavBar.vue'
+  import { useUserStore } from '@/stores/user'
 
   const route = useRoute()
   const useNavLayout = computed(() => (route.meta?.layout as string | undefined) !== 'plain')
+
+  const userStore = useUserStore()
+
+  onBeforeMount(() => {
+    userStore.init()
+  })
 </script>
 
 <template>

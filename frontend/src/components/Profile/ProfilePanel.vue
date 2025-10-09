@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { useRouter } from 'vue-router'
 
@@ -19,9 +19,48 @@ const lastName = ref(userStore.user.lastName)
 
 // Computed to check if there are changes (only for editable fields)
 const hasChanges = computed(() => {
-  return firstName.value !== userStore.user.firstName ||
-         lastName.value !== userStore.user.lastName
+  return (
+    firstName.value !== userStore.user.firstName ||
+    lastName.value !== userStore.user.lastName
+  )
 })
+
+watch(
+  () => userStore.user.firstName,
+  (value) => {
+    if (!hasChanges.value) {
+      firstName.value = value
+    }
+  },
+  { immediate: true }
+)
+
+watch(
+  () => userStore.user.lastName,
+  (value) => {
+    if (!hasChanges.value) {
+      lastName.value = value
+    }
+  },
+  { immediate: true }
+)
+
+watch(
+  () => props.modelValue,
+  (isOpen) => {
+    if (isOpen) {
+      if (!userStore.profileLoaded && !userStore.loading) {
+        userStore.fetchUserProfile()
+      }
+      firstName.value = userStore.user.firstName
+      lastName.value = userStore.user.lastName
+    } else {
+      firstName.value = userStore.user.firstName
+      lastName.value = userStore.user.lastName
+    }
+  },
+  { immediate: true }
+)
 
 function closePanel() {
   emit('update:modelValue', false)
@@ -31,15 +70,18 @@ function closePanel() {
 }
 
 function saveChanges() {
-  userStore.updateProfile({
-    firstName: firstName.value,
-    lastName: lastName.value
-  })
-  userStore.saveChanges()
+  userStore
+    .saveChanges({
+      firstName: firstName.value,
+      lastName: lastName.value,
+    })
+    .catch((err) => {
+      console.error('Failed to update profile', err)
+    })
 }
 
-function logout() {
-  userStore.logout()
+async function logout() {
+  await userStore.logout()
   closePanel()
   router.push({ name: 'login' })
 }
@@ -124,7 +166,8 @@ function logout() {
         <!-- Save Changes Button -->
         <v-btn
           class="save-button w-100 mb-6"
-          :disabled="!hasChanges"
+          :disabled="!hasChanges || userStore.loading"
+          :loading="userStore.loading"
           @click="saveChanges"
         >
           Save Changes
