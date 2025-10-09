@@ -60,6 +60,22 @@
     return filtered;
   });
 
+  // Sort lists based on selected criteria
+  function sortLists(listArray: List[]): List[] {
+    if (sortBy.value === "Name") {
+      return [...listArray].sort((a, b) => a.title.localeCompare(b.title));
+    }
+    if (sortBy.value === "Items") {
+      return [...listArray].sort((a, b) => b.itemsCount - a.itemsCount);
+    }
+    if (sortBy.value === "Date") {
+      return [...listArray].sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+    }
+    return listArray;
+  }
+
   // Fetch lists from local mock API
   async function fetchLists() {
     try {
@@ -303,7 +319,7 @@
           cols="12"
           md="6"
           lg="4"
-          v-for="item in filteredLists"
+          v-for="item in sortLists(filteredLists)"
           :key="item.id"
         >
           <ListCard
@@ -384,7 +400,12 @@
   min-width: 120px;
   min-height: 40px;
   color: var(--text-primary) !important;
-  background-color: white !important;
+  background-color: rgb(var(--v-theme-surface)) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.v-theme--dark .favorites-btn {
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .favorites-btn:hover {
