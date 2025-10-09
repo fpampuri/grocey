@@ -5,6 +5,7 @@ import NavListItem from "@/components/NavBar/NavListItem.vue";
 import NavBarTitle from "@/components/NavBar/NavBarTitle.vue";
 import ProfilePanel from "@/components/Profile/ProfilePanel.vue";
 import { useRoute } from "vue-router";
+import apiClient from "@/services/api";
 
 const route = useRoute();
 
@@ -19,16 +20,15 @@ const selectItem = (item: string) => {
 // Dynamic data fetching functions
 async function getListName(id: string): Promise<string> {
   try {
-    const response = await fetch("/api/lists.json");
-    if (!response.ok) throw new Error("Error fetching lists");
-
-    const lists = await response.json();
-    const list = lists.find((l: any) => l.id === parseInt(id));
-    return list?.title || `List ${id}`;
+    const { data } = await apiClient.get(`/shopping-lists/${id}`);
+    const list = data?.list ?? data;
+    if (list?.name) return list.name;
+    if (list?.title) return list.title;
   } catch (error) {
     console.error("Error fetching list name:", error);
     return `List ${id}`;
   }
+  return `List ${id}`;
 }
 
 async function getCategoryName(id: string): Promise<string> {
