@@ -59,18 +59,6 @@ function cancelEdit() {
 <template>
   <v-card class="product-item-card" outlined>
     <v-row class="item-row" align="center" no-gutters>
-      <!-- Completion checkbox -->
-      <v-col cols="auto">
-        <v-checkbox
-          v-model="localCompleted"
-          hide-details
-          color="green"
-          class="green-border-checkbox"
-          aria-label="mark item as completed"
-          @click.stop="toggleComplete"
-        />
-      </v-col>
-
       <!-- Item title -->
       <v-col>
         <div class="title-row">

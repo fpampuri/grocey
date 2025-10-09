@@ -2,6 +2,8 @@
 import { useRoute, useRouter } from "vue-router";
 import { computed, ref, onMounted } from "vue";
 import Card from "@/components/Products/ProductItemCard.vue";
+import MoveToCategoryDialog from "@/components/dialog/MoveToCategoryDialog.vue";
+import AddToListDialog from "@/components/dialog/AddToListDialog.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -15,6 +17,36 @@ const isFromPantry = computed(() => route.path.includes('/pantry/'));
 const categoryData = ref<Category | null>(null);
 const products = ref<Product[]>([]);
 const isLoading = ref(true);
+
+// Dialog states
+const showMoveDialog = ref(false);
+const showAddToListDialog = ref(false);
+const selectedProductId = ref<number | null>(null);
+
+// Mock categories for MoveToCategoryDialog
+const availableCategories = computed(() => {
+  if (isFromPantry.value) {
+    return [
+      { value: 1, label: "Fresh Produce" },
+      { value: 2, label: "Pantry Staples" },
+      { value: 3, label: "Refrigerated" },
+      { value: 4, label: "Frozen" },
+    ].filter(cat => cat.value !== categoryId.value);
+  } else {
+    return [
+      { value: 1, label: "Fruits" },
+      { value: 2, label: "Vegetables" },
+      { value: 3, label: "Dairy" },
+    ].filter(cat => cat.value !== categoryId.value);
+  }
+});
+
+// Mock lists for AddToListDialog
+const availableLists = computed(() => [
+  { value: 1, label: "Weekly Shopping" },
+  { value: 2, label: "Party Supplies" },
+  { value: 3, label: "Meal Prep" },
+]);
 
 function goBack() {
   if (isFromPantry.value) {
@@ -117,6 +149,32 @@ function handleRenameProduct(payload: { id: number; name: string }) {
   const item = products.value.find((p) => p.id === payload.id);
   if (item) item.name = payload.name;
 }
+
+function handleMoveProduct(productId: number) {
+  selectedProductId.value = productId;
+  showMoveDialog.value = true;
+}
+
+function handleAddToList(productId: number) {
+  selectedProductId.value = productId;
+  showAddToListDialog.value = true;
+}
+
+function confirmMoveToCategory(data: { categoryId: number }) {
+  console.log('Moving product', selectedProductId.value, 'to category', data.categoryId);
+  // Remove product from current list
+  if (selectedProductId.value) {
+    products.value = products.value.filter(p => p.id !== selectedProductId.value);
+  }
+  showMoveDialog.value = false;
+  selectedProductId.value = null;
+}
+
+function confirmAddToList(data: { listId: number }) {
+  console.log('Adding product', selectedProductId.value, 'to list', data.listId);
+  showAddToListDialog.value = false;
+  selectedProductId.value = null;
+}
 </script>
 
 <template>
@@ -154,6 +212,8 @@ function handleRenameProduct(payload: { id: number; name: string }) {
                 @toggle-complete="(completed) => handleToggleComplete(item.id, completed)"
                 @delete="(id) => handleDeleteItem(id)"
                 @rename="handleRenameProduct"
+                @move="handleMoveProduct"
+                @add-to-list="handleAddToList"
               />
             </div>
             <div v-else class="text-center pa-8">
@@ -182,6 +242,20 @@ function handleRenameProduct(payload: { id: number; name: string }) {
         </v-col>
       </v-row>
     </v-container>
+
+    <!-- Move to Category Dialog -->
+    <MoveToCategoryDialog
+      v-model="showMoveDialog"
+      :categories="availableCategories"
+      @move-to-category="confirmMoveToCategory"
+    />
+
+    <!-- Add to List Dialog -->
+    <AddToListDialog
+      v-model="showAddToListDialog"
+      :lists="availableLists"
+      @add-to-list="confirmAddToList"
+    />
   </div>
 </template>
 
