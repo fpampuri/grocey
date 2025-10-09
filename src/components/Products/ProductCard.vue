@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, ref, watch, nextTick } from 'vue';
+import { defineProps, defineEmits } from 'vue';
 
 const props = defineProps({
   title: { type: String, required: true },
@@ -7,34 +7,7 @@ const props = defineProps({
   itemsCount: { type: Number, default: 0 },
 });
 
-const emits = defineEmits(["click", "edit", "delete", "rename"]);
-
-// Inline rename state
-const editing = ref(false);
-const localTitle = ref(props.title);
-const inputRef = ref<HTMLInputElement | null>(null);
-
-watch(() => props.title, (v) => { if (!editing.value) localTitle.value = v; });
-
-function startEdit(e?: Event) {
-  if (e) e.stopPropagation();
-  editing.value = true;
-  localTitle.value = props.title;
-  nextTick(() => inputRef.value?.focus());
-}
-
-function commitEdit() {
-  const newName = localTitle.value.trim();
-  if (newName && newName !== props.title) {
-    emits('rename', newName);
-  }
-  editing.value = false;
-}
-
-function cancelEdit() {
-  localTitle.value = props.title;
-  editing.value = false;
-}
+const emits = defineEmits(["click", "edit", "delete"]);
 </script>
 
 <template>
@@ -49,24 +22,7 @@ function cancelEdit() {
       <v-col>
         <div class="category-body">
           <div class="category-title-row">
-            <template v-if="editing">
-              <input
-                ref="inputRef"
-                v-model="localTitle"
-                class="rename-input"
-                type="text"
-                @click.stop
-                @keydown.enter.stop.prevent="commitEdit"
-                @keydown.esc.stop.prevent="cancelEdit"
-                @blur="commitEdit"
-              />
-            </template>
-            <template v-else>
-              <span class="category-title">{{ title }}</span>
-              <button class="action-btn edit-btn" @click.stop="startEdit" aria-label="Rename category">
-                <v-icon>mdi-pencil</v-icon>
-              </button>
-            </template>
+            <span class="category-title">{{ title }}</span>
           </div>
         </div>
       </v-col>
@@ -160,15 +116,6 @@ function cancelEdit() {
   color: var(--text-primary);
 }
 
-.rename-input {
-  width: 100%;
-  max-width: 320px;
-  padding: 6px 10px;
-  border: 2px solid var(--primary-green-light);
-  border-radius: 8px;
-  font-size: 0.95rem;
-}
-
 .category-count {
   text-align: center;
   color: var(--text-secondary);
@@ -192,10 +139,6 @@ function cancelEdit() {
 .action-btn:hover {
   background-color: var(--primary-green);
   color: white;
-}
-
-.edit-btn {
-  border: 1px solid var(--v-border-color, #e0e0e0);
 }
 
 .text-green {

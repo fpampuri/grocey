@@ -59,7 +59,9 @@ function handleBackdropClick() {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   width: 90%;
   max-height: 90vh;
-  overflow: hidden;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Provide utility classes for consistent header styling */
@@ -103,6 +105,7 @@ function handleBackdropClick() {
 /* Provide utility classes for consistent body styling */
 .dialog-container :deep(.dialog-body) {
   padding: 24px;
+  overflow: visible;
 }
 
 /* Provide utility classes for consistent footer styling */

@@ -3,6 +3,7 @@
   import StandardButton from "@/components/StandardButton.vue";
   import SearchBar from "@/components/SearchBar.vue";
   import CreateListDialog from "@/components/dialog/CreateListDialog.vue";
+  import EditListDialog from "@/components/dialog/EditListDialog.vue";
   import ConfirmDeleteDialog from "@/components/dialog/ConfirmDeleteDialog.vue";
   import ShareListDialog from "@/components/dialog/ShareListDialog.vue";
   import { useRouter } from "vue-router";
@@ -33,10 +34,12 @@
   const searchQuery = ref("");
   const sortBy = ref("Date");
   const showCreateDialog = ref(false);
+  const showEditDialog = ref(false);
   const showFavoritesOnly = ref(false);
   const showDeleteDialog = ref(false);
   const showShareDialog = ref(false);
   const listToShare = ref<List | null>(null);
+  const listToEdit = ref<List | null>(null);
 
   // Filtered list by search and favorites
   const filteredLists = computed(() => {
@@ -124,7 +127,23 @@
   function handleSelectionToggle(isSelected: boolean) {
   }
 
-  function handleEdit() {
+  function handleEdit(listId: number) {
+    const list = lists.value.find((l) => l.id === listId);
+    if (!list) return;
+    
+    listToEdit.value = list;
+    showEditDialog.value = true;
+  }
+
+  function handleEditList(data: { id: number; name: string; icon: string }) {
+    const list = lists.value.find((l) => l.id === data.id);
+    if (!list) return;
+    
+    list.title = data.name;
+    list.icon = data.icon;
+    
+    showEditDialog.value = false;
+    listToEdit.value = null;
   }
   //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -295,7 +314,7 @@
             @click="() => handleListClick(item)"
             @toggle-star="(isStarred) => handleStarToggle(isStarred, item.id)"
             @toggle-selection="handleSelectionToggle"
-            @edit="handleEdit"
+            @edit="() => handleEdit(item.id)"
             @delete="() => handleDeleteList(item.id)"
             @share="() => handleShare(item.id)"
           />
@@ -319,6 +338,13 @@
     <CreateListDialog
       v-model="showCreateDialog"
       @create-list="handleCreateList"
+    />
+
+    <!-- Edit List Dialog -->
+    <EditListDialog
+      v-model="showEditDialog"
+      :list-data="listToEdit"
+      @edit-list="handleEditList"
     />
 
     <!-- Delete Confirmation Dialog -->

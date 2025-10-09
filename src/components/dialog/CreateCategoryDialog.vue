@@ -15,12 +15,54 @@ const selectedIcon = ref('mdi-tag-outline');
 
 // Available icons for selection
 const iconOptions = [
-  { value: 'mdi-cart', label: 'Shopping Cart', icon: 'mdi-cart' },
-  { value: 'mdi-apple', label: 'Apple', icon: 'mdi-apple' },
-  { value: 'mdi-broom', label: 'Cleaning', icon: 'mdi-broom' },
-  { value: 'mdi-home', label: 'Home', icon: 'mdi-home' },
-  { value: 'mdi-food', label: 'Food', icon: 'mdi-food' },
-  { value: 'mdi-gift', label: 'Gift', icon: 'mdi-gift' },
+  'mdi-cart',
+  'mdi-apple',
+  'mdi-food-apple',
+  'mdi-food',
+  'mdi-carrot',
+  'mdi-cheese',
+  'mdi-fish',
+  'mdi-egg',
+  'mdi-bread-slice',
+  'mdi-baguette',
+  'mdi-grain',
+  'mdi-pasta',
+  'mdi-rice',
+  'mdi-bottle-wine',
+  'mdi-coffee',
+  'mdi-tea',
+  'mdi-beer',
+  'mdi-glass-cocktail',
+  'mdi-cupcake',
+  'mdi-cake',
+  'mdi-ice-cream',
+  'mdi-candy',
+  'mdi-fruit-cherries',
+  'mdi-fruit-grapes',
+  'mdi-fruit-watermelon',
+  'mdi-leaf',
+  'mdi-tree',
+  'mdi-sprout',
+  'mdi-flower',
+  'mdi-home',
+  'mdi-fridge',
+  'mdi-microwave',
+  'mdi-silverware-fork-knife',
+  'mdi-grill',
+  'mdi-pot',
+  'mdi-broom',
+  'mdi-gift',
+  'mdi-party-popper',
+  'mdi-star',
+  'mdi-heart',
+  'mdi-tag',
+  'mdi-tag-outline',
+  'mdi-bookmark',
+  'mdi-shopping',
+  'mdi-basket',
+  'mdi-package',
+  'mdi-package-variant',
+  'mdi-snowflake',
 ];
 
 function closeDialog() {
@@ -89,9 +131,6 @@ const iconOptionsOpen = ref(false);
           <div class="icon-selector">
             <div class="selected-icon" @click="iconOptionsOpen = !iconOptionsOpen">
               <v-icon :icon="selectedIcon" size="24" />
-              <span class="selected-label">
-                {{ iconOptions.find(opt => opt.value === selectedIcon)?.label }}
-              </span>
               <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                 <path d="M7,10L12,15L17,10H7Z" />
               </svg>
@@ -100,14 +139,13 @@ const iconOptionsOpen = ref(false);
             <!-- Icon Grid -->
             <div class="icon-options" v-if="iconOptionsOpen">
               <button
-                v-for="option in iconOptions"
-                :key="option.value"
-                @click="selectIcon(option.value)"
+                v-for="iconValue in iconOptions"
+                :key="iconValue"
+                @click="selectIcon(iconValue)"
                 class="icon-option"
-                :class="{ active: selectedIcon === option.value }"
+                :class="{ active: selectedIcon === iconValue }"
               >
-                <v-icon :icon="option.icon" size="20" />
-                <span>{{ option.label }}</span>
+                <v-icon :icon="iconValue" size="24" />
               </button>
             </div>
           </div>
@@ -150,7 +188,9 @@ const iconOptionsOpen = ref(false);
   width: 90%;
   max-width: 480px;
   max-height: 90vh;
-  overflow: hidden;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
 }
 
 .dialog-header {
@@ -192,6 +232,7 @@ const iconOptionsOpen = ref(false);
 
 .dialog-body {
   padding: 24px;
+  overflow: visible;
 }
 
 .dialog-description {
@@ -246,15 +287,11 @@ const iconOptionsOpen = ref(false);
   border-color: #4CAF50;
 }
 
-.selected-label {
-  flex: 1;
-  color: #333;
-}
-
 .dropdown-arrow {
   width: 16px;
   height: 16px;
   fill: #666;
+  margin-left: auto;
 }
 
 .icon-options {
@@ -265,32 +302,38 @@ const iconOptionsOpen = ref(false);
   background: white;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  z-index: 10;
-  max-height: 200px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  max-height: 300px;
   overflow-y: auto;
-  display: block;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
 }
 
 .icon-option {
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
   width: 100%;
-  padding: 12px 16px;
-  border: none;
+  aspect-ratio: 1;
+  padding: 8px;
+  border: 2px solid transparent;
+  border-radius: 8px;
   background: none;
   cursor: pointer;
-  text-align: left;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .icon-option:hover {
   background-color: #f5f5f5;
+  border-color: #4CAF50;
 }
 
 .icon-option.active {
   background-color: #e8f5e8;
+  border-color: #4CAF50;
   color: #4CAF50;
 }
 

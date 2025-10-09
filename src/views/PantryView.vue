@@ -3,6 +3,7 @@ import ProductCard from "@/components/Products/ProductCard.vue";
 import StandardButton from "@/components/StandardButton.vue";
 import SearchBar from "@/components/SearchBar.vue";
 import CreateCategoryDialog from "@/components/dialog/CreateCategoryDialog.vue";
+import EditCategoryDialog from "@/components/dialog/EditCategoryDialog.vue";
 import CreateProductDialog from "@/components/dialog/CreateProductDialog.vue";
 import ConfirmDeleteDialog from "@/components/dialog/ConfirmDeleteDialog.vue";
 import { useRouter } from "vue-router";
@@ -29,9 +30,11 @@ const isLoading = ref(true);
 const searchQuery = ref("");
 const sortBy = ref("Name");
 const showCreateDialog = ref(false);
+const showEditDialog = ref(false);
 const showCreateProductDialog = ref(false);
 const showDeleteDialog = ref(false);
 const categoryToDelete = ref<Category | null>(null);
+const categoryToEdit = ref<Category | null>(null);
 
 const filteredCategories = computed<Category[]>(() => {
   const q = searchQuery.value.trim().toLowerCase();
@@ -119,8 +122,23 @@ function handleSelectionToggle(isSelected: boolean) {
   console.log("Selection toggled:", isSelected ? "SELECTED" : "UNSELECTED");
 }
 
-function handleEdit() {
-  console.log("Edit pantry category");
+function handleEdit(categoryId: number) {
+  const category = categories.value.find((c) => c.id === categoryId);
+  if (!category) return;
+
+  categoryToEdit.value = category;
+  showEditDialog.value = true;
+}
+
+function handleEditCategory(data: { id: number; name: string; icon: string }) {
+  const category = categories.value.find((c) => c.id === data.id);
+  if (!category) return;
+
+  category.title = data.name;
+  category.icon = data.icon;
+
+  showEditDialog.value = false;
+  categoryToEdit.value = null;
 }
 
 function handleDelete(categoryId: number) {
@@ -146,11 +164,6 @@ function confirmDelete() {
   // Reset state
   showDeleteDialog.value = false;
   categoryToDelete.value = null;
-}
-
-function handleRenameCategory(catId: number, newTitle: string) {
-  const cat = categories.value.find((c) => c.id === catId);
-  if (cat) cat.title = newTitle;
 }
 
 function handleAddProduct() {
@@ -191,9 +204,9 @@ function handleCreateProduct(data: { name: string; categoryId: number }) {
             placeholder="Search pantry items or categories..."
           />
         </v-col>
-        <v-col cols="12" md="4" class="text-md-right">
+        <v-col cols="12" md="4" class="d-flex flex-column flex-sm-row justify-end align-end">
           <StandardButton
-            class="mr-4"
+            class="mb-2 mb-sm-0 mr-sm-3"
             title="Add Item"
             icon="mdi-plus"
             @click="handleAddProduct"
@@ -244,9 +257,8 @@ function handleCreateProduct(data: { name: string; categoryId: number }) {
             :icon="cat.icon"
             :itemsCount="cat.products.length"
             @click="() => handleCategoryClick(cat)"
-            @edit="handleEdit"
+            @edit="() => handleEdit(cat.id)"
             @delete="() => handleDelete(cat.id)"
-            @rename="(newTitle) => handleRenameCategory(cat.id, newTitle)"
           />
         </v-col>
       </v-row>
@@ -268,6 +280,13 @@ function handleCreateProduct(data: { name: string; categoryId: number }) {
     <CreateCategoryDialog
       v-model="showCreateDialog"
       @create-category="handleCreateCategory"
+    />
+
+    <!-- Edit Category Dialog -->
+    <EditCategoryDialog
+      v-model="showEditDialog"
+      :category-data="categoryToEdit"
+      @edit-category="handleEditCategory"
     />
 
     <!-- Create Product Dialog -->
