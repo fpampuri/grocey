@@ -18,13 +18,13 @@
   const authError = ref("");
 
   const emailRules = [
-    (value: string) => !!value || "Ingresá tu correo electrónico",
-    (value: string) => /.+@.+\..+/.test(value) || "Ingresá un correo válido",
+    (value: string) => !!value || "Enter your email address",
+    (value: string) => /.+@.+\..+/.test(value) || "Enter a valid email",
   ];
 
   const passwordRules = [
-    (value: string) => !!value || "Ingresá tu contraseña",
-    (value: string) => value.length >= 6 || "Debe tener al menos 6 caracteres",
+    (value: string) => !!value || "Enter your password",
+    (value: string) => value.length >= 6 || "Must be at least 6 characters",
   ];
 
   async function handleSubmit() {
@@ -40,7 +40,7 @@
       router.push({ name: "lists" });
     } catch (error) {
       console.error("Login error", error);
-      authError.value = "No pudimos iniciar sesión. Intentá nuevamente.";
+      authError.value = "We couldn't log you in. Please try again.";
     } finally {
       isSubmitting.value = false;
     }
@@ -53,17 +53,17 @@
       <section class="login-hero">
         <div class="hero-heading">
           <v-icon icon="mdi-cart" class="hero-logo" />
-          <h1>Bienvenido a Grocey</h1>
+          <h1>Welcome to Grocey</h1>
         </div>
-        <p>Organizá tus listas y compras con una experiencia simple e inteligente.</p>
+        <p>Organize your lists and shopping with a simple and smart experience.</p>
       </section>
 
       <v-card class="login-card" elevation="10">
         <v-card-title class="text-h5 font-weight-bold text-primary">
-          Iniciar sesión
+          Sign In
         </v-card-title>
         <v-card-subtitle class="text-subtitle-1 mb-4">
-          Ingresá tus datos para continuar
+          Enter your credentials to continue
         </v-card-subtitle>
 
         <v-card-text>
@@ -79,7 +79,7 @@
           <v-form ref="formRef" @submit.prevent="handleSubmit">
             <v-text-field
               v-model="email"
-              label="Correo electrónico"
+              label="Email address"
               type="email"
               prepend-inner-icon="mdi-email"
               density="comfortable"
@@ -94,7 +94,7 @@
             <v-text-field
               v-model="password"
               :type="showPassword ? 'text' : 'password'"
-              label="Contraseña"
+              label="Password"
               prepend-inner-icon="mdi-lock"
               :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
               @click:append-inner="showPassword = !showPassword"
@@ -109,13 +109,13 @@
             <div class="helpers">
               <v-checkbox
                 v-model="rememberMe"
-                label="Recordarme"
+                label="Remember me"
                 hide-details
                 density="compact"
               />
 
               <RouterLink to="/forgot-password" class="forgot-link">
-                ¿Olvidaste tu contraseña?
+                Forgot your password?
               </RouterLink>
             </div>
 
@@ -127,7 +127,7 @@
               :loading="isSubmitting"
               :disabled="isSubmitting"
             >
-              Ingresar
+              Sign In
             </v-btn>
           </v-form>
         </v-card-text>
