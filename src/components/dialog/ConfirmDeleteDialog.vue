@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { defineProps, defineEmits, computed } from "vue";
+  import { computed } from "vue";
   import StandardButton from "@/components/StandardButton.vue";
   import BaseDialog from "@/components/dialog/BaseDialog.vue";
 
@@ -103,7 +103,7 @@
 
 <style scoped>
 
-::v-deep .red-button {
+:deep(.red-button) {
   background-color: red !important;
 }
 

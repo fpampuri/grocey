@@ -1,6 +1,4 @@
 <script setup lang="ts">
-  import { defineProps, defineEmits } from "vue";
-
     const props = defineProps({
       title: { type: String, required: true },
       icon: { type: String, default: "mdi-plus" },

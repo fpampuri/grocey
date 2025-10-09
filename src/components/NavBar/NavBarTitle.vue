@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { defineProps } from 'vue'
 
 const { icon, title } = defineProps({
   icon: { type: String, required: true },

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue';
 const props = defineProps<{ icon: string; title: string; subtitle?: string; actionText?: string }>();
 const emit = defineEmits(['click']);
 </script>

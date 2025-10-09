@@ -22,6 +22,16 @@ export default createVuetify({
       } as ThemeDefinition,
       dark: {
         dark: true,
+        colors: {
+          background: '#121212',
+            surface: '#1E1E1E',
+            primary: '#66bb6a',      // verde más claro para fondos oscuros
+            secondary: '#90caf9',
+            error: '#ff5252',
+            info: '#2196F3',
+            success: '#4CAF50',
+            warning: '#FB8C00',
+          },     
       } as ThemeDefinition,
     },
   },

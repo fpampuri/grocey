@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue';
 
 const props = defineProps<{ icon: string; title: string; subtitle?: string; modelValue: boolean }>();
 const emit = defineEmits(['update:modelValue']);
