@@ -3,6 +3,7 @@
       title: { type: String, required: true },
       icon: { type: String, default: "mdi-plus" },
       disabled: { type: Boolean, default: false },
+      color: { type: String, default: "green" }, // Options: "green", "light-green", "red"
     });
     
     const emits = defineEmits(["click"]);
@@ -19,6 +20,11 @@
   <button
     @click="handleClick"
     class="standard-button"
+    :class="{
+      'button-green': color === 'green',
+      'button-light-green': color === 'light-green',
+      'button-red': color === 'red'
+    }"
     :disabled="disabled"
   >
     <v-icon v-if="icon" :icon="icon" class="button-icon" />
@@ -41,10 +47,32 @@
   min-width: 120px;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
-  
-  background-color: var(--primary-green-light);
   color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.button-green {
+  background-color: var(--primary-green);
+}
+
+.button-green:hover {
+  background-color: var(--primary-green-light);
+}
+
+.button-light-green {
+  background-color: var(--primary-green-light);
+}
+
+.button-light-green:hover {
+  background-color: var(--primary-green);
+}
+
+.button-red {
+  background-color: #ef5350;
+}
+
+.button-red:hover {
+  background-color: #e53935;
 }
 
 .standard-button:hover {

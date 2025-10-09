@@ -40,6 +40,10 @@
   const showShareDialog = ref(false);
   const listToShare = ref<List | null>(null);
   const listToEdit = ref<List | null>(null);
+  const selectedListIds = ref<Set<number>>(new Set());
+
+  // Computed property to check if any list is selected
+  const hasSelectedLists = computed(() => selectedListIds.value.size > 0);
 
   // Filtered list by search and favorites
   const filteredLists = computed(() => {
@@ -140,7 +144,28 @@
   }
 
   //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  function handleSelectionToggle(isSelected: boolean) {
+  function handleSelectionToggle(isSelected: boolean, listId: number) {
+    if (isSelected) {
+      selectedListIds.value.add(listId);
+    } else {
+      selectedListIds.value.delete(listId);
+    }
+  }
+
+  function selectAllLists() {
+    // Select all filtered lists
+    filteredLists.value.forEach((list) => {
+      selectedListIds.value.add(list.id);
+    });
+  }
+
+  function deleteSelectedLists() {
+    // Remove all selected lists
+    lists.value = lists.value.filter(
+      (list) => !selectedListIds.value.has(list.id)
+    );
+    // Clear selection
+    selectedListIds.value.clear();
   }
 
   function handleEdit(listId: number) {
@@ -269,6 +294,7 @@
           <StandardButton
             title="Add List"
             icon="mdi-plus"
+            color="light-green"
             @click="handleAddList"
           />
         </v-col>
@@ -291,6 +317,25 @@
             Favorites
           </v-btn>
         </v-col>
+
+        <!-- Selection Actions (shown when at least one list is selected) -->
+        <v-col cols="auto" v-if="hasSelectedLists">
+          <StandardButton
+            title="Select All"
+            icon="mdi-checkbox-multiple-marked"
+            color="light-green"
+            @click="selectAllLists"
+          />
+        </v-col>
+        <v-col cols="auto" v-if="hasSelectedLists">
+          <StandardButton
+            title="Delete Selected"
+            icon="mdi-delete"
+            color="red"
+            @click="deleteSelectedLists"
+          />
+        </v-col>
+
         <v-spacer />
         <v-col cols="auto">
           <div class="d-flex align-center">
@@ -327,9 +372,10 @@
             :icon="item.icon"
             :itemsCount="item.itemsCount"
             :starred="item.isFavorite || false"
+            :selected="selectedListIds.has(item.id)"
             @click="() => handleListClick(item)"
             @toggle-star="(isStarred) => handleStarToggle(isStarred, item.id)"
-            @toggle-selection="handleSelectionToggle"
+            @toggle-selection="(isSelected) => handleSelectionToggle(isSelected, item.id)"
             @edit="() => handleEdit(item.id)"
             @delete="() => handleDeleteList(item.id)"
             @share="() => handleShare(item.id)"
@@ -412,13 +458,6 @@
   color: white !important;
   background-color: var(--primary-green-light) !important;
   opacity: 0.7 !important;
-}
-
-.add-list-btn {
-  border-radius: 12px;
-  text-transform: none;
-  font-weight: 600;
-  min-width: 120px;
 }
 
 @media (max-width: 960px) {
