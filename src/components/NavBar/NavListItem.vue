@@ -21,14 +21,14 @@
       rounded="lg"
       @click="onClick"
       :to="to"
-      :class="['py-2 mx-2 my-3 nav-item', (selected || isHovering) ? 'bg-green text-white' : '']"
+      :class="['py-2 mx-2 my-3 nav-item', (selected || isHovering) ? 'selected' : '']"
       :style="{ opacity: (isHovering && !selected) ? 0.6 : 1 }"
     >
       <v-row align="center">
-        <v-icon :class="['text-h4 ma-4', (selected || isHovering) ? 'text-white' : 'text-green']">
+        <v-icon :class="['text-h4 ma-4', (selected || isHovering) ? 'icon-selected' : 'icon-default']">
           {{ icon }}
         </v-icon>
-        <v-list-item-title :class="['text-h5 font-weight-bold', (selected || isHovering) ? 'text-white' : '']">
+        <v-list-item-title :class="['text-h5 font-weight-bold', (selected || isHovering) ? 'text-selected' : '']">
           {{ title }}
         </v-list-item-title>
       </v-row>
@@ -45,16 +45,22 @@
   transition: color 150ms ease;
 }
 
-/* Define color classes using CSS custom properties */
-.bg-green {
+/* Selected state styling */
+.nav-item.selected {
   background-color: var(--primary-green) !important;
 }
 
-.text-green {
+/* Icon styling */
+.icon-default {
   color: var(--primary-green) !important;
 }
 
-.text-white {
+.icon-selected {
+  color: white !important;
+}
+
+/* Text styling */
+.text-selected {
   color: white !important;
 }
 </style>

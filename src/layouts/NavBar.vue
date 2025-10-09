@@ -133,6 +133,23 @@ const pageTitle = computed(() => {
 const onProfileClick = () => {
   showProfilePanel.value = true;
 };
+
+// Helper function to check if a route is selected, including child routes
+const isRouteSelected = (routeName: string): boolean => {
+  if (route.name === routeName) return true;
+  
+  // Check for child routes
+  switch (routeName) {
+    case 'lists':
+      return route.name === 'list-details';
+    case 'categories':
+      return route.name === 'category-details';
+    case 'pantry':
+      return route.name === 'pantry-category-details';
+    default:
+      return false;
+  }
+};
 </script>
 
 <template>
@@ -156,7 +173,7 @@ const onProfileClick = () => {
           icon="mdi-format-list-bulleted"
           title="Lists"
           :to="{ name: 'lists' }"
-          :selected="route.name === 'lists'"
+          :selected="isRouteSelected('lists')"
           @click="selectItem('lists')"
         />
 
@@ -165,7 +182,7 @@ const onProfileClick = () => {
           icon="mdi-food-apple-outline"
           title="Categories"
           :to="{ name: 'categories' }"
-          :selected="route.name === 'categories'"
+          :selected="isRouteSelected('categories')"
           @click="selectItem('categories')"
         />
 
@@ -174,7 +191,7 @@ const onProfileClick = () => {
           icon="mdi-fridge-outline"
           title="Pantry"
           :to="{ name: 'pantry' }"
-          :selected="route.name === 'pantry'"
+          :selected="isRouteSelected('pantry')"
           @click="selectItem('pantry')"
         />
       </v-list>
@@ -185,7 +202,7 @@ const onProfileClick = () => {
           icon="mdi-cog"
           title="Settings"
           :to="{ name: 'settings' }"
-          :selected="route.name === 'settings'"
+          :selected="isRouteSelected('settings')"
           @click="selectItem('settings')"
         />
       </div>
