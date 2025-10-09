@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
-import { defineProps, defineEmits } from 'vue';
 import StandardButton from '@/components/StandardButton.vue';
 
 type CategoryOption = { value: number; label: string; icon?: string };

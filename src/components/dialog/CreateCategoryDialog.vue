@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { defineProps, defineEmits } from 'vue';
 import StandardButton from '@/components/StandardButton.vue';
 
 const props = defineProps({
