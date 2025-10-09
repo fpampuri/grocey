@@ -1,12 +1,19 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import StandardButton from '@/components/StandardButton.vue';
+
+interface CategoryData {
+  id: number;
+  title: string;
+  icon: string;
+}
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
+  categoryData: { type: Object as () => CategoryData | null, default: null },
 });
 
-const emit = defineEmits(['update:modelValue', 'create-category']);
+const emit = defineEmits(['update:modelValue', 'edit-category']);
 
 // Form data
 const categoryName = ref('');
@@ -64,6 +71,18 @@ const iconOptions = [
   'mdi-snowflake',
 ];
 
+// Watch for changes in categoryData prop to populate form
+watch(
+  () => props.categoryData,
+  (newData) => {
+    if (newData) {
+      categoryName.value = newData.title;
+      selectedIcon.value = newData.icon;
+    }
+  },
+  { immediate: true }
+);
+
 function closeDialog() {
   emit('update:modelValue', false);
   // Reset form
@@ -72,12 +91,13 @@ function closeDialog() {
   iconOptionsOpen.value = false;
 }
 
-function createCategory() {
-  if (!categoryName.value.trim()) {
-    return; // Don't create if name is empty
+function editCategory() {
+  if (!categoryName.value.trim() || !props.categoryData) {
+    return; // Don't edit if name is empty or no category data
   }
 
-  emit('create-category', {
+  emit('edit-category', {
+    id: props.categoryData.id,
     name: categoryName.value.trim(),
     icon: selectedIcon.value,
   });
@@ -101,7 +121,7 @@ const iconOptionsOpen = ref(false);
     <div class="dialog-container" @click.stop>
       <!-- Dialog Header -->
       <div class="dialog-header">
-  <h2 class="dialog-title">Create New Category</h2>
+  <h2 class="dialog-title">Edit Category</h2>
         <button class="close-button" @click="closeDialog">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
             <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
@@ -120,7 +140,7 @@ const iconOptionsOpen = ref(false);
             type="text"
             placeholder="Enter category name"
             class="text-input"
-            @keyup.enter="createCategory"
+            @keyup.enter="editCategory"
           />
         </div>
 
@@ -157,9 +177,9 @@ const iconOptionsOpen = ref(false);
           Cancel
         </button>
         <StandardButton
-          title="Create Category"
-          icon="mdi-plus"
-          @click="createCategory"
+          title="Save Changes"
+          icon="mdi-content-save"
+          @click="editCategory"
         />
       </div>
     </div>
@@ -301,7 +321,7 @@ const iconOptionsOpen = ref(false);
   background: white;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   z-index: 1001;
   max-height: 300px;
   overflow-y: auto;
