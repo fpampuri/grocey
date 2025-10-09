@@ -2,7 +2,7 @@
 
 /* CSS Custom Properties (Constants) */
 :root {
-  /* Colors */
+  /* Colors - Light Mode */
   --primary-green: rgb(7, 138, 7);
   --primary-green-light: rgb(76, 175, 80);
   --primary-green-dark: rgb(5, 100, 5);
@@ -16,7 +16,24 @@
   --text-primary: rgba(0, 0, 0, 0.87);
   --text-secondary: rgba(0, 0, 0, 0.5);
   --text-terciary: rgba(0, 0, 0, 0.38);
+}
 
+/* Dark Mode Variables */
+.v-theme--dark {
+  /* Colors - Dark Mode */
+  --primary-green: rgb(102, 187, 106);        /* Verde más claro y visible */
+  --primary-green-light: rgb(129, 199, 132);  /* Verde aún más claro */
+  --primary-green-dark: rgb(76, 175, 80);     /* Verde medio para contraste */
+
+  --primary-lightgrey: rgb(48, 48, 48);       /* Gris oscuro en lugar de claro */
+  --star-gold: #FFD700;                        /* Dorado más brillante */
+  --star-gold-hover: #FFC107;                  /* Dorado hover más visible */
+
+  --delete-red: #ef5350;                       /* Rojo más claro y visible */
+
+  --text-primary: rgba(255, 255, 255, 0.87);   /* Texto blanco */
+  --text-secondary: rgba(255, 255, 255, 0.6);  /* Texto gris claro */
+  --text-terciary: rgba(255, 255, 255, 0.38);  /* Texto gris muy claro */
 }
 
 /* Global Font Settings */
@@ -34,4 +51,19 @@ body,
 .v-card-title,
 .v-card-text {
   font-family: inherit !important;
+}
+
+/* Dark Mode: Override card backgrounds */
+.v-theme--dark .v-card {
+  background-color: rgb(var(--v-theme-surface)) !important;
+  color: rgba(255, 255, 255, 0.87) !important;
+}
+
+.v-theme--dark .v-list-item {
+  background-color: rgb(var(--v-theme-surface)) !important;
+}
+
+/* Dark Mode: Fix hover states for settings rows */
+.v-theme--dark .setting-row:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
 }
