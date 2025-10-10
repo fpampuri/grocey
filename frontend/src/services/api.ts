@@ -1,20 +1,144 @@
-import axios from 'axios';
+import { setAuthToken } from ".";
 
-const baseURL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080/api';
+class Api {
+  static token: string | null = null;
 
-export const apiClient = axios.create({
-  baseURL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
+  // Use /api with proxy instead of http://localhost:8080/api
+  // (Se puede modificar en el archivo vite.config.mts)
+  static get baseUrl(): string {
+    return "/api";
+  }
 
-export function setAuthToken(token: string | null) {
-  if (token) {
-    apiClient.defaults.headers.common.Authorization = `Bearer ${token}`;
-  } else {
-    delete apiClient.defaults.headers.common.Authorization;
+  static get timeout(): number {
+    return 60 * 1000;
+  }
+
+  static async fetch<T = any>(
+    url: string,
+    secure: boolean,
+    init: RequestInit = {},
+    controller?: AbortController
+  ): Promise<T> {
+    if (secure && Api.token) {
+      if (!init.headers) {
+        init.headers = {};
+      }
+      (init.headers as Record<string, string>)[
+        "Authorization"
+      ] = `Bearer ${Api.token}`;
+    }
+
+    controller = controller || new AbortController();
+    init.signal = controller.signal;
+    const timer = setTimeout(() => controller.abort(), Api.timeout);
+
+    try {
+      const response = await fetch(url, init);
+      const result = await response.json();
+      if (result.message && !response.ok) throw result;
+      return result;
+    } catch (error: any) {
+      if (error.name === "AbortError" || error.name === "TypeError") {
+        throw { message: error.message };
+      } else {
+        throw error;
+      }
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  static async get<T = any>(
+    endpoint: string,
+    secure: boolean = true,
+    controller?: AbortController
+  ): Promise<T> {
+    const url = `${Api.baseUrl}${endpoint}`;
+    return await Api.fetch<T>(url, secure, {}, controller);
+  }
+
+  static async post<T = any>(
+    endpoint: string,
+    secure: boolean = true,
+    data?: any,
+    controller?: AbortController
+  ): Promise<T> {
+    const url = `${Api.baseUrl}${endpoint}`;
+    return await Api.fetch<T>(
+      url,
+      secure,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+        },
+        body: JSON.stringify(data),
+      },
+      controller
+    );
+  }
+
+  static async put<T = any>(
+    endpoint: string,
+    secure: boolean = true,
+    data?: any,
+    controller?: AbortController
+  ): Promise<T> {
+    const url = `${Api.baseUrl}${endpoint}`;
+    return await Api.fetch<T>(
+      url,
+      secure,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+        },
+        body: JSON.stringify(data),
+      },
+      controller
+    );
+  }
+
+  static async patch<T = any>(
+    endpoint: string,
+    secure: boolean = true,
+    data?: any,
+    controller?: AbortController
+  ): Promise<T> {
+    const url = `${Api.baseUrl}${endpoint}`;
+    return await Api.fetch<T>(
+      url,
+      secure,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+        },
+        body: JSON.stringify(data),
+      },
+      controller
+    );
+  }
+
+  static async delete<T = any>(
+    endpoint: string,
+    secure: boolean = true,
+    controller?: AbortController
+  ): Promise<T> {
+    const url = `${Api.baseUrl}${endpoint}`;
+    return await Api.fetch<T>(
+      url,
+      secure,
+      {
+        method: "DELETE",
+      },
+      controller
+    );
+  }
+
+  static setAuthToken(token: string | null): void {
+    Api.token = token;
   }
 }
 
-export default apiClient;
+export default Api;
