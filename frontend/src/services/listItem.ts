@@ -1,5 +1,5 @@
 import Api from './api';
-import { Product } from './product';
+import type { Product } from './product';
 
 // Types based on Swagger documentation
 export interface ListItemMetadata {

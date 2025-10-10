@@ -9,7 +9,6 @@ import ShareListDialog from "@/components/dialog/ShareListDialog.vue";
 import { useRouter } from "vue-router";
 import { ref, onMounted, computed, watch, onBeforeUnmount } from "vue";
 import apiClient from "@/services/api";
-import { isAxiosError } from "axios";
 
 const router = useRouter();
 

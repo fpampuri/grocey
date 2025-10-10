@@ -1,9 +1,9 @@
 import Api from './api';
-import { User } from './user';
+import type { User } from './user';
 
 // Types based on Swagger documentation
 export interface PantryMetadata {
-  color?: string;
+  icon?: string;
   [key: string]: any;
 }
 
@@ -139,7 +139,7 @@ export class PantryModel {
       this.id = id;
     }
     this.name = name;
-    this.metadata = metadata || {};
+    this.metadata = metadata || { icon: '' };
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
     this.owner = owner;

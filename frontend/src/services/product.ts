@@ -1,9 +1,8 @@
 import Api from './api';
-import { Category } from './category';
+import type { Category } from './category';
 
 // Types based on Swagger documentation
 export interface ProductMetadata {
-  barcode?: string;
   [key: string]: any;
 }
 
@@ -95,7 +94,7 @@ export class ProductApi {
     controller?: AbortController
   ): Promise<Product[]> {
     return await Api.get<Product[]>(
-      ProductApi.getUrl(null, `name=${encodeURIComponent(name)}`), 
+      ProductApi.getUrl(undefined, `name=${encodeURIComponent(name)}`), 
       true, 
       controller
     );
@@ -106,7 +105,7 @@ export class ProductApi {
     controller?: AbortController
   ): Promise<Product[]> {
     return await Api.get<Product[]>(
-      ProductApi.getUrl(null, `categoryId=${categoryId}`),
+      ProductApi.getUrl(undefined, `categoryId=${categoryId}`),
       true,
       controller
     );

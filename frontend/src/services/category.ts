@@ -2,7 +2,7 @@ import Api from './api';
 
 // Types based on Swagger documentation
 export interface CategoryMetadata {
-  color?: string;
+  icon: string;
   [key: string]: any;
 }
 
@@ -91,7 +91,7 @@ export class CategoryApi {
     controller?: AbortController
   ): Promise<Category[]> {
     return await Api.get<Category[]>(
-      CategoryApi.getUrl(null, `name=${encodeURIComponent(name)}`), 
+      CategoryApi.getUrl(undefined, `name=${encodeURIComponent(name)}`), 
       true, 
       controller
     );
@@ -117,7 +117,7 @@ export class CategoryModel {
       this.id = id;
     }
     this.name = name;
-    this.metadata = metadata || {};
+    this.metadata = metadata || { icon: 'mdi-box' };
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
   }

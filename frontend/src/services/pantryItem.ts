@@ -1,5 +1,5 @@
 import Api from './api';
-import { Product } from './product';
+import type { Product } from './product';
 
 // Types based on Swagger documentation
 export interface PantryItemMetadata {
@@ -108,20 +108,6 @@ export class PantryItemApi {
       PantryItemApi.getUrl(pantryId, itemId),
       true,
       { quantity: newQuantity },
-      controller
-    );
-  }
-
-  // Move from shopping list to pantry (if supported)
-  static async addFromShoppingList(
-    pantryId: number,
-    listItemId: number,
-    controller?: AbortController
-  ): Promise<PantryItem> {
-    return await Api.post<PantryItem>(
-      PantryItemApi.getUrl(pantryId, 'from-list'),
-      true,
-      { listItemId },
       controller
     );
   }

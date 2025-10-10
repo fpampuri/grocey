@@ -1,8 +1,7 @@
 <script setup lang="ts">
   import { ref, computed } from "vue";
   import { useRouter } from "vue-router";
-  import { isAxiosError } from "axios";
-  import apiClient from "@/services/api";
+  import { UserApi } from "@/services";
   import { useUserStore } from "@/stores/user";
 
   type VuetifyForm = {
@@ -54,7 +53,7 @@
 
   const passwordRules = [
     (value: string) => !!value || "Enter your password",
-    (value: string) => value.length >= 6 || "Must be at least 6 characters",
+    (value: string) => value.length >= 8 || "Must be at least 8 characters",
   ];
 
   const confirmPasswordRules = [
@@ -142,18 +141,12 @@
 
     isResending.value = true;
     try {
-      await apiClient.post("/users/send-verification", {}, {
-        params: { email: targetEmail },
-      });
+      await UserApi.resendVerification(targetEmail);
       verificationEmail.value = targetEmail;
       resendMessage.value = `We sent a new verification code to ${targetEmail}.`;
     } catch (error: unknown) {
       console.error("Resend verification error", error);
-      if (isAxiosError(error)) {
-        resendError.value =
-          (error.response?.data as { message?: string })?.message ??
-          "Unable to resend the verification code.";
-      } else if (error instanceof Error) {
+      if (error instanceof Error) {
         resendError.value = error.message;
       } else {
         resendError.value = "Unable to resend the verification code.";
@@ -173,7 +166,7 @@
 
     try {
       if (isRegisterMode.value) {
-        await apiClient.post("/users/register", {
+        await UserApi.register({
           name: firstName.value,
           surname: lastName.value,
           email: email.value,
@@ -186,7 +179,7 @@
         password.value = "";
         confirmPassword.value = "";
       } else if (isVerifyMode.value) {
-        await apiClient.post("/users/verify-account", {
+        await UserApi.verify({
           code: verificationCode.value,
         });
 
@@ -195,16 +188,16 @@
         changeMode("login", { keepSuccess: true });
         verificationCode.value = "";
       } else {
-        const { data } = await apiClient.post("/users/login", {
+        const authResult = await UserApi.login({
           email: email.value,
           password: password.value,
         });
 
-        if (!data?.token) {
+        if (!authResult?.token) {
           throw new Error("Invalid response from server.");
         }
 
-        userStore.setToken(data.token);
+        userStore.setToken(authResult.token);
         await userStore.fetchUserProfile();
 
         if (!userStore.profileLoaded) {
@@ -220,10 +213,7 @@
       }
 
       let message = "We couldn't complete your request. Please try again.";
-      if (isAxiosError(error)) {
-        message =
-          (error.response?.data as { message?: string })?.message ?? message;
-      } else if (error instanceof Error) {
+      if (error instanceof Error) {
         message = error.message;
       }
 

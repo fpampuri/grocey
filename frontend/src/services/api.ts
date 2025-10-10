@@ -1,5 +1,3 @@
-import { setAuthToken } from ".";
-
 class Api {
   static token: string | null = null;
 
@@ -140,5 +138,8 @@ class Api {
     Api.token = token;
   }
 }
+
+// Named export for convenience
+export const setAuthToken = Api.setAuthToken;
 
 export default Api;

@@ -1,8 +1,11 @@
 import Api from './api';
-import { User } from './user';
+import type { User } from './user';
 
 // Types based on Swagger documentation
 export interface ShoppingListMetadata {
+  icon: string;
+  isFavorite: boolean;
+  itemsCount: number;
   [key: string]: any;
 }
 
@@ -35,7 +38,7 @@ export interface ShoppingList {
 
 export class ShoppingListApi {
   private static getUrl(slug?: string | number): string {
-    return `/lists${slug ? `/${slug}` : ""}`;
+    return `/shopping-lists${slug ? `/${slug}` : ""}`;
   }
 
   static async add(
@@ -163,7 +166,7 @@ export class ShoppingListModel {
     this.name = name;
     this.description = description || "";
     this.recurring = recurring || false;
-    this.metadata = metadata || {};
+    this.metadata = metadata || { icon: 'mdi-apple', isFavorite: false, itemsCount: 0 };
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
   }

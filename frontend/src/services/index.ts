@@ -81,7 +81,5 @@ export type {
 } from './pantryItem';
 export { PantryItemModel } from './pantryItem';
 
-
-
 // Re-export the main API client as default
 export { default } from './api';

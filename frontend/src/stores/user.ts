@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import apiClient, { setAuthToken } from '@/services/api';
+import { UserApi, Api } from '@/services';
 
 export interface UserProfile {
   firstName: string;
@@ -67,7 +67,7 @@ export const useUserStore = defineStore('user', {
 
     setToken(token: string | null) {
       this.token = token;
-      setAuthToken(token);
+      Api.setAuthToken(token);
       if (typeof window !== 'undefined') {
         if (token) {
           window.localStorage.setItem(TOKEN_STORAGE_KEY, token);
@@ -86,7 +86,7 @@ export const useUserStore = defineStore('user', {
       this.loading = true;
       this.error = null;
       try {
-        const { data } = await apiClient.get('/users/profile');
+        const data = await UserApi.getProfile();
         this.user = mapServerUser(data);
         this.profileLoaded = true;
       } catch (err: any) {
@@ -111,7 +111,7 @@ export const useUserStore = defineStore('user', {
       };
 
       try {
-        const { data } = await apiClient.put('/users/profile', payload);
+        const data = await UserApi.updateProfile(payload);
         this.user = mapServerUser(data);
         this.profileLoaded = true;
       } catch (err: any) {
@@ -128,7 +128,7 @@ export const useUserStore = defineStore('user', {
     async logout() {
       try {
         if (this.token) {
-          await apiClient.post('/users/logout', {});
+          await UserApi.logout();
         }
       } catch (err) {
         // Failing to call logout shouldn't block clearing the session

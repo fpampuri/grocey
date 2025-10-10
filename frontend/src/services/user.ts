@@ -117,7 +117,7 @@ export class UserApi {
     controller?: AbortController
   ): Promise<AuthenticationToken> {
     return await Api.post<AuthenticationToken>(
-      UserApi.getUrl("verify"),
+      UserApi.getUrl("verify-account"),
       false, // Verification doesn't require auth token
       verificationCode,
       controller
@@ -141,7 +141,7 @@ export class UserApi {
     controller?: AbortController
   ): Promise<void> {
     return await Api.post<void>(
-      UserApi.getUrl("password-recovery"),
+      UserApi.getUrl("forgot-password"),
       false, // Password recovery doesn't require auth token
       passwordRecovery,
       controller
@@ -153,7 +153,7 @@ export class UserApi {
     controller?: AbortController
   ): Promise<void> {
     return await Api.post<void>(
-      UserApi.getUrl("password-reset"),
+      UserApi.getUrl("reset-password"),
       false, // Password reset doesn't require auth token
       passwordReset,
       controller
@@ -187,10 +187,22 @@ export class UserApi {
     passwordChange: PasswordChange,
     controller?: AbortController
   ): Promise<void> {
-    return await Api.put<void>(
-      UserApi.getUrl("password"),
+    return await Api.post<void>(
+      UserApi.getUrl("change-password"),
       true,
       passwordChange,
+      controller
+    );
+  }
+
+  static async resendVerification(
+    email: string,
+    controller?: AbortController
+  ): Promise<void> {
+    return await Api.post<void>(
+      UserApi.getUrl("send-verification"),
+      true,
+      { email },
       controller
     );
   }
