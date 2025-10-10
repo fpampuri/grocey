@@ -1,260 +1,435 @@
 <script setup lang="ts">
-  import ListCard from "@/components/List/ListCard.vue";
-  import StandardButton from "@/components/StandardButton.vue";
-  import SearchBar from "@/components/SearchBar.vue";
-  import CreateListDialog from "@/components/dialog/CreateListDialog.vue";
-  import EditListDialog from "@/components/dialog/EditListDialog.vue";
-  import ConfirmDeleteDialog from "@/components/dialog/ConfirmDeleteDialog.vue";
-  import ShareListDialog from "@/components/dialog/ShareListDialog.vue";
-  import { useRouter } from "vue-router";
-  import { ref, onMounted, computed } from "vue";
+import ListCard from "@/components/List/ListCard.vue";
+import StandardButton from "@/components/StandardButton.vue";
+import SearchBar from "@/components/SearchBar.vue";
+import CreateListDialog from "@/components/dialog/CreateListDialog.vue";
+import EditListDialog from "@/components/dialog/EditListDialog.vue";
+import ConfirmDeleteDialog from "@/components/dialog/ConfirmDeleteDialog.vue";
+import ShareListDialog from "@/components/dialog/ShareListDialog.vue";
+import { useRouter } from "vue-router";
+import { ref, onMounted, computed, watch, onBeforeUnmount } from "vue";
+import apiClient from "@/services/api";
+import { isAxiosError } from "axios";
 
-  const router = useRouter();
+const router = useRouter();
 
-  // Define the List type
-  interface List {
-    id: number;
-    title: string;
-    icon: string;
-    itemsCount: number;
-    users: Array<{
-      id: number;
-      name: string;
-      email: string;
-      role: string;
-    }>;
-    createdBy: number;
-    createdAt: string;
-    isFavorite?: boolean;
+interface ListUser {
+  id: number;
+  name: string;
+  email: string;
+  role: "owner" | "collaborator";
+}
+
+interface ShoppingList {
+  id: number;
+  name: string;
+  title: string;
+  description: string;
+  recurring: boolean;
+  icon: string;
+  metadata: Record<string, any>;
+  itemsCount: number;
+  users: ListUser[];
+  createdBy: number | null;
+  createdAt: string;
+  isFavorite: boolean;
+}
+
+interface SharePayload {
+  emails: string[];
+}
+
+interface CreatePayload {
+  name: string;
+  description: string;
+  recurring: boolean;
+  icon: string;
+}
+
+interface UpdatePayload extends CreatePayload {
+  id: number;
+}
+
+const lists = ref<ShoppingList[]>([]);
+const toDeleteList = ref<ShoppingList | null>(null);
+const searchQuery = ref("");
+const sortBy = ref("Date");
+const showCreateDialog = ref(false);
+const showEditDialog = ref(false);
+const showFavoritesOnly = ref(false);
+const showDeleteDialog = ref(false);
+const showShareDialog = ref(false);
+const listToShare = ref<ShoppingList | null>(null);
+const listToEdit = ref<ShoppingList | null>(null);
+const isLoading = ref(false);
+const loadError = ref<string | null>(null);
+const actionMessage = ref<string | null>(null);
+const actionError = ref<string | null>(null);
+
+const listItemCountCache = new Map<number, number>();
+let messageTimeout: ReturnType<typeof setTimeout> | null = null;
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+
+const filteredLists = computed(() => {
+  let filtered = lists.value;
+
+  if (showFavoritesOnly.value) {
+    filtered = filtered.filter((list) => list.isFavorite);
   }
 
-  const lists = ref<List[]>([]);
-  const toDeleteList = ref<List | null>(null);
-  const isLoading = ref(true);
-  const searchQuery = ref("");
-  const sortBy = ref("Date");
-  const showCreateDialog = ref(false);
-  const showEditDialog = ref(false);
-  const showFavoritesOnly = ref(false);
-  const showDeleteDialog = ref(false);
-  const showShareDialog = ref(false);
-  const listToShare = ref<List | null>(null);
-  const listToEdit = ref<List | null>(null);
+  if (searchQuery.value.trim()) {
+    const term = searchQuery.value.trim().toLowerCase();
+    filtered = filtered.filter((list) =>
+      list.title.toLowerCase().includes(term)
+    );
+  }
 
-  // Filtered list by search and favorites
-  const filteredLists = computed(() => {
-    let filtered = lists.value;
+  return filtered;
+});
 
-    // Filter by favorites if enabled
-    if (showFavoritesOnly.value) {
-      filtered = filtered.filter((list) => list.isFavorite);
-    }
-
-    // Filter by search query
-    if (searchQuery.value) {
-      filtered = filtered.filter((list) =>
-        list.title.toLowerCase().includes(searchQuery.value.toLowerCase())
-      );
-    }
-
-    return filtered;
-  });
-
-  // Sort lists based on selected criteria
-  function sortLists(listArray: List[]): List[] {
-    if (sortBy.value === "Name") {
-      return [...listArray].sort((a, b) => a.title.localeCompare(b.title));
-    }
-    if (sortBy.value === "Items") {
-      return [...listArray].sort((a, b) => b.itemsCount - a.itemsCount);
-    }
-    if (sortBy.value === "Date") {
-      return [...listArray].sort((a, b) => 
+function sortLists(listArray: ShoppingList[]): ShoppingList[] {
+  if (sortBy.value === "Name") {
+    return [...listArray].sort((a, b) => a.title.localeCompare(b.title));
+  }
+  if (sortBy.value === "Items") {
+    return [...listArray].sort((a, b) => b.itemsCount - a.itemsCount);
+  }
+  if (sortBy.value === "Date") {
+    return [...listArray].sort(
+      (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
-    }
-    return listArray;
+    );
+  }
+  return listArray;
+}
+
+function showMessage(message: string) {
+  actionError.value = null;
+  actionMessage.value = message;
+  if (messageTimeout) clearTimeout(messageTimeout);
+  messageTimeout = setTimeout(() => {
+    actionMessage.value = null;
+  }, 4000);
+}
+
+function showError(message: string) {
+  actionMessage.value = null;
+  actionError.value = message;
+  if (messageTimeout) clearTimeout(messageTimeout);
+  messageTimeout = setTimeout(() => {
+    actionError.value = null;
+  }, 5000);
+}
+
+function mapApiList(data: any): ShoppingList {
+  const metadata = (data?.metadata ?? {}) as Record<string, any>;
+  const icon = metadata.icon ?? "mdi-format-list-bulleted";
+  const isFavorite = Boolean(metadata.isFavorite);
+  const items = Array.isArray(data?.items) ? data.items : [];
+
+  const users: ListUser[] = [];
+  if (data?.owner) {
+    users.push({
+      id: data.owner.id,
+      name: [data.owner.name, data.owner.surname].filter(Boolean).join(" "),
+      email: data.owner.email,
+      role: "owner",
+    });
+  }
+  if (Array.isArray(data?.sharedWith)) {
+    data.sharedWith.forEach((user: any) => {
+      users.push({
+        id: user.id,
+        name: [user.name, user.surname].filter(Boolean).join(" "),
+        email: user.email,
+        role: "collaborator",
+      });
+    });
   }
 
-  // Fetch lists from local mock API
-  async function fetchLists() {
-    try {
-      const response = await fetch("/api/lists.json");
+  return {
+    id: data.id,
+    name: data.name,
+    title: data.name,
+    description: data.description ?? "",
+    recurring: Boolean(data.recurring),
+    icon,
+    metadata,
+    itemsCount: metadata.itemsCount ?? items.length ?? 0,
+    users,
+    createdBy: data?.owner?.id ?? null,
+    createdAt: data.createdAt ?? new Date().toISOString(),
+    isFavorite,
+  };
+}
 
-      if (!response.ok) throw new Error("Error fetching lists");
-
-      const lists = await response.json();
-
-      // Lists already have the correct structure, just return them
-      return lists;
-    } catch (error) {
-      console.error("Error fetching lists:", error);
-      return [];
-    }
+async function fetchListItemsCount(listId: number): Promise<number> {
+  if (listItemCountCache.has(listId)) {
+    return listItemCountCache.get(listId) ?? 0;
   }
-
-  // Fetch real item counts for each list from list-items.json
-  async function fetchItemCounts() {
-    try {
-      const response = await fetch("/api/list-items.json");
-      if (!response.ok) throw new Error("Error fetching list items");
-
-      const items = await response.json();
-
-      // Count unique items per list
-      const countsByListId = items.reduce(
-        (acc: Record<number, number>, item: any) => {
-          acc[item.listId] = (acc[item.listId] || 0) + 1;
-          return acc;
-        },
-        {}
-      );
-
-      // Update lists with real counts
-      lists.value = lists.value.map((list) => ({
-        ...list, // Keep existing properties
-        itemsCount: countsByListId[list.id] || 0, // Update with real count or 0
-      }));
-    } catch (error) {
-      console.error("Error fetching item counts:", error);
-    }
+  try {
+    const { data } = await apiClient.get(`/shopping-lists/${listId}/items`, {
+      params: { per_page: 500 },
+    });
+    const collection = Array.isArray(data)
+      ? data
+      : Array.isArray(data?.items)
+      ? data.items
+      : Array.isArray(data?.data)
+      ? data.data
+      : [];
+    const count = Array.isArray(collection)
+      ? collection.length
+      : typeof data?.total === "number"
+      ? data.total
+      : 0;
+    listItemCountCache.set(listId, count);
+    return count;
+  } catch (error) {
+    console.error("Error fetching list item count:", error);
+    return 0;
   }
+}
 
-  onMounted(async () => {
-    isLoading.value = true;
-    lists.value = await fetchLists();
-    await fetchItemCounts(); // Get real item counts
+async function loadLists() {
+  isLoading.value = true;
+  loadError.value = null;
+
+  try {
+    const params: Record<string, any> = {};
+    if (searchQuery.value.trim()) {
+      params.name = searchQuery.value.trim();
+    }
+
+    const { data } = await apiClient.get("/shopping-lists", { params });
+    const rawLists = Array.isArray(data) ? data : data?.lists ?? data?.data ?? [];
+    const mapped = rawLists.map(mapApiList);
+
+    for (const list of mapped) {
+      if (!list.itemsCount) {
+        list.itemsCount = await fetchListItemsCount(list.id);
+      } else {
+        listItemCountCache.set(list.id, list.itemsCount);
+      }
+    }
+
+    lists.value = mapped;
+  } catch (error) {
+    console.error("Error loading lists:", error);
+    if (isAxiosError(error)) {
+      loadError.value =
+        (error.response?.data as { message?: string })?.message ??
+        "Unable to load shopping lists.";
+    } else if (error instanceof Error) {
+      loadError.value = error.message;
+    } else {
+      loadError.value = "Unable to load shopping lists.";
+    }
+    lists.value = [];
+  } finally {
     isLoading.value = false;
-  });
-
-  function handleListClick(listItem: any) {
-    router.push(`/lists/${listItem.id}`);
   }
+}
 
-  function handleStarToggle(isStarred: boolean, listId: number) {
-    // Update the list's favorite status in the data
-    const listIndex = lists.value.findIndex((list) => list.id === listId);
-    if (listIndex !== -1) {
-      lists.value[listIndex].isFavorite = isStarred;
-    }
+function handleListClick(listItem: ShoppingList) {
+  router.push(`/lists/${listItem.id}`);
+}
+
+async function handleStarToggle(isStarred: boolean, listId: number) {
+  const list = lists.value.find((l) => l.id === listId);
+  if (!list) return;
+
+  const previous = list.isFavorite;
+  list.isFavorite = isStarred;
+  list.metadata = { ...list.metadata, icon: list.icon, isFavorite: isStarred };
+
+  try {
+    await apiClient.put(`/shopping-lists/${listId}`, {
+      name: list.name,
+      description: list.description,
+      recurring: list.recurring,
+      metadata: list.metadata,
+    });
+    showMessage(isStarred ? "List marked as favorite." : "List removed from favorites.");
+  } catch (error) {
+    console.error("Error updating favorite state:", error);
+    list.isFavorite = previous;
+    list.metadata = { ...list.metadata, isFavorite: previous };
+    showError(
+      isAxiosError(error)
+        ? (error.response?.data as { message?: string })?.message ?? "Unable to update favorite state."
+        : "Unable to update favorite state."
+    );
   }
+}
 
-  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  function handleSelectionToggle(isSelected: boolean) {
-  }
+function handleSelectionToggle(_isSelected: boolean) {
+  // Reserved for bulk actions
+}
 
-  function handleEdit(listId: number) {
-    const list = lists.value.find((l) => l.id === listId);
-    if (!list) return;
-    
-    listToEdit.value = list;
-    showEditDialog.value = true;
-  }
+function handleEdit(listId: number) {
+  const list = lists.value.find((l) => l.id === listId);
+  if (!list) return;
+  listToEdit.value = { ...list };
+  showEditDialog.value = true;
+}
 
-  function handleEditList(data: { id: number; name: string; icon: string }) {
-    const list = lists.value.find((l) => l.id === data.id);
-    if (!list) return;
-    
-    list.title = data.name;
-    list.icon = data.icon;
-    
+async function handleEditList(data: UpdatePayload) {
+  const list = lists.value.find((l) => l.id === data.id);
+  if (!list) return;
+
+  const metadata = { ...list.metadata, icon: data.icon, isFavorite: list.isFavorite };
+
+  try {
+    const { data: response } = await apiClient.put(`/shopping-lists/${data.id}`, {
+      name: data.name,
+      description: data.description,
+      recurring: data.recurring,
+      metadata,
+    });
+
+    const raw = response?.list ?? response;
+    const updated = mapApiList(raw);
+    updated.itemsCount = list.itemsCount;
+    listItemCountCache.set(updated.id, updated.itemsCount);
+    lists.value = lists.value.map((l) => (l.id === updated.id ? updated : l));
+    showMessage("List updated successfully.");
+  } catch (error) {
+    console.error("Error updating list:", error);
+    showError(
+      isAxiosError(error)
+        ? (error.response?.data as { message?: string })?.message ?? "Unable to update list."
+        : "Unable to update list."
+    );
+  } finally {
     showEditDialog.value = false;
     listToEdit.value = null;
   }
-  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+}
 
-  function handleFavoritesToggle() {
-    showFavoritesOnly.value = !showFavoritesOnly.value;
-  }
+function handleFavoritesToggle() {
+  showFavoritesOnly.value = !showFavoritesOnly.value;
+}
 
-  function handleDeleteList(listId: number) {
-    const deleteList = lists.value.find((list) => list.id === listId);
+function handleDeleteList(listId: number) {
+  const list = lists.value.find((list) => list.id === listId);
+  if (!list) return;
+  toDeleteList.value = list;
+  showDeleteDialog.value = true;
+}
 
-    if (!deleteList) {
-      return;
-    }
+async function confirmDelete() {
+  if (!toDeleteList.value) return;
 
-    toDeleteList.value = deleteList;
-    showDeleteDialog.value = true;
-  }
-
-  function confirmDelete() {
-    if (!toDeleteList.value) {
-      return;
-    }
-    
-    try {
-
-      // Remove the list from the local state
-      lists.value = lists.value.filter(
-        (list) => list.id !== toDeleteList.value!.id
-      );
-      
-      } catch (error) {
-    }
-
+  const targetId = toDeleteList.value.id;
+  try {
+    await apiClient.delete(`/shopping-lists/${targetId}`);
+    lists.value = lists.value.filter((list) => list.id !== targetId);
+    listItemCountCache.delete(targetId);
+    showMessage("List deleted successfully.");
+  } catch (error) {
+    console.error("Error deleting list:", error);
+    showError(
+      isAxiosError(error)
+        ? (error.response?.data as { message?: string })?.message ?? "Unable to delete list."
+        : "Unable to delete list."
+    );
+  } finally {
     showDeleteDialog.value = false;
     toDeleteList.value = null;
   }
+}
 
-  function cancelDelete() {
-    showDeleteDialog.value = false;
-    toDeleteList.value = null;
+function cancelDelete() {
+  showDeleteDialog.value = false;
+  toDeleteList.value = null;
+}
+
+function handleShare(listId: number) {
+  const shareList = lists.value.find((list) => list.id === listId);
+  if (!shareList) {
+    console.error("List not found for sharing");
+    return;
   }
+  listToShare.value = shareList;
+  showShareDialog.value = true;
+}
 
-  function handleShare(listId: number) {
-    const shareList = lists.value.find((list) => list.id === listId);
-    
-    if (!shareList) {
-      console.error("List not found for sharing");
-      return;
+async function handleShareList(data: SharePayload) {
+  if (!listToShare.value) return;
+  const listId = listToShare.value.id;
+  showShareDialog.value = false;
+
+  try {
+    for (const email of data.emails) {
+      await apiClient.post(`/shopping-lists/${listId}/share`, { email });
     }
-    
-    listToShare.value = shareList;
-    showShareDialog.value = true;
-  }
-
-  function handleShareList(data: { emails: string[] }) {
-    if (!listToShare.value) return;
-    
-    
-    // TODO: Implement actual sharing logic here
-    // This would typically make an API call to share the list with multiple users
-    
-    
+    showMessage(
+      data.emails.length === 1
+        ? "List shared successfully."
+        : "List shared with selected users."
+    );
+    await loadLists();
+  } catch (error) {
+    console.error("Error sharing list:", error);
+    showError(
+      isAxiosError(error)
+        ? (error.response?.data as { message?: string })?.message ?? "Unable to share list."
+        : "Unable to share list."
+    );
+  } finally {
     listToShare.value = null;
   }
+}
 
-  function handleAddList() {
-    showCreateDialog.value = true;
-  }
+function handleAddList() {
+  showCreateDialog.value = true;
+}
 
-  function handleCreateList(listData: { name: string; icon: string }) {
-    // Create new list object
-    const newList: List = {
-      id: Date.now(), // Use timestamp as temporary ID
-      title: listData.name,
-      icon: listData.icon,
-      itemsCount: 0,
-      isFavorite: false, // Default to not favorite
-      users: [
-        {
-          id: 1,
-          name: "Current User",
-          email: "user@example.com",
-          role: "owner",
-        },
-      ],
-      createdBy: 1,
-      createdAt: new Date().toISOString(),
+async function handleCreateList(listData: CreatePayload) {
+  try {
+    const payload = {
+      name: listData.name,
+      description: listData.description,
+      recurring: listData.recurring,
+      metadata: {
+        icon: listData.icon,
+        isFavorite: false,
+      },
     };
-
-    // Add to lists
-    lists.value.unshift(newList);
-
-    // Close dialog
+    const { data } = await apiClient.post("/shopping-lists", payload);
+    const raw = data?.list ?? data;
+    const newList = mapApiList(raw);
+    listItemCountCache.set(newList.id, 0);
+    lists.value.unshift({ ...newList, itemsCount: 0 });
+    showMessage("List created successfully.");
+  } catch (error) {
+    console.error("Error creating list:", error);
+    showError(
+      isAxiosError(error)
+        ? (error.response?.data as { message?: string })?.message ?? "Unable to create list."
+        : "Unable to create list."
+    );
+  } finally {
     showCreateDialog.value = false;
   }
+}
+
+watch(searchQuery, () => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    loadLists();
+  }, 400);
+});
+
+onMounted(() => {
+  loadLists();
+});
+
+onBeforeUnmount(() => {
+  if (messageTimeout) clearTimeout(messageTimeout);
+  if (searchTimeout) clearTimeout(searchTimeout);
+});
 </script>
 
 <template>
@@ -304,6 +479,34 @@
               style="min-width: 100px"
             />
           </div>
+        </v-col>
+      </v-row>
+
+      <v-row v-if="actionMessage || actionError || loadError" class="mb-4">
+        <v-col cols="12">
+          <v-alert
+            v-if="actionMessage"
+            type="success"
+            variant="tonal"
+            class="mb-2"
+          >
+            {{ actionMessage }}
+          </v-alert>
+          <v-alert
+            v-if="actionError"
+            type="error"
+            variant="tonal"
+            class="mb-2"
+          >
+            {{ actionError }}
+          </v-alert>
+          <v-alert
+            v-if="loadError"
+            type="error"
+            variant="tonal"
+          >
+            {{ loadError }}
+          </v-alert>
         </v-col>
       </v-row>
 

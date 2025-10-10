@@ -5,6 +5,8 @@ import StandardButton from "@/components/StandardButton.vue";
 interface ListData {
   id: number;
   title: string;
+  description: string;
+  recurring: boolean;
   icon: string;
 }
 
@@ -17,6 +19,8 @@ const emit = defineEmits(["update:modelValue", "edit-list"]);
 
 // Form data
 const listName = ref("");
+const listDescription = ref("");
+const isRecurring = ref(false);
 const selectedIcon = ref("mdi-cart");
 
 // Available icons for selection
@@ -77,6 +81,8 @@ watch(
   (newData) => {
     if (newData) {
       listName.value = newData.title;
+      listDescription.value = newData.description ?? "";
+      isRecurring.value = newData.recurring ?? false;
       selectedIcon.value = newData.icon;
     }
   },
@@ -87,18 +93,22 @@ function closeDialog() {
   emit("update:modelValue", false);
   // Reset form
   listName.value = "";
+  listDescription.value = "";
+  isRecurring.value = false;
   selectedIcon.value = "mdi-cart";
   iconOptionsOpen.value = false;
 }
 
 function editList() {
-  if (!listName.value.trim() || !props.listData) {
-    return; // Don't edit if name is empty or no list data
+  if (!listName.value.trim() || !listDescription.value.trim() || !props.listData) {
+    return; // Don't edit if required fields empty or no list data
   }
 
   emit("edit-list", {
     id: props.listData.id,
     name: listName.value.trim(),
+    description: listDescription.value.trim(),
+    recurring: isRecurring.value,
     icon: selectedIcon.value,
   });
 
@@ -142,6 +152,26 @@ const iconOptionsOpen = ref(false);
             placeholder="Enter list name"
             class="text-input"
             @keyup.enter="editList"
+          />
+        </div>
+
+        <div class="form-field">
+          <label class="field-label">Description</label>
+          <textarea
+            v-model="listDescription"
+            rows="3"
+            placeholder="Update the description"
+            class="text-area"
+          />
+        </div>
+
+        <div class="form-field toggle-row">
+          <label class="field-label">Recurring List</label>
+          <v-switch
+            v-model="isRecurring"
+            inset
+            color="var(--primary-green)"
+            hide-details
           />
         </div>
 
@@ -284,6 +314,28 @@ const iconOptionsOpen = ref(false);
 .text-input:focus {
   border-color: #388e3c;
   box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+.text-area {
+  width: 100%;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  resize: vertical;
+  min-height: 96px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.text-area:focus {
+  border-color: #4caf50;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .icon-selector {

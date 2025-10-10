@@ -11,6 +11,8 @@ const emit = defineEmits(["update:modelValue", "create-list"]);
 
 // Form data
 const listName = ref("");
+const listDescription = ref("");
+const isRecurring = ref(false);
 const selectedIcon = ref("mdi-cart");
 
 // Available icons for selection
@@ -69,6 +71,8 @@ function closeDialog() {
   emit("update:modelValue", false);
   // Reset form
   listName.value = "";
+  listDescription.value = "";
+  isRecurring.value = false;
   selectedIcon.value = "mdi-cart";
   iconOptionsOpen.value = false;
 }
@@ -77,6 +81,8 @@ function handleModelValueUpdate(value: boolean) {
   if (!value) {
     // Reset form when dialog closes
     listName.value = "";
+    listDescription.value = "";
+    isRecurring.value = false;
     selectedIcon.value = "mdi-cart";
     iconOptionsOpen.value = false;
   }
@@ -84,12 +90,14 @@ function handleModelValueUpdate(value: boolean) {
 }
 
 function createList() {
-  if (!listName.value.trim()) {
-    return; // Don't create if name is empty
+  if (!listName.value.trim() || !listDescription.value.trim()) {
+    return; // Don't create if required fields missing
   }
 
   emit("create-list", {
     name: listName.value.trim(),
+    description: listDescription.value.trim(),
+    recurring: isRecurring.value,
     icon: selectedIcon.value,
   });
 
@@ -136,6 +144,26 @@ const iconOptionsOpen = ref(false);
         />
       </div>
 
+      <div class="form-field">
+        <label class="field-label">Description</label>
+        <textarea
+          v-model="listDescription"
+          rows="3"
+          placeholder="Add a short description"
+          class="text-area"
+        />
+      </div>
+
+      <div class="form-field toggle-row">
+        <label class="field-label">Recurring List</label>
+        <v-switch
+          v-model="isRecurring"
+          inset
+          color="var(--primary-green)"
+          hide-details
+        />
+      </div>
+
       <!-- Icon Selection -->
       <div class="form-field">
         <label class="field-label">Icon</label>
@@ -179,6 +207,35 @@ const iconOptionsOpen = ref(false);
 
 <style scoped>
 /* Custom styles specific to this dialog - icon selector */
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.text-area {
+  width: 100%;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  resize: vertical;
+  min-height: 96px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.text-area:focus {
+  border-color: var(--primary-green);
+}
+
+.toggle-row {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
 
 .icon-selector {
   position: relative;
