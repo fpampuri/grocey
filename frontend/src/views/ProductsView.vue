@@ -8,16 +8,17 @@ import CreateProductDialog from "@/components/dialog/CreateProductDialog.vue";
 import ConfirmDeleteDialog from "@/components/dialog/ConfirmDeleteDialog.vue";
 import { useRouter } from "vue-router";
 import { ref, onMounted, computed } from "vue";
+import CategoryApi, { type Category as CategoryApiType } from "@/services/category";
+import ProductApi, { type Product as ProductApiType } from "@/services/product";
 
 const router = useRouter();
 
-// Categories and Products state
-type Product = { id: number; name: string; price?: number };
-type Category = {
-  id: number;
-  title: string;
-  icon: string;
-  products: Product[];
+// Categories and Products state - extending API types for UI needs
+type Product = ProductApiType & { price: number }; // Default price, not used in UI
+type Category = CategoryApiType & {
+  title: string; // UI display name (mapped from 'name')
+  icon: string; // UI icon (from metadata)
+  products: Product[]; // UI-specific aggregated products
 };
 
 const categories = ref<Category[]>([]);
@@ -63,39 +64,34 @@ function sortCategories(list: Category[]): Category[] {
 
 onMounted(async () => {
   isLoading.value = true;
-  // Mock demo data; could be fetched from API later
-  categories.value = [
-    {
-      id: 1,
-      title: "Fruits",
-      icon: "mdi-food-apple",
-      products: [
-        { id: 101, name: "Apples" },
-        { id: 102, name: "Bananas" },
-        { id: 103, name: "Strawberries" },
-      ],
-    },
-    {
-      id: 2,
-      title: "Vegetables",
-      icon: "mdi-food-variant",
-      products: [
-        { id: 201, name: "Tomatoes" },
-        { id: 202, name: "Lettuce" },
-      ],
-    },
-    {
-      id: 3,
-      title: "Dairy",
-      icon: "mdi-cheese",
-      products: [
-        { id: 301, name: "Milk" },
-        { id: 302, name: "Cheese" },
-        { id: 303, name: "Yogurt" },
-        { id: 304, name: "Butter" },
-      ],
-    },
-  ];
+  
+  // Fetch categories from API
+  const apiCategoriesResponse = await CategoryApi.getAll();
+  console.log('Categories API response:', apiCategoriesResponse);
+  
+  // Fetch all products to group by category
+  const apiProductsResponse = await ProductApi.getAll();
+  console.log('Products API response:', apiProductsResponse);
+  
+  // Handle different possible response formats
+  const apiCategories: CategoryApiType[] = Array.isArray(apiCategoriesResponse) 
+    ? apiCategoriesResponse 
+    : (apiCategoriesResponse as any)?.data || [];
+    
+  const apiProducts: ProductApiType[] = Array.isArray(apiProductsResponse) 
+    ? apiProductsResponse 
+    : (apiProductsResponse as any)?.data || [];
+  
+  // Transform API data to UI format
+  categories.value = apiCategories.map(category => ({
+    ...category,
+    title: category.name,
+    icon: category.metadata?.icon || 'mdi-box',
+    products: apiProducts
+      .filter(product => product.category?.id === category.id)
+      .map(product => ({ ...product, price: 0 })) // Default price value
+  }));
+  
   isLoading.value = false;
 });
 
@@ -115,15 +111,31 @@ function handleEdit(categoryId: number) {
   showEditDialog.value = true;
 }
 
-function handleEditCategory(data: { id: number; name: string; icon: string }) {
-  const category = categories.value.find(c => c.id === data.id);
-  if (!category) return;
-  
-  category.title = data.name;
-  category.icon = data.icon;
-  
-  showEditDialog.value = false;
-  categoryToEdit.value = null;
+async function handleEditCategory(data: { id: number; name: string; icon: string }) {
+  try {
+    // Update category via API
+    await CategoryApi.modify(data.id, {
+      name: data.name,
+      metadata: { icon: data.icon }
+    });
+    
+    // Update local state
+    const category = categories.value.find(c => c.id === data.id);
+    if (category) {
+      category.name = data.name;
+      category.title = data.name;
+      category.icon = data.icon;
+      if (category.metadata) {
+        category.metadata.icon = data.icon;
+      }
+    }
+    
+    showEditDialog.value = false;
+    categoryToEdit.value = null;
+  } catch (error) {
+    console.error('Error updating category:', error);
+    // You might want to show a toast notification here
+  }
 }
 
 function handleDelete(categoryId: number) {
@@ -134,46 +146,92 @@ function handleDelete(categoryId: number) {
   showDeleteDialog.value = true;
 }
 
-function confirmDelete() {
-  if (!categoryToDelete.value) return;
+async function confirmDelete() {
+  if (!categoryToDelete.value?.id) return;
   
-  console.log('🗑️ Deleting category:', categoryToDelete.value.title);
-  
-  // Remove the category from the list
-  categories.value = categories.value.filter(
-    category => category.id !== categoryToDelete.value!.id
-  );
-  
-  console.log('✅ Category deleted successfully');
-  
-  // Reset state
-  showDeleteDialog.value = false;
-  categoryToDelete.value = null;
+  try {
+    console.log('🗑️ Deleting category:', categoryToDelete.value.title);
+    
+    // Delete category via API
+    await CategoryApi.remove(categoryToDelete.value.id);
+    
+    // Remove the category from local state
+    categories.value = categories.value.filter(
+      category => category.id !== categoryToDelete.value!.id
+    );
+    
+    console.log('✅ Category deleted successfully');
+    
+    // Reset state
+    showDeleteDialog.value = false;
+    categoryToDelete.value = null;
+  } catch (error) {
+    console.error('Error deleting category:', error);
+    // You might want to show a toast notification here
+  }
 }
 
 function handleAddProduct() {
   showCreateProductDialog.value = true;
 }
 
-function handleCreateCategory(categoryData: { name: string; icon: string }) {
-  const newCategory: Category = {
-    id: Date.now(),
-    title: categoryData.name,
-    icon: categoryData.icon || "mdi-tag-outline",
-    products: [],
-  };
-  categories.value.unshift(newCategory);
-  showCreateDialog.value = false;
+async function handleCreateCategory(categoryData: { name: string; icon: string }) {
+  try {
+    // Create category via API
+    const newCategory = await CategoryApi.add({
+      name: categoryData.name,
+      metadata: { icon: categoryData.icon || "mdi-tag-outline" }
+    });
+    
+    // Add to local state with UI format
+    const categoryForUI: Category = {
+      ...newCategory,
+      title: newCategory.name,
+      icon: newCategory.metadata?.icon || "mdi-tag-outline",
+      products: []
+    };
+    
+    categories.value.unshift(categoryForUI);
+    showCreateDialog.value = false;
+  } catch (error) {
+    console.error('Error creating category:', error);
+    // You might want to show a toast notification here
+  }
 }
 
 const categoryOptions = computed(() =>
-  categories.value.map((c) => ({ value: c.id, label: c.title, icon: c.icon }))
+  categories.value
+    .filter(c => c.id) // Only include categories with valid IDs
+    .map((c) => ({ value: c.id!, label: c.title, icon: c.icon }))
 );
 
-function handleCreateProduct(data: { name: string; categoryId: number }) {
-  const target = categories.value.find((c) => c.id === data.categoryId);
-  if (!target) return;
-  target.products.unshift({ id: Date.now(), name: data.name });
+// Transform category for dialog
+const categoryDataForDialog = computed(() => {
+  if (!categoryToEdit.value || !categoryToEdit.value.id) return null;
+  return {
+    id: categoryToEdit.value.id,
+    title: categoryToEdit.value.title,
+    icon: categoryToEdit.value.icon
+  };
+});
+
+async function handleCreateProduct(data: { name: string; categoryId: number }) {
+  try {
+    // Create product via API
+    const newProduct = await ProductApi.add({
+      name: data.name,
+      category: { id: data.categoryId }
+    });
+    
+    // Add to local state
+    const target = categories.value.find((c) => c.id === data.categoryId);
+    if (target) {
+      target.products.unshift({ ...newProduct, price: 0 });
+    }
+  } catch (error) {
+    console.error('Error creating product:', error);
+    // You might want to show a toast notification here
+  }
 }
 </script>
 
@@ -241,8 +299,8 @@ function handleCreateProduct(data: { name: string; categoryId: number }) {
             :icon="cat.icon"
             :itemsCount="cat.products.length"
             @click="() => handleCategoryClick(cat)"
-            @edit="() => handleEdit(cat.id)"
-            @delete="() => handleDelete(cat.id)"
+            @edit="() => cat.id && handleEdit(cat.id)"
+            @delete="() => cat.id && handleDelete(cat.id)"
           />
         </v-col>
       </v-row>
@@ -271,7 +329,7 @@ function handleCreateProduct(data: { name: string; categoryId: number }) {
     <!-- Edit Category Dialog -->
     <EditCategoryDialog
       v-model="showEditDialog"
-      :category-data="categoryToEdit"
+      :category-data="categoryDataForDialog"
       @edit-category="handleEditCategory"
     />
 

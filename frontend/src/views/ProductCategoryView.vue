@@ -4,12 +4,22 @@ import { computed, ref, onMounted } from "vue";
 import Card from "@/components/Products/ProductItemCard.vue";
 import MoveToCategoryDialog from "@/components/dialog/MoveToCategoryDialog.vue";
 import AddToListDialog from "@/components/dialog/AddToListDialog.vue";
+import CategoryApi, { type Category as CategoryApiType } from "@/services/category";
+import ProductApi, { type Product as ProductApiType } from "@/services/product";
 
 const route = useRoute();
 const router = useRouter();
 
-type Product = { id: number; name: string; completed: boolean; quantity?: number; expiryDate?: string };
-type Category = { id: number; title: string; icon: string };
+type Product = ProductApiType & { completed?: boolean; quantity?: number; expiryDate?: string };
+type Category = {
+  id: number;
+  name?: string;
+  title: string;
+  icon: string;
+  metadata?: any;
+  createdAt?: string;
+  updatedAt?: string;
+};
 
 const categoryId = computed(() => Number(route.params.id));
 const isFromPantry = computed(() => route.path.includes('/pantry/'));
@@ -128,10 +138,44 @@ function getMockProducts(id: number): Product[] {
 
 onMounted(async () => {
   isLoading.value = true;
-  const cat = getMockCategory(categoryId.value);
-  categoryData.value = cat;
-  if (cat) {
-    products.value = getMockProducts(categoryId.value);
+  try {
+    if (isFromPantry.value) {
+      // For pantry, we'll keep mock data for now since it's a different data structure
+      const cat = getMockCategory(categoryId.value);
+      categoryData.value = cat;
+      if (cat) {
+        products.value = getMockProducts(categoryId.value);
+      }
+    } else {
+      // For categories, use real API calls
+      const apiCategory = await CategoryApi.get(categoryId.value);
+      categoryData.value = {
+        id: apiCategory.id || categoryId.value,
+        name: apiCategory.name,
+        title: apiCategory.name,
+        icon: apiCategory.metadata?.icon || 'mdi-box',
+        metadata: apiCategory.metadata,
+        createdAt: apiCategory.createdAt,
+        updatedAt: apiCategory.updatedAt
+      };
+      
+      // Fetch products for this category
+      const allProducts = await ProductApi.getAll();
+      products.value = allProducts
+        .filter(product => product.category?.id === categoryId.value)
+        .map(product => ({
+          ...product,
+          completed: false // Default UI state
+        }));
+    }
+  } catch (error) {
+    console.error('Error loading category data:', error);
+    // Fallback to mock data if API fails
+    const cat = getMockCategory(categoryId.value);
+    categoryData.value = cat;
+    if (cat) {
+      products.value = getMockProducts(categoryId.value);
+    }
   }
   isLoading.value = false;
 });
@@ -205,11 +249,11 @@ function confirmAddToList(data: { listId: number }) {
             <div v-if="products.length > 0">
               <Card
                 v-for="item in products"
-                :key="item.id"
-                :id="item.id"
+                :key="item.id || item.name"
+                :id="item.id || 0"
                 :title="item.name"
-                :completed="item.completed"
-                @toggle-complete="(completed) => handleToggleComplete(item.id, completed)"
+                :completed="item.completed || false"
+                @toggle-complete="(completed) => handleToggleComplete(item.id || 0, completed)"
                 @delete="(id) => handleDeleteItem(id)"
                 @rename="handleRenameProduct"
                 @move="handleMoveProduct"
