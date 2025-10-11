@@ -38,23 +38,23 @@ async function getCategoryName(id: string): Promise<string> {
     if (response.ok) {
       const categories = await response.json();
       const category = categories.find((c: any) => c.id === parseInt(id));
-      return category?.title || `Category ${id}`;
+      return category?.title || `Product Category ${id}`;
     }
   } catch (apiError) {
-    // API endpoint doesn't exist, fall back to the same data structure used in CategoriesView
+    // API endpoint doesn't exist, fall back to the same data structure used in ProductsView
     console.log(
-      "API endpoint /api/categories.json not found, using CategoriesView data structure"
+      "API endpoint /api/categories.json not found, using ProductsView data structure"
     );
   }
 
-  // Fallback to match the exact same data as CategoriesView.vue uses
+  // Fallback to match the exact same data as ProductsView uses
   const categories: Record<string, string> = {
     "1": "Fruits",
     "2": "Vegetables",
     "3": "Dairy",
   };
 
-  return categories[id] || `Category ${id}`;
+  return categories[id] || `Product Category ${id}`;
 }
 
 async function getPantryName(id: string): Promise<string> {
@@ -92,7 +92,7 @@ async function fetchDynamicTitle() {
     return;
   }
 
-  if (route.name === "category-details" && route.params.id) {
+  if (route.name === "product-category-details" && route.params.id) {
     dynamicTitle.value = await getCategoryName(route.params.id as string);
     return;
   }
@@ -110,6 +110,19 @@ async function fetchDynamicTitle() {
 watch(() => [route.name, route.params.id], fetchDynamicTitle, {
   immediate: true,
 });
+
+// Watch for route changes and update selected item
+watch(() => route.name, (newRouteName) => {
+  if (newRouteName === 'lists' || newRouteName === 'list-details') {
+    selectedItem.value = 'lists';
+  } else if (newRouteName === 'products' || newRouteName === 'product-category-details') {
+    selectedItem.value = 'products';
+  } else if (newRouteName === 'pantry' || newRouteName === 'pantry-category-details') {
+    selectedItem.value = 'pantry';
+  } else if (newRouteName === 'settings') {
+    selectedItem.value = 'settings';
+  }
+}, { immediate: true });
 
 const pageTitle = computed(() => {
   // Use dynamic title if available
@@ -142,8 +155,8 @@ const isRouteSelected = (routeName: string): boolean => {
   switch (routeName) {
     case 'lists':
       return route.name === 'list-details';
-    case 'categories':
-      return route.name === 'category-details';
+    case 'products':
+      return route.name === 'product-category-details';
     case 'pantry':
       return route.name === 'pantry-category-details';
     default:
@@ -177,13 +190,13 @@ const isRouteSelected = (routeName: string): boolean => {
           @click="selectItem('lists')"
         />
 
-        <!-- Categories Button -->
+        <!-- Products Button -->
         <NavListItem
-          icon="mdi-food-apple-outline"
-          title="Categories"
-          :to="{ name: 'categories' }"
-          :selected="isRouteSelected('categories')"
-          @click="selectItem('categories')"
+          icon="mdi-package-variant-closed"
+          title="Products"
+          :to="{ name: 'products' }"
+          :selected="isRouteSelected('products')"
+          @click="selectItem('products')"
         />
 
         <!-- Pantry Button -->

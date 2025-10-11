@@ -52,7 +52,7 @@ function goBack() {
   if (isFromPantry.value) {
     router.push("/pantry");
   } else {
-    router.push("/categories");
+    router.push("/products");
   }
 }
 
@@ -234,7 +234,7 @@ function confirmAddToList(data: { listId: number }) {
                   No {{ isFromPantry ? 'pantry category' : 'category' }} found with ID: <strong>{{ categoryId }}</strong>
                 </p>
                 <v-btn @click="goBack" color="primary" class="mt-2">
-                  {{ isFromPantry ? 'Back to Pantry' : 'Back to Categories' }}
+                  {{ isFromPantry ? 'Back to Pantry' : 'Back to Products' }}
                 </v-btn>
               </v-card-text>
             </v-card>

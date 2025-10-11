@@ -21,16 +21,16 @@ const routes = [
     meta: { title: "Lists" },
   },
   {
-    path: "/categories",
-    name: "categories",
-    component: () => import("@/views/CategoriesView.vue"),
-    meta: { title: "Categories" },
+    path: "/products",
+    name: "products",
+    component: () => import("@/views/ProductsView.vue"),
+    meta: { title: "Products" },
   },
   {
-    path: "/categories/:id",
-    name: "category-details",
-    component: () => import("@/views/CategoryDetailsView.vue"),
-    meta: { title: "Category Details" },
+    path: "/products/:id",
+    name: "product-category-details",
+    component: () => import("@/views/ProductCategoryView.vue"),
+    meta: { title: "Product Category Details" },
   },
   {
     path: "/pantry",
@@ -41,7 +41,7 @@ const routes = [
   {
     path: "/pantry/:id",
     name: "pantry-category-details",
-    component: () => import("@/views/CategoryDetailsView.vue"),
+    component: () => import("@/views/ProductCategoryView.vue"),
     meta: { title: "Pantry Category Details" },
   },
   {
@@ -55,12 +55,6 @@ const routes = [
     name: "list-details",
     component: () => import("@/views/ListDetailsView.vue"),
     meta: { title: "List Details" },
-  },
-  {
-    path: "/products/:id",
-    name: "product-details",
-    component: () => import("@/views/ProductDetailsView.vue"),
-    meta: { title: "Product Details" },
   },
 ];
 

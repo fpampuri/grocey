@@ -100,7 +100,7 @@ onMounted(async () => {
 });
 
 function handleCategoryClick(cat: Category) {
-  router.push(`/categories/${cat.id}`);
+  router.push(`/products/${cat.id}`);
 }
 
 function handleSelectionToggle(isSelected: boolean) {
