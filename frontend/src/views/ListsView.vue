@@ -6,12 +6,15 @@ import CreateListDialog from "@/components/dialog/CreateListDialog.vue";
 import EditListDialog from "@/components/dialog/EditListDialog.vue";
 import ConfirmDeleteDialog from "@/components/dialog/ConfirmDeleteDialog.vue";
 import ShareListDialog from "@/components/dialog/ShareListDialog.vue";
+import ToastNotification from "@/components/ToastNotification.vue";
 import { useRouter } from "vue-router";
 import { ref, onMounted, computed, watch, onBeforeUnmount } from "vue";
+import { useToast } from "@/composables/useToast";
 import ShoppingListApi from "@/services/shoppingList";
 import ListItemApi from "@/services/listItem";
 
 const router = useRouter();
+const { showToast, toastMessage, toastType, showSuccess, showError } = useToast();
 
 interface ListUser {
   id: number;
@@ -63,11 +66,7 @@ const listToShare = ref<ShoppingList | null>(null);
 const listToEdit = ref<ShoppingList | null>(null);
 const isLoading = ref(false);
 const loadError = ref<string | null>(null);
-const actionMessage = ref<string | null>(null);
-const actionError = ref<string | null>(null);
-
 const listItemCountCache = new Map<number, number>();
-let messageTimeout: ReturnType<typeof setTimeout> | null = null;
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const filteredLists = computed(() => {
@@ -103,23 +102,7 @@ function sortLists(listArray: ShoppingList[]): ShoppingList[] {
   return listArray;
 }
 
-function showMessage(message: string) {
-  actionError.value = null;
-  actionMessage.value = message;
-  if (messageTimeout) clearTimeout(messageTimeout);
-  messageTimeout = setTimeout(() => {
-    actionMessage.value = null;
-  }, 4000);
-}
 
-function showError(message: string) {
-  actionMessage.value = null;
-  actionError.value = message;
-  if (messageTimeout) clearTimeout(messageTimeout);
-  messageTimeout = setTimeout(() => {
-    actionError.value = null;
-  }, 5000);
-}
 
 function mapApiList(data: any): ShoppingList {
   const metadata = (data?.metadata ?? {}) as Record<string, any>;
@@ -250,7 +233,7 @@ async function handleStarToggle(isStarred: boolean, listId: number) {
         ...list.metadata,
       },
     });
-    showMessage(isStarred ? "List marked as favorite." : "List removed from favorites.");
+    showSuccess(isStarred ? "List marked as favorite." : "List removed from favorites.");
   } catch (error) {
     console.error("Error updating favorite state:", error);
     list.isFavorite = previous;
@@ -297,7 +280,7 @@ async function handleEditList(data: UpdatePayload) {
     mapped.itemsCount = list.itemsCount;
     listItemCountCache.set(mapped.id, mapped.itemsCount);
     lists.value = lists.value.map((l) => (l.id === mapped.id ? mapped : l));
-    showMessage("List updated successfully.");
+    showSuccess("List updated successfully.");
   } catch (error) {
     console.error("Error updating list:", error);
     showError(
@@ -330,7 +313,7 @@ async function confirmDelete() {
     await ShoppingListApi.remove(targetId);
     lists.value = lists.value.filter((list) => list.id !== targetId);
     listItemCountCache.delete(targetId);
-    showMessage("List deleted successfully.");
+    showSuccess("List deleted successfully.");
   } catch (error) {
     console.error("Error deleting list:", error);
     showError(
@@ -368,7 +351,7 @@ async function handleShareList(data: SharePayload) {
     for (const email of data.emails) {
       await ShoppingListApi.share(listId, email);
     }
-    showMessage(
+    showSuccess(
       data.emails.length === 1
         ? "List shared successfully."
         : "List shared with selected users."
@@ -408,7 +391,7 @@ async function handleCreateList(listData: CreatePayload) {
     const mapped = mapApiList(newList);
     listItemCountCache.set(mapped.id, 0);
     lists.value.unshift({ ...mapped, itemsCount: 0 });
-    showMessage("List created successfully.");
+    showSuccess("List created successfully.");
   } catch (error) {
     console.error("Error creating list:", error);
     showError(
@@ -433,7 +416,6 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-  if (messageTimeout) clearTimeout(messageTimeout);
   if (searchTimeout) clearTimeout(searchTimeout);
 });
 </script>
@@ -488,24 +470,8 @@ onBeforeUnmount(() => {
         </v-col>
       </v-row>
 
-      <v-row v-if="actionMessage || actionError || loadError" class="mb-4">
+      <v-row v-if="loadError" class="mb-4">
         <v-col cols="12">
-          <v-alert
-            v-if="actionMessage"
-            type="success"
-            variant="tonal"
-            class="mb-2"
-          >
-            {{ actionMessage }}
-          </v-alert>
-          <v-alert
-            v-if="actionError"
-            type="error"
-            variant="tonal"
-            class="mb-2"
-          >
-            {{ actionError }}
-          </v-alert>
           <v-alert
             v-if="loadError"
             type="error"
@@ -587,6 +553,13 @@ onBeforeUnmount(() => {
       :list-name="listToShare?.title"
       :list-id="listToShare?.id"
       @share-list="handleShareList"
+    />
+
+    <!-- Toast Messages -->
+    <ToastNotification
+      v-model="showToast"
+      :message="toastMessage"
+      :type="toastType"
     />
   </div>
 </template>

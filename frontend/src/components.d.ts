@@ -43,5 +43,6 @@ declare module 'vue' {
     ShareListDialog: typeof import('./components/dialog/ShareListDialog.vue')['default']
     StandardButton: typeof import('./components/StandardButton.vue')['default']
     ToastContainer: typeof import('./components/ToastContainer.vue')['default']
+    ToastNotification: typeof import('./components/ToastNotification.vue')['default']
   }
 }

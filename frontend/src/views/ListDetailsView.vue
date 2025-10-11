@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { useRoute, useRouter } from "vue-router";
 import { computed, ref, watch, onBeforeUnmount } from "vue";
+import { useToast } from "@/composables/useToast";
 import ListItemCard from "@/components/List/ListItemCard.vue";
 import StandardButton from "@/components/StandardButton.vue";
 import AddItemDialog from "@/components/dialog/AddItemDialog.vue";
+import ToastNotification from "@/components/ToastNotification.vue";
 import apiClient from "@/services/api";
 import { isAxiosError } from "axios";
 
@@ -40,6 +42,7 @@ interface ShoppingListDetail {
 
 const route = useRoute();
 const router = useRouter();
+const { showToast, toastMessage, toastType, showSuccess, showError } = useToast();
 
 const listId = computed(() => Number(route.params.id));
 const listData = ref<ShoppingListDetail | null>(null);
@@ -48,29 +51,9 @@ const isLoading = ref(true);
 const itemsLoading = ref(false);
 const loadError = ref<string | null>(null);
 const itemsError = ref<string | null>(null);
-const actionMessage = ref<string | null>(null);
-const actionError = ref<string | null>(null);
 const showAddItemDialog = ref(false);
 
-let messageTimeout: ReturnType<typeof setTimeout> | null = null;
 
-function showMessage(message: string) {
-  actionError.value = null;
-  actionMessage.value = message;
-  if (messageTimeout) clearTimeout(messageTimeout);
-  messageTimeout = setTimeout(() => {
-    actionMessage.value = null;
-  }, 4000);
-}
-
-function showError(message: string) {
-  actionMessage.value = null;
-  actionError.value = message;
-  if (messageTimeout) clearTimeout(messageTimeout);
-  messageTimeout = setTimeout(() => {
-    actionError.value = null;
-  }, 5000);
-}
 
 function mapListDetail(data: any): ShoppingListDetail {
   const metadata = (data?.metadata ?? {}) as Record<string, any>;
@@ -129,8 +112,6 @@ function mapListItem(data: any): ShoppingListItem {
 async function loadList() {
   isLoading.value = true;
   loadError.value = null;
-  actionError.value = null;
-  actionMessage.value = null;
 
   try {
     const { data } = await apiClient.get(`/shopping-lists/${listId.value}`);
@@ -207,7 +188,7 @@ async function handleUpdateQuantity(itemId: number | string, newQuantity: number
         metadata: target.metadata ?? {},
       }
     );
-    showMessage("Item quantity updated.");
+    showSuccess("Item quantity updated.");
   } catch (error) {
     console.error("Error updating quantity:", error);
     target.quantity = previous;
@@ -234,7 +215,7 @@ async function handleToggleComplete(itemId: number | string, completed: boolean)
       `/shopping-lists/${listId.value}/items/${numericId}`,
       { purchased: completed }
     );
-    showMessage(
+    showSuccess(
       completed ? "Marked item as purchased." : "Marked item as pending."
     );
   } catch (error) {
@@ -260,7 +241,7 @@ async function handleDeleteItem(itemId: number | string) {
     await apiClient.delete(
       `/shopping-lists/${listId.value}/items/${numericId}`
     );
-    showMessage("Item removed from the list.");
+    showSuccess("Item removed from the list.");
   } catch (error) {
     console.error("Error deleting item:", error);
     listItems.value = previousItems;
@@ -352,7 +333,7 @@ async function handleAddItem(itemData: { name: string }) {
     const raw = data?.item ?? data;
     const mapped = mapListItem(raw);
     listItems.value.unshift(mapped);
-    showMessage("Item added to the list.");
+    showSuccess("Item added to the list.");
   } catch (error) {
     console.error("Error adding item:", error);
     showError(
@@ -395,7 +376,7 @@ watch(
 );
 
 onBeforeUnmount(() => {
-  if (messageTimeout) clearTimeout(messageTimeout);
+  // Cleanup if needed
 });
 </script>
 
@@ -423,26 +404,6 @@ onBeforeUnmount(() => {
 
       <v-row>
         <v-col cols="12">
-          <transition name="fade">
-            <v-alert
-              v-if="actionMessage"
-              type="success"
-              variant="tonal"
-              class="mb-4"
-            >
-              {{ actionMessage }}
-            </v-alert>
-          </transition>
-          <transition name="fade">
-            <v-alert
-              v-if="actionError"
-              type="error"
-              variant="tonal"
-              class="mb-4"
-            >
-              {{ actionError }}
-            </v-alert>
-          </transition>
 
           <div v-if="isLoading">
             <v-card class="pa-4">
@@ -505,6 +466,13 @@ onBeforeUnmount(() => {
     <AddItemDialog
       v-model="showAddItemDialog"
       @add-item="handleAddItem"
+    />
+
+    <!-- Toast Messages -->
+    <ToastNotification
+      v-model="showToast"
+      :message="toastMessage"
+      :type="toastType"
     />
   </div>
 </template>
