@@ -4,6 +4,8 @@ import { computed, ref, onMounted } from "vue";
 import Card from "@/components/Products/ProductItemCard.vue";
 import MoveToCategoryDialog from "@/components/dialog/MoveToCategoryDialog.vue";
 import AddToListDialog from "@/components/dialog/AddToListDialog.vue";
+import StandardButton from "@/components/StandardButton.vue";
+import CreateProductDialog from "@/components/dialog/CreateProductDialog.vue";
 import CategoryApi, { type Category as CategoryApiType } from "@/services/category";
 import ProductApi, { type Product as ProductApiType } from "@/services/product";
 import ShoppingListApi, { type ShoppingList } from "@/services/shoppingList";
@@ -41,6 +43,7 @@ const allLists = ref<ShoppingList[]>([]);
 // Dialog states
 const showMoveDialog = ref(false);
 const showAddToListDialog = ref(false);
+const showCreateProductDialog = ref(false);
 const selectedProductId = ref<number | null>(null);
 
 // Categories for MoveToCategoryDialog - populated from API
@@ -61,6 +64,16 @@ const availableLists = computed(() => {
     label: list.name,
     icon: list.metadata?.icon || 'mdi-format-list-bulleted'
   }));
+});
+
+// Current category for CreateProductDialog - only show current category (read-only)
+const currentCategoryOption = computed(() => {
+  if (!categoryData.value) return [];
+  return [{
+    value: categoryData.value.id,
+    label: categoryData.value.name || categoryData.value.title,
+    icon: categoryData.value.icon || 'mdi-box'
+  }];
 });
 
 function goBack() {
@@ -235,6 +248,39 @@ async function handleAddToList(productId: number) {
   showAddToListDialog.value = true;
 }
 
+function handleAddProduct() {
+  showCreateProductDialog.value = true;
+}
+
+async function onProductCreated(productData: { name: string; categoryId: number }) {
+  try {
+    // Create the product via API
+    const newProduct = await ProductApi.add({
+      name: productData.name,
+      category: { id: productData.categoryId }
+    });
+    
+    // Add the new product to the current products list
+    products.value.push({
+      ...newProduct,
+      completed: false // Default UI state
+    });
+    
+    showCreateProductDialog.value = false;
+    showSuccess(`Product "${productData.name}" created successfully!`);
+  } catch (error) {
+
+    // Check if the error is due to product already existing
+    const errorMessage = (error as any)?.message || '';
+    if (errorMessage.toLowerCase().includes('product already exists') || 
+        errorMessage.toLowerCase().includes('already exists')) {
+      showError(`Cannot create product, product "${productData.name}" already exists`);
+    } else {
+      showError(`Failed to create product "${productData.name}". Please try again.`);
+    }
+  }
+}
+
 async function confirmMoveToCategory(data: { categoryId: number }) {
   if (!selectedProductId.value) return;
   
@@ -300,6 +346,14 @@ async function confirmAddToList(data: { listId: number }) {
             @click="goBack"
             variant="text"
             size="large"
+          />
+        </v-col>
+        <v-spacer />
+        <v-col cols="auto">
+          <StandardButton
+            title="Add Product"
+            icon="mdi-plus"
+            @click="handleAddProduct"
           />
         </v-col>
       </v-row>
@@ -368,6 +422,13 @@ async function confirmAddToList(data: { listId: number }) {
       v-model="showAddToListDialog"
       :lists="availableLists"
       @add-to-list="confirmAddToList"
+    />
+
+    <!-- Create Product Dialog -->
+    <CreateProductDialog
+      v-model="showCreateProductDialog"
+      :categories="currentCategoryOption"
+      @create-product="onProductCreated"
     />
 
     <!-- Toast Notification -->
