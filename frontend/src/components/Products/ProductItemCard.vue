@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, nextTick } from 'vue';
+import StandardButton from '@/components/StandardButton.vue';
 
 const props = defineProps({
   title: { type: String, required: true },
@@ -87,17 +88,24 @@ function cancelEdit() {
         </div>
       </v-col>
 
-      <!-- Actions: move icon + add-to-list button + delete -->
+      <!-- Actions: move button + add-to-list button + delete -->
       <v-col cols="auto">
         <div class="actions">
-          <button class="icon-btn" @click="moveItem" aria-label="Move to category">
-            <v-icon icon="mdi-folder-move" size="small" />
-          </button>
+          <div class="compact-button">
+            <StandardButton
+              title="Move to Category"
+              icon="mdi-folder-move"
+              @click="moveItem"
+            />
+          </div>
 
-          <button class="add-list-btn" @click="addToList" aria-label="Add to list">
-            <v-icon icon="mdi-plus" size="small" class="mr-1" />
-            Add to List
-          </button>
+          <div class="compact-button">
+            <StandardButton
+              title="Add to List"
+              icon="mdi-plus"
+              @click="addToList"
+            />
+          </div>
 
           <button class="delete-btn" @click="deleteItem" aria-label="delete item">
             <v-icon icon="mdi-delete" size="small" />
@@ -178,20 +186,18 @@ function cancelEdit() {
   font-size: 0.95rem;
 }
 
-.add-list-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  background-color: var(--primary-green);
-  color: white;
-  border: 1px solid var(--primary-green);
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
+
+
+.compact-button :deep(.standard-button) {
+  padding: 6px 12px;
+  font-size: 14px;
+  min-width: auto;
+  border-radius: 8px;
 }
-.add-list-btn:hover { background-color: #0f7a0f; }
+
+.compact-button :deep(.button-icon) {
+  font-size: 16px;
+}
 
 .delete-btn {
   background: none;

@@ -9,6 +9,7 @@ import CreateProductDialog from "@/components/dialog/CreateProductDialog.vue";
 import CategoryApi, { type Category as CategoryApiType } from "@/services/category";
 import ProductApi, { type Product as ProductApiType } from "@/services/product";
 import ShoppingListApi, { type ShoppingList } from "@/services/shoppingList";
+import ListItemApi from "@/services/listItem";
 import ToastNotification from "@/components/ToastNotification.vue";
 import { useToast } from "@/composables/useToast";
 
@@ -294,6 +295,7 @@ async function confirmMoveToCategory(data: { categoryId: number }) {
     
     // Update product category via API
     await ProductApi.modify(selectedProductId.value, { 
+      name: productName, // Required by backend validation
       category: { id: data.categoryId } 
     });
     
@@ -321,9 +323,12 @@ async function confirmAddToList(data: { listId: number }) {
   try {
     console.log('Adding product', selectedProductId.value, 'to list', data.listId);
     
-    // TODO: Implement actual API call to add product to list
-    // This would depend on your list items API
-    // await ListItemApi.add({ productId: selectedProductId.value, listId: data.listId });
+    // Add product to list via API
+    await ListItemApi.add(data.listId, {
+      product: { id: selectedProductId.value },
+      quantity: 1, // Default quantity
+      unit: 'unit' // Default unit
+    });
     
     showSuccess(`"${productName}" added to ${targetListName}!`);
   } catch (error) {
@@ -441,5 +446,5 @@ async function confirmAddToList(data: { listId: number }) {
 </template>
 
 <style scoped>
-/* Add any specific styling here if needed */
+
 </style>
