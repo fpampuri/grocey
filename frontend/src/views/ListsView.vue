@@ -8,7 +8,8 @@ import ConfirmDeleteDialog from "@/components/dialog/ConfirmDeleteDialog.vue";
 import ShareListDialog from "@/components/dialog/ShareListDialog.vue";
 import { useRouter } from "vue-router";
 import { ref, onMounted, computed, watch, onBeforeUnmount } from "vue";
-import apiClient from "@/services/api";
+import ShoppingListApi from "@/services/shoppingList";
+import ListItemApi from "@/services/listItem";
 
 const router = useRouter();
 
@@ -167,21 +168,17 @@ async function fetchListItemsCount(listId: number): Promise<number> {
     return listItemCountCache.get(listId) ?? 0;
   }
   try {
-    const { data } = await apiClient.get(`/shopping-lists/${listId}/items`, {
-      params: { per_page: 500 },
-    });
-    const collection = Array.isArray(data)
-      ? data
-      : Array.isArray(data?.items)
-      ? data.items
-      : Array.isArray(data?.data)
-      ? data.data
+    const response = await ListItemApi.getAll(listId);
+    // Handle different response structures from the API
+    const items = Array.isArray(response) 
+      ? response 
+      : Array.isArray((response as any)?.items) 
+      ? (response as any).items 
+      : Array.isArray((response as any)?.data)
+      ? (response as any).data
       : [];
-    const count = Array.isArray(collection)
-      ? collection.length
-      : typeof data?.total === "number"
-      ? data.total
-      : 0;
+    
+    const count = items.length;
     listItemCountCache.set(listId, count);
     return count;
   } catch (error) {
@@ -195,13 +192,16 @@ async function loadLists() {
   loadError.value = null;
 
   try {
-    const params: Record<string, any> = {};
-    if (searchQuery.value.trim()) {
-      params.name = searchQuery.value.trim();
-    }
-
-    const { data } = await apiClient.get("/shopping-lists", { params });
-    const rawLists = Array.isArray(data) ? data : data?.lists ?? data?.data ?? [];
+    const response = await ShoppingListApi.getAll();
+    // Handle different response structures from the API
+    const rawLists = Array.isArray(response) 
+      ? response 
+      : Array.isArray((response as any)?.lists) 
+      ? (response as any).lists 
+      : Array.isArray((response as any)?.data)
+      ? (response as any).data
+      : [];
+    
     const mapped = rawLists.map(mapApiList);
 
     for (const list of mapped) {
@@ -215,11 +215,7 @@ async function loadLists() {
     lists.value = mapped;
   } catch (error) {
     console.error("Error loading lists:", error);
-    if (isAxiosError(error)) {
-      loadError.value =
-        (error.response?.data as { message?: string })?.message ??
-        "Unable to load shopping lists.";
-    } else if (error instanceof Error) {
+    if (error instanceof Error) {
       loadError.value = error.message;
     } else {
       loadError.value = "Unable to load shopping lists.";
@@ -243,11 +239,16 @@ async function handleStarToggle(isStarred: boolean, listId: number) {
   list.metadata = { ...list.metadata, icon: list.icon, isFavorite: isStarred };
 
   try {
-    await apiClient.put(`/shopping-lists/${listId}`, {
+    await ShoppingListApi.modify(listId, {
       name: list.name,
       description: list.description,
       recurring: list.recurring,
-      metadata: list.metadata,
+      metadata: {
+        icon: list.icon,
+        isFavorite: isStarred,
+        itemsCount: list.itemsCount,
+        ...list.metadata,
+      },
     });
     showMessage(isStarred ? "List marked as favorite." : "List removed from favorites.");
   } catch (error) {
@@ -255,8 +256,8 @@ async function handleStarToggle(isStarred: boolean, listId: number) {
     list.isFavorite = previous;
     list.metadata = { ...list.metadata, isFavorite: previous };
     showError(
-      isAxiosError(error)
-        ? (error.response?.data as { message?: string })?.message ?? "Unable to update favorite state."
+      error instanceof Error
+        ? error.message
         : "Unable to update favorite state."
     );
   }
@@ -277,27 +278,31 @@ async function handleEditList(data: UpdatePayload) {
   const list = lists.value.find((l) => l.id === data.id);
   if (!list) return;
 
-  const metadata = { ...list.metadata, icon: data.icon, isFavorite: list.isFavorite };
-
   try {
-    const { data: response } = await apiClient.put(`/shopping-lists/${data.id}`, {
+    const response = await ShoppingListApi.modify(data.id, {
       name: data.name,
       description: data.description,
       recurring: data.recurring,
-      metadata,
+      metadata: {
+        icon: data.icon,
+        isFavorite: list.isFavorite,
+        itemsCount: list.itemsCount,
+        ...list.metadata,
+      },
     });
 
-    const raw = response?.list ?? response;
-    const updated = mapApiList(raw);
-    updated.itemsCount = list.itemsCount;
-    listItemCountCache.set(updated.id, updated.itemsCount);
-    lists.value = lists.value.map((l) => (l.id === updated.id ? updated : l));
+    // Handle different response structures from the API
+    const updated = (response as any)?.list ?? response;
+    const mapped = mapApiList(updated);
+    mapped.itemsCount = list.itemsCount;
+    listItemCountCache.set(mapped.id, mapped.itemsCount);
+    lists.value = lists.value.map((l) => (l.id === mapped.id ? mapped : l));
     showMessage("List updated successfully.");
   } catch (error) {
     console.error("Error updating list:", error);
     showError(
-      isAxiosError(error)
-        ? (error.response?.data as { message?: string })?.message ?? "Unable to update list."
+      error instanceof Error
+        ? error.message
         : "Unable to update list."
     );
   } finally {
@@ -322,15 +327,15 @@ async function confirmDelete() {
 
   const targetId = toDeleteList.value.id;
   try {
-    await apiClient.delete(`/shopping-lists/${targetId}`);
+    await ShoppingListApi.remove(targetId);
     lists.value = lists.value.filter((list) => list.id !== targetId);
     listItemCountCache.delete(targetId);
     showMessage("List deleted successfully.");
   } catch (error) {
     console.error("Error deleting list:", error);
     showError(
-      isAxiosError(error)
-        ? (error.response?.data as { message?: string })?.message ?? "Unable to delete list."
+      error instanceof Error
+        ? error.message
         : "Unable to delete list."
     );
   } finally {
@@ -361,7 +366,7 @@ async function handleShareList(data: SharePayload) {
 
   try {
     for (const email of data.emails) {
-      await apiClient.post(`/shopping-lists/${listId}/share`, { email });
+      await ShoppingListApi.share(listId, email);
     }
     showMessage(
       data.emails.length === 1
@@ -372,8 +377,8 @@ async function handleShareList(data: SharePayload) {
   } catch (error) {
     console.error("Error sharing list:", error);
     showError(
-      isAxiosError(error)
-        ? (error.response?.data as { message?: string })?.message ?? "Unable to share list."
+      error instanceof Error
+        ? error.message
         : "Unable to share list."
     );
   } finally {
@@ -387,26 +392,28 @@ function handleAddList() {
 
 async function handleCreateList(listData: CreatePayload) {
   try {
-    const payload = {
+    const response = await ShoppingListApi.add({
       name: listData.name,
       description: listData.description,
       recurring: listData.recurring,
       metadata: {
         icon: listData.icon,
         isFavorite: false,
+        itemsCount: 0,
       },
-    };
-    const { data } = await apiClient.post("/shopping-lists", payload);
-    const raw = data?.list ?? data;
-    const newList = mapApiList(raw);
-    listItemCountCache.set(newList.id, 0);
-    lists.value.unshift({ ...newList, itemsCount: 0 });
+    });
+    
+    // Handle different response structures from the API
+    const newList = (response as any)?.list ?? response;
+    const mapped = mapApiList(newList);
+    listItemCountCache.set(mapped.id, 0);
+    lists.value.unshift({ ...mapped, itemsCount: 0 });
     showMessage("List created successfully.");
   } catch (error) {
     console.error("Error creating list:", error);
     showError(
-      isAxiosError(error)
-        ? (error.response?.data as { message?: string })?.message ?? "Unable to create list."
+      error instanceof Error
+        ? error.message
         : "Unable to create list."
     );
   } finally {
