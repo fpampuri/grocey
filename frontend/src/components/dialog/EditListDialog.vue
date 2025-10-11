@@ -155,16 +155,6 @@ const iconOptionsOpen = ref(false);
           />
         </div>
 
-        <div class="form-field">
-          <label class="field-label">Description</label>
-          <textarea
-            v-model="listDescription"
-            rows="3"
-            placeholder="Update the description"
-            class="text-area"
-          />
-        </div>
-
         <div class="form-field toggle-row">
           <label class="field-label">Recurring List</label>
           <v-switch

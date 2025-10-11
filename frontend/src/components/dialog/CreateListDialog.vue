@@ -11,7 +11,6 @@ const emit = defineEmits(["update:modelValue", "create-list"]);
 
 // Form data
 const listName = ref("");
-const listDescription = ref("");
 const isRecurring = ref(false);
 const selectedIcon = ref("mdi-cart");
 
@@ -71,7 +70,6 @@ function closeDialog() {
   emit("update:modelValue", false);
   // Reset form
   listName.value = "";
-  listDescription.value = "";
   isRecurring.value = false;
   selectedIcon.value = "mdi-cart";
   iconOptionsOpen.value = false;
@@ -81,7 +79,6 @@ function handleModelValueUpdate(value: boolean) {
   if (!value) {
     // Reset form when dialog closes
     listName.value = "";
-    listDescription.value = "";
     isRecurring.value = false;
     selectedIcon.value = "mdi-cart";
     iconOptionsOpen.value = false;
@@ -90,13 +87,13 @@ function handleModelValueUpdate(value: boolean) {
 }
 
 function createList() {
-  if (!listName.value.trim() || !listDescription.value.trim()) {
+  if (!listName.value.trim()) {
     return; // Don't create if required fields missing
   }
 
   emit("create-list", {
     name: listName.value.trim(),
-    description: listDescription.value.trim(),
+    description: "-", // Minimal placeholder to satisfy backend requirement
     recurring: isRecurring.value,
     icon: selectedIcon.value,
   });
@@ -141,16 +138,6 @@ const iconOptionsOpen = ref(false);
           placeholder="Enter list name"
           class="text-input"
           @keyup.enter="createList"
-        />
-      </div>
-
-      <div class="form-field">
-        <label class="field-label">Description</label>
-        <textarea
-          v-model="listDescription"
-          rows="3"
-          placeholder="Add a short description"
-          class="text-area"
         />
       </div>
 
