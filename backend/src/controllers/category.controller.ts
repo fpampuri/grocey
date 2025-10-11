@@ -45,8 +45,8 @@ export async function getCategories(req: Request, res: Response): Promise<void> 
       name,
     };
 
-    const categories = await getUserCategoriesService(categoryData);
-    replySuccess(res, categories);
+    const result = await getUserCategoriesService(categoryData);
+    replySuccess(res, result);
   } catch (err) {
     replyWithError(res, err);
   }

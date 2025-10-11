@@ -39,8 +39,8 @@ export async function getPantries(req: Request, res: Response): Promise<void> {
         const order = req.query.order && ["ASC", "DESC"].includes(String(req.query.order).toUpperCase()) ? String(req.query.order).toUpperCase() as "ASC" | "DESC" : "ASC";
         const page = req.query.page ? Math.max(1, Number(req.query.page)) : 1;
         const per_page = req.query.per_page ? Math.max(1, Number(req.query.per_page)) : 10;
-        const pantries = await PantryService.getPantriesService(user, owner, sort_by, order, page, per_page);
-        replySuccess(res, pantries);
+        const result = await PantryService.getPantriesService(user, owner, sort_by, order, page, per_page);
+        replySuccess(res, result);
     } catch (err) {
         replyWithError(res, err);
     }

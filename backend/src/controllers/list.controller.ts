@@ -43,8 +43,8 @@ export async function getLists(req: Request, res: Response): Promise<void> {
             order: req.query.order ? String(req.query.order).toUpperCase() as "ASC" | "DESC" : "ASC"
         };
 
-        const lists = await ListService.getListsService(filterOptions);
-        replySuccess(res, lists);
+        const result = await ListService.getListsService(filterOptions);
+        replySuccess(res, result);
     } catch (err) {
         replyWithError(res, err);
     }

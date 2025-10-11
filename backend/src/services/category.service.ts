@@ -4,6 +4,7 @@ import {RegisterCategoryData, GetCategoryData, generateCategoriesFilteringOption
 import {Category} from "../entities/category";
 import {User} from "../entities/user";
 import { ERROR_MESSAGES } from '../types/errorMessages';
+import { PaginatedResponse, createPaginationMeta } from '../types/pagination';
 
 /**
  * Creates a new category.
@@ -51,7 +52,7 @@ export async function createNewCategoryService(categoryData: RegisterCategoryDat
  * @returns {Promise<Category>} Category information
  * @throws {NotFoundError} If category is not found
  */
-export async function getUserCategoriesService(categoryData: GetCategoryData): Promise<Category[]> {
+export async function getUserCategoriesService(categoryData: GetCategoryData): Promise<PaginatedResponse<any>> {
   try {
     const whereOptions = generateCategoriesFilteringOptions(categoryData)
 
@@ -59,7 +60,7 @@ export async function getUserCategoriesService(categoryData: GetCategoryData): P
     const orderDirection = categoryData.order && String(categoryData.order).toUpperCase() === "ASC" ? "ASC" : "DESC";
     const order: any = {};
     order[sortField] = orderDirection;
-    const categories: Category[] = await Category.find({
+    const [categories, total] = await Category.findAndCount({
       where: whereOptions,
       relations: ['owner'],
       order,
@@ -67,11 +68,12 @@ export async function getUserCategoriesService(categoryData: GetCategoryData): P
       skip: (parseInt(categoryData.page) - 1) * (categoryData.per_page || 10),
     });
 
-    if(!categories.length) {
-      return []
-    }
-
-    return categories.map(c => c.getFormattedCategory());
+    const formattedCategories = categories.map(c => c.getFormattedCategory());
+    
+    return {
+      data: formattedCategories,
+      pagination: createPaginationMeta(total, parseInt(categoryData.page), categoryData.per_page)
+    };
   } catch (err: unknown) {
     handleCaughtError(err);
   }

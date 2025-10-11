@@ -45,6 +45,7 @@ export const ERROR_MESSAGES = {
   CONFLICT: {
     EMAIL_EXISTS: "Email already exists",
     NAME_EXISTS: "Name already exists",
+    LIST_NAME_EXISTS: "Shopping list name already exists",
     RESOURCE_EXISTS: "Resource already exists",
     ALREADY_SHARED: "Already shared",
     DUPLICATE: "Duplicate resource",

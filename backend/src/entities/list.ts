@@ -10,7 +10,8 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
-  UpdateDateColumn
+  UpdateDateColumn,
+  Unique
 } from "typeorm";
 import {IsOptional, Length} from "class-validator";
 import {User} from "./user";
@@ -18,6 +19,7 @@ import {ListItem} from "./listItem";
 import {Purchase} from "./purchase";
 
 @Entity()
+@Unique("unique_list_name_per_owner", ["name", "owner"])
 export class List extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;

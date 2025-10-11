@@ -57,6 +57,9 @@ export function handleCaughtError(err: unknown) {
       if ((err as QueryFailedError).driverError.message.includes('UNIQUE constraint failed: user.email')) {
         throw new ConflictError(ERROR_MESSAGES.CONFLICT.EMAIL_EXISTS);
       }
+      if ((err as QueryFailedError).driverError.message.includes('UNIQUE constraint failed: list.name, list.ownerId')) {
+        throw new ConflictError(ERROR_MESSAGES.CONFLICT.LIST_NAME_EXISTS);
+      }
       throw new BadRequestError((err as QueryFailedError).message);
     }
     case EntityNotFoundError: {

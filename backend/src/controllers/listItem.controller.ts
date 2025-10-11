@@ -46,8 +46,8 @@ export async function getListItems(req: Request, res: Response): Promise<void> {
             search,
         };
 
-        const items = await ListItemService.getListItemsService(filterOptions);
-        replySuccess(res, items);
+        const result = await ListItemService.getListItemsService(filterOptions);
+        replySuccess(res, result);
     } catch (err) {
         replyWithError(res, err);
     }

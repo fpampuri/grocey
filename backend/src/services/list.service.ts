@@ -1,5 +1,5 @@
 import AppDataSource from "../db";
-import {BadRequestError, handleCaughtError, NotFoundError} from "../types/errors";
+import {BadRequestError, handleCaughtError, NotFoundError, ConflictError} from "../types/errors";
 import {User} from "../entities/user";
 import {List} from "../entities/list";
 import {ListFilterOptions, ListUpdateData, RegisterListData} from "../types/list";
@@ -9,6 +9,7 @@ import {PantryItem} from "../entities/pantryItem";
 import {Purchase} from "../entities/purchase";
 import { ERROR_MESSAGES } from '../types/errorMessages';
 import { Mailer, EmailType } from './email.service';
+import { PaginatedResponse, createPaginationMeta } from '../types/pagination';
 
 /**
  * Creates a new list.
@@ -35,9 +36,14 @@ export async function createListService(listData: RegisterListData): Promise<Lis
         await queryRunner.commitTransaction();
 
         return list.getFormattedList();
-    } catch (err) {
+    } catch (err: any) {
         if (queryRunner.isTransactionActive) await queryRunner.rollbackTransaction();
-        throw err;
+        
+        if (err.code === 'SQLITE_CONSTRAINT' && err.message.includes('unique_list_name_per_owner')) {
+            throw new ConflictError(ERROR_MESSAGES.CONFLICT.LIST_NAME_EXISTS);
+        }
+        
+        handleCaughtError(err);
     } finally {
         await queryRunner.release();
     }
@@ -50,7 +56,7 @@ export async function createListService(listData: RegisterListData): Promise<Lis
  * @returns {Promise<List[]>} List information
  * @throws {NotFoundError} If the list is not found
  */
-export async function getListsService(listData: ListFilterOptions): Promise<List[]> {
+export async function getListsService(listData: ListFilterOptions): Promise<PaginatedResponse<any>> {
     try {
         const queryBuilder = List.createQueryBuilder("list")
             .leftJoinAndSelect("list.owner", "owner")
@@ -101,10 +107,14 @@ export async function getListsService(listData: ListFilterOptions): Promise<List
             .take(listData.per_page)
             .skip((listData.page! - 1) * (listData.per_page ?? 10));
 
-        const lists = await queryBuilder.getMany();
+        const [lists, total] = await queryBuilder.getManyAndCount();
 
-        if (!lists.length) return [];
-        return lists.map(list => list.getFormattedList());
+        const formattedLists = lists.map(list => list.getFormattedList());
+        
+        return {
+            data: formattedLists,
+            pagination: createPaginationMeta(total, listData.page!, listData.per_page!)
+        };
     } catch (err) {
         handleCaughtError(err);
     }
@@ -402,10 +412,10 @@ export async function shareListService(listId: number, fromUser: User, toUserEma
 
         if (list.sharedWith && list.sharedWith.some(u => u.id === toUser.id)) {
             await queryRunner.release();
-            return list.getFormattedList();
+            throw new ConflictError(ERROR_MESSAGES.CONFLICT.ALREADY_SHARED);
         }
 
-        list.sharedWith = [...(list.sharedWith || []), toUser.getFormattedUser()];
+        list.sharedWith = [...(list.sharedWith || []), toUser];
         await queryRunner.manager.save(list);
 
         await queryRunner.commitTransaction();
@@ -459,8 +469,7 @@ export async function getSharedUsersService(listId: number, user: User): Promise
         }
 
         return list.sharedWith.map(user => {
-            removeUserForListShared(user);
-            return user;
+            return user.getFormattedUser();
         });
 
     } catch (err) {

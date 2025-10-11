@@ -16,8 +16,8 @@ export async function getPurchases(req: Request, res: Response): Promise<void> {
       sort_by: req.query.sort_by ? String(req.query.sort_by) as "createdAt" | "list" | "id" : "createdAt",
       order: req.query.order ? String(req.query.order).toUpperCase() as "ASC" | "DESC" : "DESC"
     };
-    const purchases = await PurchaseService.getPurchasesService(filter);
-    replySuccess(res, purchases);
+    const result = await PurchaseService.getPurchasesService(filter);
+    replySuccess(res, result);
   } catch (err) {
     replyWithError(res, err);
   }

@@ -103,9 +103,53 @@ router.post("/", authenticateJWT, createPantry);
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                  $ref: '#/definitions/Pantry'
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/definitions/Pantry'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                       description: Total number of pantries
+ *                     page:
+ *                       type: integer
+ *                       description: Current page number
+ *                     per_page:
+ *                       type: integer
+ *                       description: Number of items per page
+ *                     total_pages:
+ *                       type: integer
+ *                       description: Total number of pages
+ *                     has_next:
+ *                       type: boolean
+ *                       description: Whether there is a next page
+ *                     has_prev:
+ *                       type: boolean
+ *                       description: Whether there is a previous page
+ *             example:
+ *               data:
+ *                 - id: 1
+ *                   name: "Home Pantry"
+ *                   metadata: {}
+ *                   createdAt: "2025-01-15 10:30:00"
+ *                   updatedAt: "2025-01-15 10:30:00"
+ *                   owner:
+ *                     id: 1
+ *                     name: "John"
+ *                     surname: "Doe"
+ *                     email: "john@example.com"
+ *                   sharedWith: []
+ *               pagination:
+ *                 total: 1
+ *                 page: 1
+ *                 per_page: 10
+ *                 total_pages: 1
+ *                 has_next: false
+ *                 has_prev: false
  *       401:
  *         $ref: '#/responses/Unauthorized'
  *       500:

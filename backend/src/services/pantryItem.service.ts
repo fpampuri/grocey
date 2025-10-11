@@ -5,6 +5,7 @@ import { Product } from "../entities/product";
 import { User } from "../entities/user";
 import {NotFoundError, handleCaughtError, ConflictError} from "../types/errors";
 import { ERROR_MESSAGES } from '../types/errorMessages';
+import { PaginatedResponse, createPaginationMeta } from '../types/pagination';
 
 /**
  * Retrieves pantry items for a given pantry, with support for pagination, sorting, and search.
@@ -29,7 +30,7 @@ export async function getPantryItemsService(
     sort_by?: string,
     search?: string,
     category_id?: number
-): Promise<PantryItem[]> {
+): Promise<PaginatedResponse<any>> {
     const queryRunner = AppDataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -76,7 +77,13 @@ export async function getPantryItemsService(
         const [items, total] = await qb.getManyAndCount();
 
         await queryRunner.commitTransaction();
-        return items.map(i => i.getFormattedListItem())
+        
+        const formattedItems = items.map(i => i.getFormattedListItem());
+        
+        return {
+            data: formattedItems,
+            pagination: createPaginationMeta(total, page, per_page)
+        };
     } catch (err) {
         if (queryRunner.isTransactionActive) await queryRunner.rollbackTransaction();
         handleCaughtError(err);

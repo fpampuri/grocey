@@ -9,15 +9,16 @@ import {
   GetProductsData,
   ProductUpdateData, RegisterProductData
 } from "../types/product";
+import { PaginatedResponse, createPaginationMeta } from '../types/pagination';
 
 /**
 * Retrieves user's products.
 *
 * @param {GetProductsData} productData - Filtering and pagination options
-* @returns {Promise<Product[]>} Product information
+* @returns {Promise<PaginatedResponse<Product>>} Product information with pagination
 * @throws {NotFoundError} If no products are found
 */
-export async function getProductsService(productData: GetProductsData): Promise<Product[]> {
+export async function getProductsService(productData: GetProductsData): Promise<PaginatedResponse<any>> {
   try {
     if (productData.category_id) {
       const category = await Category.findOne({ where: { id: productData.category_id, deletedAt: null } });
@@ -46,6 +47,8 @@ export async function getProductsService(productData: GetProductsData): Promise<
       order = { name: orderDirection };
     }
 
+    const total = await Product.count({ where: whereOptions });
+
     const products: Product[] = await Product.find({
       where: whereOptions,
       relations: ["owner", "category"],
@@ -54,7 +57,12 @@ export async function getProductsService(productData: GetProductsData): Promise<
       skip: (productData.page - 1) * (productData.per_page || 10),
     });
 
-    return products.map((p) => p.getFormattedProduct());
+    const formattedProducts = products.map((p) => p.getFormattedProduct());
+    
+    return {
+      data: formattedProducts,
+      pagination: createPaginationMeta(total, productData.page, productData.per_page)
+    };
   } catch (err: unknown) {
     handleCaughtError(err);
   }

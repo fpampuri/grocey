@@ -92,7 +92,62 @@ router.post('/', authenticateJWT, registerCategory);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/definitions/ArrayOfCategories'
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/definitions/GetCategory'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                       description: Total number of categories
+ *                     page:
+ *                       type: integer
+ *                       description: Current page number
+ *                     per_page:
+ *                       type: integer
+ *                       description: Number of items per page
+ *                     total_pages:
+ *                       type: integer
+ *                       description: Total number of pages
+ *                     has_next:
+ *                       type: boolean
+ *                       description: Whether there is a next page
+ *                     has_prev:
+ *                       type: boolean
+ *                       description: Whether there is a previous page
+ *             example:
+ *               data:
+ *                 - id: 1
+ *                   name: "Dairy"
+ *                   metadata: {}
+ *                   createdAt: "2025-01-15 10:30:00"
+ *                   updatedAt: "2025-01-15 10:30:00"
+ *                   owner:
+ *                     id: 1
+ *                     name: "John"
+ *                     surname: "Doe"
+ *                     email: "john@example.com"
+ *                 - id: 2
+ *                   name: "Bakery"
+ *                   metadata: {}
+ *                   createdAt: "2025-01-15 10:30:00"
+ *                   updatedAt: "2025-01-15 10:30:00"
+ *                   owner:
+ *                     id: 1
+ *                     name: "John"
+ *                     surname: "Doe"
+ *                     email: "john@example.com"
+ *               pagination:
+ *                 total: 1
+ *                 page: 1
+ *                 per_page: 10
+ *                 total_pages: 1
+ *                 has_next: false
+ *                 has_prev: false
  *       400:
  *         $ref: '#/responses/BadRequest'
  *       401:

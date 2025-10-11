@@ -21,7 +21,7 @@ export async function getProducts(req: Request, res: Response): Promise<void> {
     const name: string | undefined = req.query.name ? String(req.query.name) : undefined;
     const category_id: number | undefined = req.query.category_id ? Number(req.query.category_id) : undefined;
 
-    const products = await ProductService.getProductsService({
+    const result = await ProductService.getProductsService({
       owner,
       name,
       category_id,
@@ -31,7 +31,7 @@ export async function getProducts(req: Request, res: Response): Promise<void> {
       order,
     });
 
-    replySuccess(res, products);
+    replySuccess(res, result);
   } catch (err) {
     replyWithError(res, err);
   }

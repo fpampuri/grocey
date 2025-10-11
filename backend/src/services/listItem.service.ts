@@ -9,6 +9,7 @@ import {
     ListItemUpdateData,
     ListItemFilterOptions,
 } from "../types/listItem";
+import { PaginatedResponse, createPaginationMeta } from '../types/pagination';
 
 /**
  * Creates a new list item inside a shopping list.
@@ -78,7 +79,7 @@ export async function addListItemService(
  * @returns {Promise<ListItem[]>} List of items
  * @throws {NotFoundError} If no items are found
  */
-export async function getListItemsService(filterOptions: ListItemFilterOptions): Promise<ListItem[]> {
+export async function getListItemsService(filterOptions: ListItemFilterOptions): Promise<PaginatedResponse<any>> {
     try {
         const list = await List.findOne({
             where: { id: filterOptions.listId, deletedAt: null },
@@ -111,7 +112,7 @@ export async function getListItemsService(filterOptions: ListItemFilterOptions):
             orderOptions = { [orderField]: orderDirection };
         }
 
-        const items = await ListItem.find({
+        const [items, total] = await ListItem.findAndCount({
             where: whereOptions,
             relations: ["list", "list.owner", "product", "product.pantry", "product.pantry.owner", "owner", "product.category"],
             take: filterOptions.per_page,
@@ -119,11 +120,12 @@ export async function getListItemsService(filterOptions: ListItemFilterOptions):
             order: orderOptions,
         });
 
-        if (!items.length) {
-            return []
-        }
-
-        return items.map(i => i.getFormattedListItem());
+        const formattedItems = items.map(i => i.getFormattedListItem());
+        
+        return {
+            data: formattedItems,
+            pagination: createPaginationMeta(total, filterOptions.page, filterOptions.per_page)
+        };
     } catch (err) {
         handleCaughtError(err);
     }

@@ -6,6 +6,8 @@ import { NotFoundError, BadRequestError, handleCaughtError } from "../types/erro
 import { GetPurchasesData, generatePurchasesFilteringOptions } from "../types/purchase";
 import {ListItem} from "../entities/listItem";
 import { ERROR_MESSAGES } from '../types/errorMessages';
+import { PaginatedResponse, createPaginationMeta } from '../types/pagination';
+import { generateUniqueListName } from '../utils/listNameUtils';
 
 /**
  * Retrieves purchases with optional filters and pagination.
@@ -14,7 +16,7 @@ import { ERROR_MESSAGES } from '../types/errorMessages';
  * @returns {Promise<Category>} Purchase information
  * @throws {NotFoundError} If purchase is not found
  */
-export async function getPurchasesService(filter: GetPurchasesData): Promise<Purchase[]> {
+export async function getPurchasesService(filter: GetPurchasesData): Promise<PaginatedResponse<any>> {
   try {
     const whereOptions = generatePurchasesFilteringOptions(filter);
     const take = filter.per_page || 10;
@@ -36,7 +38,7 @@ export async function getPurchasesService(filter: GetPurchasesData): Promise<Pur
         order = { createdAt: orderDirection };
     }
 
-    const purchases = await Purchase.find({
+    const [purchases, total] = await Purchase.findAndCount({
       where: whereOptions,
       relations: ["list", "list.owner", "list.sharedWith", "owner", "items", "items.product", "items.product.category", "items.product.pantry", "items.product.pantry.owner"],
       order,
@@ -55,7 +57,12 @@ export async function getPurchasesService(filter: GetPurchasesData): Promise<Pur
       }
     }
 
-    return purchases.map(p => p.getFormattedPurchase());
+    const formattedPurchases = purchases.map(p => p.getFormattedPurchase());
+    
+    return {
+      data: formattedPurchases,
+      pagination: createPaginationMeta(total, filter.page || 1, filter.per_page || 10)
+    };
   } catch (err) {
     handleCaughtError(err);
   }
@@ -145,7 +152,7 @@ export async function restorePurchaseService(id: number, user: User): Promise<Li
     if (purchase.list.recurring) throw new BadRequestError(ERROR_MESSAGES.BUSINESS_RULE.CANNOT_RESTORE_RECURRING_LIST);
 
     const newList = new List();
-    newList.name = purchase.list.name;
+    newList.name = await generateUniqueListName(purchase.list.name, user, queryRunner);
     newList.description = purchase.list.description;
     newList.recurring = false;
     newList.metadata = purchase.list.metadata;
