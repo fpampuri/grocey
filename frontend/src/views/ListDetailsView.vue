@@ -6,8 +6,9 @@ import ListItemCard from "@/components/List/ListItemCard.vue";
 import StandardButton from "@/components/StandardButton.vue";
 import AddItemDialog from "@/components/dialog/AddItemDialog.vue";
 import ToastNotification from "@/components/ToastNotification.vue";
-import apiClient from "@/services/api";
-import { isAxiosError } from "axios";
+import ShoppingListApi from "@/services/shoppingList";
+import ListItemApi from "@/services/listItem";
+import ProductApi from "@/services/product";
 
 interface ListUser {
   id: number;
@@ -102,7 +103,7 @@ function mapListItem(data: any): ShoppingListItem {
     productId: Number.isFinite(parsedProductId) ? parsedProductId : 0,
     productName: data.product?.name ?? data.productName ?? "Unnamed product",
     quantity: data.quantity ?? 1,
-    unit: data.unit ?? data.product?.unit ?? "unit",
+    unit: data.unit ?? "unit",
     completed: Boolean(data.purchased ?? data.completed),
     lastPurchasedAt: data.lastPurchasedAt ?? null,
     metadata: data.metadata ?? {},
@@ -114,15 +115,12 @@ async function loadList() {
   loadError.value = null;
 
   try {
-    const { data } = await apiClient.get(`/shopping-lists/${listId.value}`);
-    const raw = data?.list ?? data;
-    listData.value = mapListDetail(raw);
+    const data = await ShoppingListApi.get(listId.value);
+    listData.value = mapListDetail(data);
   } catch (error) {
     console.error("Error fetching list data:", error);
-    if (isAxiosError(error)) {
-      loadError.value =
-        (error.response?.data as { message?: string })?.message ??
-        "Unable to load the list.";
+    if (error && typeof error === 'object' && 'message' in error) {
+      loadError.value = (error as { message: string }).message;
     } else if (error instanceof Error) {
       loadError.value = error.message;
     } else {
@@ -141,24 +139,13 @@ async function loadListItems() {
   itemsError.value = null;
 
   try {
-    const { data } = await apiClient.get(
-      `/shopping-lists/${listId.value}/items`,
-      { params: { per_page: 200 } }
-    );
-    const collection = Array.isArray(data)
-      ? data
-      : Array.isArray(data?.items)
-      ? data.items
-      : Array.isArray(data?.data)
-      ? data.data
-      : [];
+    const data = await ListItemApi.getAll(listId.value);
+    const collection = Array.isArray(data) ? data : [];
     listItems.value = collection.map(mapListItem);
   } catch (error) {
     console.error("Error fetching list items:", error);
-    if (isAxiosError(error)) {
-      itemsError.value =
-        (error.response?.data as { message?: string })?.message ??
-        "Unable to load items.";
+    if (error && typeof error === 'object' && 'message' in error) {
+      itemsError.value = (error as { message: string }).message;
     } else if (error instanceof Error) {
       itemsError.value = error.message;
     } else {
@@ -181,21 +168,18 @@ async function handleUpdateQuantity(itemId: number | string, newQuantity: number
   target.metadata = target.metadata ?? {};
 
   try {
-    await apiClient.put(`/shopping-lists/${listId.value}/items/${numericId}`,
-      {
-        quantity: newQuantity,
-        unit: target.unit || "unit",
-        metadata: target.metadata ?? {},
-      }
-    );
+    await ListItemApi.modify(listId.value, numericId, {
+      quantity: newQuantity,
+      unit: target.unit || "unit",
+      metadata: target.metadata ?? {},
+    });
     showSuccess("Item quantity updated.");
   } catch (error) {
     console.error("Error updating quantity:", error);
     target.quantity = previous;
     showError(
-      isAxiosError(error)
-        ? (error.response?.data as { message?: string })?.message ??
-            "Unable to update quantity."
+      error && typeof error === 'object' && 'message' in error
+        ? (error as { message: string }).message
         : "Unable to update quantity."
     );
   }
@@ -211,10 +195,11 @@ async function handleToggleComplete(itemId: number | string, completed: boolean)
   target.completed = completed;
 
   try {
-    await apiClient.patch(
-      `/shopping-lists/${listId.value}/items/${numericId}`,
-      { purchased: completed }
-    );
+     if (completed) {
+      await ListItemApi.markAsPurchased(listId.value, numericId);
+    } else {
+      await ListItemApi.markAsNotPurchased(listId.value, numericId);
+    }
     showSuccess(
       completed ? "Marked item as purchased." : "Marked item as pending."
     );
@@ -222,9 +207,8 @@ async function handleToggleComplete(itemId: number | string, completed: boolean)
     console.error("Error toggling item state:", error);
     target.completed = previous;
     showError(
-      isAxiosError(error)
-        ? (error.response?.data as { message?: string })?.message ??
-            "Unable to update item."
+      error && typeof error === 'object' && 'message' in error
+        ? (error as { message: string }).message
         : "Unable to update item."
     );
   }
@@ -238,17 +222,14 @@ async function handleDeleteItem(itemId: number | string) {
   listItems.value = listItems.value.filter((item) => Number(item.id) !== numericId);
 
   try {
-    await apiClient.delete(
-      `/shopping-lists/${listId.value}/items/${numericId}`
-    );
+    await ListItemApi.remove(listId.value, numericId);
     showSuccess("Item removed from the list.");
   } catch (error) {
     console.error("Error deleting item:", error);
     listItems.value = previousItems;
     showError(
-      isAxiosError(error)
-        ? (error.response?.data as { message?: string })?.message ??
-            "Unable to delete item."
+      error && typeof error === 'object' && 'message' in error
+        ? (error as { message: string }).message
         : "Unable to delete item."
     );
   }
@@ -259,18 +240,8 @@ async function resolveProductId(productName: string): Promise<number> {
   if (!trimmed) throw new Error("Product name is required.");
 
   try {
-    const { data } = await apiClient.get("/products", {
-      params: { name: trimmed, per_page: 10 },
-    });
-    const collection = Array.isArray(data)
-      ? data
-      : Array.isArray(data?.products)
-      ? data.products
-      : Array.isArray(data?.items)
-      ? data.items
-      : Array.isArray(data?.data)
-      ? data.data
-      : [];
+    const data = await ProductApi.getByName(trimmed);
+    const collection = Array.isArray(data) ? data : [];
     const match = collection.find(
       (product: any) =>
         (product.name ?? "").trim().toLowerCase() === trimmed.toLowerCase()
@@ -281,30 +252,19 @@ async function resolveProductId(productName: string): Promise<number> {
   }
 
   try {
-    const { data } = await apiClient.post("/products", {
+    const data = await ProductApi.add({
       name: trimmed,
       metadata: {},
     });
-    const created = data?.product ?? data;
-    if (!created?.id) {
+    if (!data?.id) {
       throw new Error("Unable to create product for list item.");
     }
-    return created.id;
+    return data.id;
   } catch (error) {
-    if (isAxiosError(error) && error.response?.status === 409) {
+    if (error && typeof error === 'object' && 'message' in error && (error as any).message?.includes('409')) {
       // Product already exists, try to retrieve it again
-      const { data } = await apiClient.get("/products", {
-        params: { name: trimmed, per_page: 10 },
-      });
-      const collection = Array.isArray(data)
-        ? data
-        : Array.isArray(data?.products)
-        ? data.products
-        : Array.isArray(data?.items)
-        ? data.items
-        : Array.isArray(data?.data)
-        ? data.data
-        : [];
+      const data = await ProductApi.getByName(trimmed);
+      const collection = Array.isArray(data) ? data : [];
       const match = collection.find(
         (product: any) =>
           (product.name ?? "").trim().toLowerCase() === trimmed.toLowerCase()
@@ -321,25 +281,20 @@ async function handleAddItem(itemData: { name: string }) {
   try {
     const productId = await resolveProductId(itemData.name);
 
-    const { data } = await apiClient.post(
-      `/shopping-lists/${listId.value}/items`,
-      {
-        product: { id: productId },
-        quantity: 1,
-        unit: "unit",
-        metadata: {},
-      }
-    );
-    const raw = data?.item ?? data;
-    const mapped = mapListItem(raw);
+    const data = await ListItemApi.add(listId.value, {
+      product: { id: productId },
+      quantity: 1,
+      unit: "unit",
+      metadata: {},
+    });
+    const mapped = mapListItem(data);
     listItems.value.unshift(mapped);
     showSuccess("Item added to the list.");
   } catch (error) {
     console.error("Error adding item:", error);
     showError(
-      isAxiosError(error)
-        ? (error.response?.data as { message?: string })?.message ??
-            "Unable to add item."
+      error && typeof error === 'object' && 'message' in error
+        ? (error as { message: string }).message
         : error instanceof Error
         ? error.message
         : "Unable to add item."

@@ -33,7 +33,7 @@ export interface ListItemUpdate {
 
 export class ListItemApi {
   private static getUrl(listId: number, itemId?: number): string {
-    return `/lists/${listId}/items${itemId ? `/${itemId}` : ""}`;
+    return `/shopping-lists/${listId}/items${itemId ? `/${itemId}` : ""}`;
   }
 
   static async add(
