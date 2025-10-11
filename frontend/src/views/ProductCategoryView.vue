@@ -147,13 +147,65 @@ function handleToggleComplete(itemId: number, completed: boolean) {
   if (item) item.completed = completed;
 }
 
-function handleDeleteItem(itemId: number) {
-  products.value = products.value.filter((p) => p.id !== itemId);
+async function handleDeleteItem(itemId: number) {
+  try {
+    console.log('Deleting product:', itemId);
+    
+    // Delete via API first
+    await ProductApi.remove(itemId);
+    
+    // Remove from local state only after successful API call
+    products.value = products.value.filter((p) => p.id !== itemId);
+    
+    console.log('Product deleted successfully');
+  } catch (error) {
+    console.error('Error deleting product:', error);
+  }
 }
 
-function handleRenameProduct(payload: { id: number; name: string }) {
-  const item = products.value.find((p) => p.id === payload.id);
-  if (item) item.name = payload.name;
+async function handleRenameProduct(payload: { id: number; name: string }) {
+  // Store original product for potential rollback
+  const originalProduct = products.value.find((p) => p.id === payload.id);
+  if (!originalProduct) return;
+  
+  try {
+    
+    // Update local state optimistically (show change immediately)
+    const itemIndex = products.value.findIndex((p) => p.id === payload.id);
+    if (itemIndex !== -1) {
+      products.value[itemIndex] = {
+        ...products.value[itemIndex],
+        name: payload.name
+      };
+    }
+    
+    // Update via API
+    const apiResponse = await ProductApi.modify(payload.id, { name: payload.name });
+    
+    // Handle different possible response formats
+    const updatedProduct = Array.isArray(apiResponse) 
+      ? apiResponse[0] 
+      : (apiResponse as any)?.data || apiResponse;
+    
+    // Update with server response to ensure consistency
+    if (itemIndex !== -1 && updatedProduct) {
+      products.value[itemIndex] = {
+        ...products.value[itemIndex],
+        ...updatedProduct,
+        completed: products.value[itemIndex].completed // Preserve UI state
+      };
+    }
+    
+    console.log('Product renamed successfully');
+  } catch (error) {
+    console.error('Error renaming product:', error);
+    
+    // Rollback the optimistic update
+    const itemIndex = products.value.findIndex((p) => p.id === payload.id);
+    if (itemIndex !== -1 && originalProduct) {
+      products.value[itemIndex] = originalProduct;
+    }
+  }
 }
 
 async function handleMoveProduct(productId: number) {
