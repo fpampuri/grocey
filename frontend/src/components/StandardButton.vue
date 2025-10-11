@@ -3,6 +3,7 @@
       title: { type: String, required: true },
       icon: { type: String, default: "mdi-plus" },
       disabled: { type: Boolean, default: false },
+      variant: { type: String, default: "primary" }, // primary, danger
     });
     
     const emits = defineEmits(["click"]);
@@ -18,7 +19,7 @@
 <template>
   <button
     @click="handleClick"
-    class="standard-button"
+    :class="['standard-button', `standard-button--${variant}`]"
     :disabled="disabled"
   >
     <v-icon v-if="icon" :icon="icon" class="button-icon" />
@@ -72,5 +73,14 @@
   background-color: #ccc;
   transform: none;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.standard-button--danger {
+  background-color: var(--delete-red);
+}
+
+.standard-button--danger:hover {
+  background-color: var(--delete-red);
+  opacity: 0.9;
 }
 </style>

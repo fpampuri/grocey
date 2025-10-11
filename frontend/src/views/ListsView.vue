@@ -61,12 +61,14 @@ const showCreateDialog = ref(false);
 const showEditDialog = ref(false);
 const showFavoritesOnly = ref(false);
 const showDeleteDialog = ref(false);
+const showBulkDeleteDialog = ref(false);
 const showShareDialog = ref(false);
 const listToShare = ref<ShoppingList | null>(null);
 const listToEdit = ref<ShoppingList | null>(null);
 const isLoading = ref(false);
 const loadError = ref<string | null>(null);
 const listItemCountCache = new Map<number, number>();
+const selectedLists = ref<Set<number>>(new Set());
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const filteredLists = computed(() => {
@@ -85,6 +87,8 @@ const filteredLists = computed(() => {
 
   return filtered;
 });
+
+const selectedCount = computed(() => selectedLists.value.size);
 
 function sortLists(listArray: ShoppingList[]): ShoppingList[] {
   if (sortBy.value === "Name") {
@@ -246,10 +250,6 @@ async function handleStarToggle(isStarred: boolean, listId: number) {
   }
 }
 
-function handleSelectionToggle(_isSelected: boolean) {
-  // Reserved for bulk actions
-}
-
 function handleEdit(listId: number) {
   const list = lists.value.find((l) => l.id === listId);
   if (!list) return;
@@ -303,6 +303,59 @@ function handleDeleteList(listId: number) {
   if (!list) return;
   toDeleteList.value = list;
   showDeleteDialog.value = true;
+}
+
+function handleSelectionToggle(listId: number, isSelected: boolean) {
+  if (isSelected) {
+    selectedLists.value.add(listId);
+  } else {
+    selectedLists.value.delete(listId);
+  }
+}
+
+function handleBulkDelete() {
+  showBulkDeleteDialog.value = true;
+}
+
+async function confirmBulkDelete() {
+  try {
+    const listIds = Array.from(selectedLists.value);
+    let deletedCount = 0;
+    
+    // Delete lists sequentially to avoid SQLite transaction conflicts
+    for (const listId of listIds) {
+      try {
+        await ShoppingListApi.remove(listId);
+        deletedCount++;
+        listItemCountCache.delete(listId);
+      } catch (error) {
+        console.error(`Failed to delete list ${listId}:`, error);
+        // Continue with other deletions even if one fails
+      }
+    }
+    
+    // Remove successfully deleted lists from the local state
+    lists.value = lists.value.filter(list => !selectedLists.value.has(list.id));
+    
+    // Clear selection
+    selectedLists.value.clear();
+    
+    if (deletedCount === listIds.length) {
+      showSuccess(`Successfully deleted ${deletedCount} list${deletedCount === 1 ? '' : 's'}`);
+    } else if (deletedCount > 0) {
+      showSuccess(`Deleted ${deletedCount} of ${listIds.length} lists. Some deletions failed.`);
+    } else {
+      showError("Unable to delete any lists.");
+    }
+  } catch (error) {
+    showError(
+      error instanceof Error
+        ? error.message
+        : "Unable to delete lists."
+    );
+  } finally {
+    showBulkDeleteDialog.value = false;
+  }
 }
 
 async function confirmDelete() {
@@ -454,6 +507,15 @@ onBeforeUnmount(() => {
             Favorites
           </v-btn>
         </v-col>
+        
+        <v-col cols="auto" v-if="selectedCount > 0">
+          <StandardButton
+            :title="`Delete (${selectedCount})`"
+            icon="mdi-delete"
+            variant="danger"
+            @click="handleBulkDelete"
+          />
+        </v-col>
         <v-spacer />
         <v-col cols="auto">
           <div class="d-flex align-center">
@@ -502,9 +564,10 @@ onBeforeUnmount(() => {
             :icon="item.icon"
             :itemsCount="item.itemsCount"
             :starred="item.isFavorite || false"
+            :selected="selectedLists.has(item.id)"
             @click="() => handleListClick(item)"
             @toggle-star="(isStarred) => handleStarToggle(isStarred, item.id)"
-            @toggle-selection="handleSelectionToggle"
+            @toggle-selection="(isSelected) => handleSelectionToggle(item.id, isSelected)"
             @edit="() => handleEdit(item.id)"
             @delete="() => handleDeleteList(item.id)"
             @share="() => handleShare(item.id)"
@@ -545,6 +608,18 @@ onBeforeUnmount(() => {
       :item-name="toDeleteList?.title"
       description="This action cannot be undone. All items in this list will be permanently deleted."
       @confirm="confirmDelete"
+    />
+
+    <!-- Bulk Delete Confirmation Dialog -->
+    <ConfirmDeleteDialog
+      v-model="showBulkDeleteDialog"
+      :item-type="selectedCount === 1 ? 'list' : 'lists'"
+      :title="selectedCount === 1 ? 'Delete List' : `Delete ${selectedCount} Lists`"
+      :description="selectedCount === 1 
+        ? 'This action cannot be undone. All items in this list will be permanently deleted.'
+        : `This action cannot be undone. All items in these ${selectedCount} lists will be permanently deleted.`"
+      :confirm-text="selectedCount === 1 ? 'Delete List' : `Delete ${selectedCount} Lists`"
+      @confirm="confirmBulkDelete"
     />
 
     <!-- Share List Dialog -->
