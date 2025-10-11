@@ -50,7 +50,7 @@ function handleBackdropClick() {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 2100;
 }
 
 .dialog-container {
@@ -59,7 +59,7 @@ function handleBackdropClick() {
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   width: 90%;
   max-height: 90vh;
-  overflow: visible;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -71,6 +71,7 @@ function handleBackdropClick() {
   justify-content: space-between;
   padding: 20px 24px;
   border-bottom: 1px solid #e0e0e0;
+  flex-shrink: 0;
 }
 
 .dialog-container :deep(.dialog-title) {
@@ -105,7 +106,9 @@ function handleBackdropClick() {
 /* Provide utility classes for consistent body styling */
 .dialog-container :deep(.dialog-body) {
   padding: 24px;
-  overflow: visible;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 }
 
 /* Provide utility classes for consistent footer styling */
@@ -117,6 +120,7 @@ function handleBackdropClick() {
   padding: 20px 24px;
   border-top: 1px solid #e0e0e0;
   background-color: #fafafa;
+  flex-shrink: 0;
 }
 
 /* Utility styles for form elements */

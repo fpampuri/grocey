@@ -13,6 +13,20 @@ const emit = defineEmits(["update:modelValue", "create-list"]);
 const listName = ref("");
 const isRecurring = ref(false);
 const selectedIcon = ref("mdi-cart");
+const selectedDay = ref("Monday");
+const selectedHour = ref(9);
+const selectedMinute = ref(0);
+
+// Available days for recurring lists
+const dayOptions = [
+  "Monday",
+  "Tuesday", 
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday"
+];
 
 // Available icons for selection
 const iconOptions = [
@@ -72,6 +86,9 @@ function closeDialog() {
   listName.value = "";
   isRecurring.value = false;
   selectedIcon.value = "mdi-cart";
+  selectedDay.value = "Monday";
+  selectedHour.value = 9;
+  selectedMinute.value = 0;
   iconOptionsOpen.value = false;
 }
 
@@ -81,6 +98,9 @@ function handleModelValueUpdate(value: boolean) {
     listName.value = "";
     isRecurring.value = false;
     selectedIcon.value = "mdi-cart";
+    selectedDay.value = "Monday";
+    selectedHour.value = 9;
+    selectedMinute.value = 0;
     iconOptionsOpen.value = false;
   }
   emit("update:modelValue", value);
@@ -91,19 +111,40 @@ function createList() {
     return; // Don't create if required fields missing
   }
 
-  emit("create-list", {
+  const listData = {
     name: listName.value.trim(),
     description: "-", // Minimal placeholder to satisfy backend requirement
     recurring: isRecurring.value,
     icon: selectedIcon.value,
-  });
+  };
 
+  // Add scheduling info if recurring is enabled
+  if (isRecurring.value) {
+    (listData as any).recurringSchedule = {
+      day: selectedDay.value,
+      hour: selectedHour.value,
+      minute: selectedMinute.value,
+      time: `${String(selectedHour.value).padStart(2, '0')}:${String(selectedMinute.value).padStart(2, '0')}`
+    };
+  }
+
+  emit("create-list", listData);
   closeDialog();
 }
 
 function selectIcon(iconValue: string) {
   selectedIcon.value = iconValue;
   iconOptionsOpen.value = false;
+}
+
+function validateHour() {
+  if (selectedHour.value < 0) selectedHour.value = 0;
+  if (selectedHour.value > 23) selectedHour.value = 23;
+}
+
+function validateMinute() {
+  if (selectedMinute.value < 0) selectedMinute.value = 0;
+  if (selectedMinute.value > 59) selectedMinute.value = 59;
 }
 
 // Toggle icon options on click instead of hover
@@ -149,6 +190,53 @@ const iconOptionsOpen = ref(false);
           color="var(--primary-green)"
           hide-details
         />
+      </div>
+
+      <!-- Recurring Schedule (only show when recurring is enabled) -->
+      <div v-if="isRecurring" class="recurring-schedule">
+        <!-- Day Selection -->
+        <div class="form-field">
+          <label class="field-label">Day of Week</label>
+          <select v-model="selectedDay" class="select-input">
+            <option v-for="day in dayOptions" :key="day" :value="day">
+              {{ day }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Time Selection -->
+        <div class="form-field">
+          <label class="field-label">Time</label>
+          <div class="time-inputs">
+            <div class="time-input-group">
+              <label class="time-label">Hour</label>
+              <input
+                v-model.number="selectedHour"
+                type="number"
+                min="0"
+                max="23"
+                class="time-input"
+                @input="validateHour"
+              />
+            </div>
+            <span class="time-separator">:</span>
+            <div class="time-input-group">
+              <label class="time-label">Minute</label>
+              <input
+                v-model.number="selectedMinute"
+                type="number"
+                min="0"
+                max="59"
+                step="5"
+                class="time-input"
+                @input="validateMinute"
+              />
+            </div>
+          </div>
+          <div class="time-preview">
+            Scheduled for {{ selectedDay }} at {{ String(selectedHour).padStart(2, '0') }}:{{ String(selectedMinute).padStart(2, '0') }}
+          </div>
+        </div>
       </div>
 
       <!-- Icon Selection -->
@@ -318,5 +406,89 @@ const iconOptionsOpen = ref(false);
 .cancel-button:hover {
   background-color: white;
   border-color: #999;
+}
+
+/* Recurring Schedule Styles */
+.recurring-schedule {
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.select-input {
+  width: 100%;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease;
+  background: white;
+}
+
+.select-input:focus {
+  border-color: var(--primary-green);
+}
+
+.time-inputs {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.time-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.time-label {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+.time-input {
+  width: 70px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px 8px;
+  font-size: 14px;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.time-input:focus {
+  border-color: var(--primary-green);
+}
+
+.time-separator {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin: 0 4px;
+  padding-bottom: 12px;
+}
+
+.time-preview {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--primary-green);
+  font-weight: 500;
+}
+
+/* Remove number input arrows */
+.time-input::-webkit-outer-spin-button,
+.time-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.time-input[type=number] {
+  appearance: textfield;
+  -moz-appearance: textfield;
 }
 </style>

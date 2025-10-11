@@ -400,18 +400,43 @@ async function handleShareList(data: SharePayload) {
   const listId = listToShare.value.id;
   showShareDialog.value = false;
 
+  let successCount = 0;
+  const failedEmails: string[] = [];
+
   try {
+    // Process emails sequentially to avoid overwhelming the server
     for (const email of data.emails) {
-      await ShoppingListApi.share(listId, email);
+      try {
+        await ShoppingListApi.share(listId, email);
+        successCount++;
+      } catch (error) {
+        console.error(`Failed to share with ${email}:`, error);
+        failedEmails.push(email);
+      }
     }
-    showSuccess(
-      data.emails.length === 1
-        ? "List shared successfully."
-        : "List shared with selected users."
-    );
+
+    // Provide detailed feedback based on results
+    if (successCount === data.emails.length) {
+      showSuccess(
+        data.emails.length === 1
+          ? "List shared successfully."
+          : `List shared with all ${data.emails.length} users.`
+      );
+    } else if (successCount > 0) {
+      showSuccess(
+        `List shared with ${successCount} of ${data.emails.length} users.`
+      );
+      if (failedEmails.length > 0) {
+        console.warn("Failed to share with:", failedEmails);
+      }
+    } else {
+      showError("Unable to share list with any of the provided email addresses.");
+    }
+
+    // Refresh the lists to show updated sharing status
     await loadLists();
   } catch (error) {
-    console.error("Error sharing list:", error);
+    console.error("Error in share process:", error);
     showError(
       error instanceof Error
         ? error.message
