@@ -15,6 +15,12 @@ const routes = [
     meta: { title: "Iniciar sesión", layout: "plain" },
   },
   {
+    path: "/forgot-password",
+    name: "forgot-password",
+    component: () => import("@/views/ForgotPasswordView.vue"),
+    meta: { title: "Forgot Password", layout: "plain" },
+  },
+  {
     path: "/lists",
     name: "lists",
     component: () => import("@/views/ListsView.vue"),

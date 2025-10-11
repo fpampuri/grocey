@@ -141,9 +141,9 @@ export class UserApi {
     controller?: AbortController
   ): Promise<void> {
     return await Api.post<void>(
-      UserApi.getUrl("forgot-password"),
+      `${UserApi.getUrl("forgot-password")}?email=${encodeURIComponent(passwordRecovery.email)}`,
       false, // Password recovery doesn't require auth token
-      passwordRecovery,
+      undefined, 
       controller
     );
   }
@@ -201,7 +201,7 @@ export class UserApi {
   ): Promise<void> {
     return await Api.post<void>(
       UserApi.getUrl("send-verification"),
-      true,
+      false, // Resend verification doesn't require auth token
       { email },
       controller
     );
