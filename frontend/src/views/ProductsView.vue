@@ -10,8 +10,13 @@ import { useRouter } from "vue-router";
 import { ref, onMounted, computed } from "vue";
 import CategoryApi, { type Category as CategoryApiType } from "@/services/category";
 import ProductApi, { type Product as ProductApiType } from "@/services/product";
+import ToastNotification from "@/components/ToastNotification.vue";
+import { useToast } from "@/composables/useToast";
 
 const router = useRouter();
+
+// Toast notifications
+const { showToast, toastMessage, toastType, showSuccess, showError } = useToast();
 
 // Categories and Products state - extending API types for UI needs
 type Product = ProductApiType & { price: number }; // Default price, not used in UI
@@ -132,9 +137,10 @@ async function handleEditCategory(data: { id: number; name: string; icon: string
     
     showEditDialog.value = false;
     categoryToEdit.value = null;
+    showSuccess(`Category "${data.name}" updated successfully!`);
   } catch (error) {
     console.error('Error updating category:', error);
-    // You might want to show a toast notification here
+    showError('Failed to update category. Please try again.');
   }
 }
 
@@ -150,7 +156,8 @@ async function confirmDelete() {
   if (!categoryToDelete.value?.id) return;
   
   try {
-    console.log('🗑️ Deleting category:', categoryToDelete.value.title);
+    const categoryName = categoryToDelete.value.title;
+    console.log('🗑️ Deleting category:', categoryName);
     
     // Delete category via API
     await CategoryApi.remove(categoryToDelete.value.id);
@@ -165,9 +172,10 @@ async function confirmDelete() {
     // Reset state
     showDeleteDialog.value = false;
     categoryToDelete.value = null;
+    showSuccess(`Category "${categoryName}" deleted successfully!`);
   } catch (error) {
     console.error('Error deleting category:', error);
-    // You might want to show a toast notification here
+    showError('Failed to delete category. Please try again.');
   }
 }
 
@@ -193,9 +201,10 @@ async function handleCreateCategory(categoryData: { name: string; icon: string }
     
     categories.value.unshift(categoryForUI);
     showCreateDialog.value = false;
+    showSuccess(`Category "${categoryData.name}" created successfully!`);
   } catch (error) {
     console.error('Error creating category:', error);
-    // You might want to show a toast notification here
+    showError('Failed to create category. Please try again.');
   }
 }
 
@@ -228,9 +237,10 @@ async function handleCreateProduct(data: { name: string; categoryId: number }) {
     if (target) {
       target.products.unshift({ ...newProduct, price: 0 });
     }
+    showSuccess(`Product "${data.name}" created successfully!`);
   } catch (error) {
     console.error('Error creating product:', error);
-    // You might want to show a toast notification here
+    showError('Failed to create product. Please try again.');
   }
 }
 </script>
@@ -347,6 +357,13 @@ async function handleCreateProduct(data: { name: string; categoryId: number }) {
       :item-name="categoryToDelete?.title"
       description="This action cannot be undone. All products in this category will be moved to 'Uncategorized'."
       @confirm="confirmDelete"
+    />
+    
+    <!-- Toast Notification -->
+    <ToastNotification
+      v-model="showToast"
+      :message="toastMessage"
+      :type="toastType"
     />
   </div>
 </template>
