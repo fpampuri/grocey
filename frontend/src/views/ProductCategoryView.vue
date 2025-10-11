@@ -7,9 +7,14 @@ import AddToListDialog from "@/components/dialog/AddToListDialog.vue";
 import CategoryApi, { type Category as CategoryApiType } from "@/services/category";
 import ProductApi, { type Product as ProductApiType } from "@/services/product";
 import ShoppingListApi, { type ShoppingList } from "@/services/shoppingList";
+import ToastNotification from "@/components/ToastNotification.vue";
+import { useToast } from "@/composables/useToast";
 
 const route = useRoute();
 const router = useRouter();
+
+// Toast notifications
+const { showToast, toastMessage, toastType, showSuccess, showError } = useToast();
 
 type Product = ProductApiType & { completed?: boolean; quantity?: number; expiryDate?: string };
 type Category = {
@@ -148,6 +153,9 @@ function handleToggleComplete(itemId: number, completed: boolean) {
 }
 
 async function handleDeleteItem(itemId: number) {
+  const productToDelete = products.value.find((p) => p.id === itemId);
+  const productName = productToDelete?.name || 'Product';
+  
   try {
     console.log('Deleting product:', itemId);
     
@@ -157,9 +165,11 @@ async function handleDeleteItem(itemId: number) {
     // Remove from local state only after successful API call
     products.value = products.value.filter((p) => p.id !== itemId);
     
+    showSuccess(`"${productName}" deleted successfully!`);
     console.log('Product deleted successfully');
   } catch (error) {
     console.error('Error deleting product:', error);
+    showError(`Failed to delete "${productName}". Please try again.`);
   }
 }
 
@@ -168,8 +178,10 @@ async function handleRenameProduct(payload: { id: number; name: string }) {
   const originalProduct = products.value.find((p) => p.id === payload.id);
   if (!originalProduct) return;
   
+  const oldName = originalProduct.name;
+  const newName = payload.name;
+  
   try {
-    
     // Update local state optimistically (show change immediately)
     const itemIndex = products.value.findIndex((p) => p.id === payload.id);
     if (itemIndex !== -1) {
@@ -196,6 +208,7 @@ async function handleRenameProduct(payload: { id: number; name: string }) {
       };
     }
     
+    showSuccess(`Product renamed from "${oldName}" to "${newName}"!`);
     console.log('Product renamed successfully');
   } catch (error) {
     console.error('Error renaming product:', error);
@@ -205,6 +218,8 @@ async function handleRenameProduct(payload: { id: number; name: string }) {
     if (itemIndex !== -1 && originalProduct) {
       products.value[itemIndex] = originalProduct;
     }
+    
+    showError(`Failed to rename "${oldName}". Please try again.`);
   }
 }
 
@@ -220,18 +235,56 @@ async function handleAddToList(productId: number) {
   showAddToListDialog.value = true;
 }
 
-function confirmMoveToCategory(data: { categoryId: number }) {
-  console.log('Moving product', selectedProductId.value, 'to category', data.categoryId);
-  // Remove product from current list
-  if (selectedProductId.value) {
+async function confirmMoveToCategory(data: { categoryId: number }) {
+  if (!selectedProductId.value) return;
+  
+  const productToMove = products.value.find(p => p.id === selectedProductId.value);
+  const productName = productToMove?.name || 'Product';
+  const targetCategory = allCategories.value.find(cat => cat.id === data.categoryId);
+  const targetCategoryName = targetCategory?.name || 'category';
+  
+  try {
+    console.log('Moving product', selectedProductId.value, 'to category', data.categoryId);
+    
+    // Update product category via API
+    await ProductApi.modify(selectedProductId.value, { 
+      category: { id: data.categoryId } 
+    });
+    
+    // Remove product from current list (since it's now in a different category)
     products.value = products.value.filter(p => p.id !== selectedProductId.value);
+    
+    showSuccess(`"${productName}" moved to ${targetCategoryName}!`);
+  } catch (error) {
+    console.error('Error moving product:', error);
+    showError(`Failed to move "${productName}". Please try again.`);
   }
+  
   showMoveDialog.value = false;
   selectedProductId.value = null;
 }
 
-function confirmAddToList(data: { listId: number }) {
-  console.log('Adding product', selectedProductId.value, 'to list', data.listId);
+async function confirmAddToList(data: { listId: number }) {
+  if (!selectedProductId.value) return;
+  
+  const productToAdd = products.value.find(p => p.id === selectedProductId.value);
+  const productName = productToAdd?.name || 'Product';
+  const targetList = allLists.value.find(list => list.id === data.listId);
+  const targetListName = targetList?.name || 'list';
+  
+  try {
+    console.log('Adding product', selectedProductId.value, 'to list', data.listId);
+    
+    // TODO: Implement actual API call to add product to list
+    // This would depend on your list items API
+    // await ListItemApi.add({ productId: selectedProductId.value, listId: data.listId });
+    
+    showSuccess(`"${productName}" added to ${targetListName}!`);
+  } catch (error) {
+    console.error('Error adding product to list:', error);
+    showError(`Failed to add "${productName}" to ${targetListName}. Please try again.`);
+  }
+  
   showAddToListDialog.value = false;
   selectedProductId.value = null;
 }
@@ -315,6 +368,13 @@ function confirmAddToList(data: { listId: number }) {
       v-model="showAddToListDialog"
       :lists="availableLists"
       @add-to-list="confirmAddToList"
+    />
+
+    <!-- Toast Notification -->
+    <ToastNotification
+      v-model="showToast"
+      :message="toastMessage"
+      :type="toastType"
     />
   </div>
 </template>
