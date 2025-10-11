@@ -6,6 +6,7 @@ import MoveToCategoryDialog from "@/components/dialog/MoveToCategoryDialog.vue";
 import AddToListDialog from "@/components/dialog/AddToListDialog.vue";
 import CategoryApi, { type Category as CategoryApiType } from "@/services/category";
 import ProductApi, { type Product as ProductApiType } from "@/services/product";
+import ShoppingListApi, { type ShoppingList } from "@/services/shoppingList";
 
 const route = useRoute();
 const router = useRouter();
@@ -28,35 +29,34 @@ const categoryData = ref<Category | null>(null);
 const products = ref<Product[]>([]);
 const isLoading = ref(true);
 
+// Data for dialogs
+const allCategories = ref<CategoryApiType[]>([]);
+const allLists = ref<ShoppingList[]>([]);
+
 // Dialog states
 const showMoveDialog = ref(false);
 const showAddToListDialog = ref(false);
 const selectedProductId = ref<number | null>(null);
 
-// Mock categories for MoveToCategoryDialog
+// Categories for MoveToCategoryDialog - populated from API
 const availableCategories = computed(() => {
-  if (isFromPantry.value) {
-    return [
-      { value: 1, label: "Fresh Produce" },
-      { value: 2, label: "Pantry Staples" },
-      { value: 3, label: "Refrigerated" },
-      { value: 4, label: "Frozen" },
-    ].filter(cat => cat.value !== categoryId.value);
-  } else {
-    return [
-      { value: 1, label: "Fruits" },
-      { value: 2, label: "Vegetables" },
-      { value: 3, label: "Dairy" },
-    ].filter(cat => cat.value !== categoryId.value);
-  }
+  return allCategories.value
+    .filter(cat => cat.id !== categoryId.value)
+    .map(cat => ({
+      value: cat.id!,
+      label: cat.name,
+      icon: cat.metadata?.icon || 'mdi-box'
+    }));
 });
 
-// Mock lists for AddToListDialog
-const availableLists = computed(() => [
-  { value: 1, label: "Weekly Shopping" },
-  { value: 2, label: "Party Supplies" },
-  { value: 3, label: "Meal Prep" },
-]);
+// Lists for AddToListDialog - populated from API
+const availableLists = computed(() => {
+  return allLists.value.map(list => ({
+    value: list.id!,
+    label: list.name,
+    icon: list.metadata?.icon || 'mdi-format-list-bulleted'
+  }));
+});
 
 function goBack() {
   if (isFromPantry.value) {
@@ -66,86 +66,45 @@ function goBack() {
   }
 }
 
-function getMockCategory(id: number): Category | null {
-  if (isFromPantry.value) {
-    // Pantry categories
-    const pantryMap: Record<number, Category> = {
-      1: { id: 1, title: "Fresh Produce", icon: "mdi-food-apple" },
-      2: { id: 2, title: "Pantry Staples", icon: "mdi-grain" },
-      3: { id: 3, title: "Refrigerated", icon: "mdi-fridge" },
-      4: { id: 4, title: "Frozen", icon: "mdi-snowflake" },
-    };
-    return pantryMap[id] ?? null;
-  } else {
-    // Categories
-    const categoryMap: Record<number, Category> = {
-      1: { id: 1, title: "Fruits", icon: "mdi-food-apple" },
-      2: { id: 2, title: "Vegetables", icon: "mdi-food-variant" },
-      3: { id: 3, title: "Dairy", icon: "mdi-cheese" },
-    };
-    return categoryMap[id] ?? null;
+// Fetch categories for MoveToCategoryDialog (with caching)
+async function fetchCategories() {
+  if (allCategories.value.length > 0 || isFromPantry.value) return; // Already loaded or not needed
+  
+  try {
+    const apiCategoriesResponse = await CategoryApi.getAll();
+    allCategories.value = Array.isArray(apiCategoriesResponse) 
+      ? apiCategoriesResponse 
+      : (apiCategoriesResponse as any)?.data || [];
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    allCategories.value = [];
   }
 }
 
-function getMockProducts(id: number): Product[] {
-  if (isFromPantry.value) {
-    // Pantry items with quantities and expiry dates
-    const pantryItems: Record<number, Array<{name: string, quantity: number, expiryDate: string}>> = {
-      1: [
-        { name: "Apples", quantity: 6, expiryDate: "2025-01-10" },
-        { name: "Bananas", quantity: 4, expiryDate: "2025-01-08" },
-        { name: "Carrots", quantity: 8, expiryDate: "2025-01-15" },
-      ],
-      2: [
-        { name: "Rice", quantity: 2, expiryDate: "2026-01-01" },
-        { name: "Pasta", quantity: 3, expiryDate: "2025-12-15" },
-        { name: "Flour", quantity: 1, expiryDate: "2025-11-30" },
-      ],
-      3: [
-        { name: "Milk", quantity: 1, expiryDate: "2025-01-05" },
-        { name: "Cheese", quantity: 2, expiryDate: "2025-01-12" },
-        { name: "Yogurt", quantity: 4, expiryDate: "2025-01-07" },
-        { name: "Eggs", quantity: 12, expiryDate: "2025-01-14" },
-      ],
-      4: [
-        { name: "Frozen Peas", quantity: 2, expiryDate: "2026-03-01" },
-        { name: "Ice Cream", quantity: 1, expiryDate: "2025-12-01" },
-      ],
-    };
-    const items = pantryItems[id] ?? [];
-    return items.map((item, idx) => ({
-      id: id * 100 + idx + 1,
-      name: item.name,
-      quantity: item.quantity,
-      expiryDate: item.expiryDate,
-      completed: false,
-    }));
-  } else {
-    // Category items
-    const categoryItems: Record<number, string[]> = {
-      1: ["Apples", "Bananas", "Strawberries"],
-      2: ["Tomatoes", "Lettuce"],
-      3: ["Milk", "Cheese", "Yogurt", "Butter"],
-    };
-    const names = categoryItems[id] ?? [];
-    return names.map((name, idx) => ({
-      id: id * 100 + idx + 1,
-      name,
-      completed: false,
-    }));
+// Fetch lists for AddToListDialog (with caching)
+async function fetchLists() {
+  if (allLists.value.length > 0) return; // Already loaded
+  
+  try {
+    const apiListsResponse = await ShoppingListApi.getAll();
+    allLists.value = Array.isArray(apiListsResponse) 
+      ? apiListsResponse 
+      : (apiListsResponse as any)?.data || [];
+  } catch (error) {
+    console.error('Error fetching lists:', error);
+    allLists.value = [];
   }
 }
+
+
 
 onMounted(async () => {
   isLoading.value = true;
   try {
     if (isFromPantry.value) {
-      // For pantry, we'll keep mock data for now since it's a different data structure
-      const cat = getMockCategory(categoryId.value);
-      categoryData.value = cat;
-      if (cat) {
-        products.value = getMockProducts(categoryId.value);
-      }
+      // For pantry, show empty state - no mock data
+      categoryData.value = null;
+      products.value = [];
     } else {
       // For categories, use real API calls
       const apiCategory = await CategoryApi.get(categoryId.value);
@@ -160,7 +119,13 @@ onMounted(async () => {
       };
       
       // Fetch products for this category
-      const allProducts = await ProductApi.getAll();
+      const apiProductsResponse = await ProductApi.getAll();
+      
+      // Handle different possible response formats
+      const allProducts: ProductApiType[] = Array.isArray(apiProductsResponse) 
+        ? apiProductsResponse 
+        : (apiProductsResponse as any)?.data || [];
+      
       products.value = allProducts
         .filter(product => product.category?.id === categoryId.value)
         .map(product => ({
@@ -170,12 +135,9 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error('Error loading category data:', error);
-    // Fallback to mock data if API fails
-    const cat = getMockCategory(categoryId.value);
-    categoryData.value = cat;
-    if (cat) {
-      products.value = getMockProducts(categoryId.value);
-    }
+    // Set empty state on error
+    categoryData.value = null;
+    products.value = [];
   }
   isLoading.value = false;
 });
@@ -194,13 +156,15 @@ function handleRenameProduct(payload: { id: number; name: string }) {
   if (item) item.name = payload.name;
 }
 
-function handleMoveProduct(productId: number) {
+async function handleMoveProduct(productId: number) {
   selectedProductId.value = productId;
+  await fetchCategories();
   showMoveDialog.value = true;
 }
 
-function handleAddToList(productId: number) {
+async function handleAddToList(productId: number) {
   selectedProductId.value = productId;
+  await fetchLists();
   showAddToListDialog.value = true;
 }
 

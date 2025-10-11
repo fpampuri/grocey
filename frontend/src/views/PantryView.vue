@@ -68,49 +68,8 @@ function sortCategories(list: Category[]): Category[] {
 
 onMounted(async () => {
   isLoading.value = true;
-  // Mock pantry data with quantities and expiry dates
-  categories.value = [
-    {
-      id: 1,
-      title: "Fresh Produce",
-      icon: "mdi-food-apple",
-      products: [
-        { id: 101, name: "Apples", quantity: 6, expiryDate: "2025-01-10" },
-        { id: 102, name: "Bananas", quantity: 4, expiryDate: "2025-01-08" },
-        { id: 103, name: "Carrots", quantity: 8, expiryDate: "2025-01-15" },
-      ],
-    },
-    {
-      id: 2,
-      title: "Pantry Staples",
-      icon: "mdi-grain",
-      products: [
-        { id: 201, name: "Rice", quantity: 2, expiryDate: "2026-01-01" },
-        { id: 202, name: "Pasta", quantity: 3, expiryDate: "2025-12-15" },
-        { id: 203, name: "Flour", quantity: 1, expiryDate: "2025-11-30" },
-      ],
-    },
-    {
-      id: 3,
-      title: "Refrigerated",
-      icon: "mdi-fridge",
-      products: [
-        { id: 301, name: "Milk", quantity: 1, expiryDate: "2025-01-05" },
-        { id: 302, name: "Cheese", quantity: 2, expiryDate: "2025-01-12" },
-        { id: 303, name: "Yogurt", quantity: 4, expiryDate: "2025-01-07" },
-        { id: 304, name: "Eggs", quantity: 12, expiryDate: "2025-01-14" },
-      ],
-    },
-    {
-      id: 4,
-      title: "Frozen",
-      icon: "mdi-snowflake",
-      products: [
-        { id: 401, name: "Frozen Peas", quantity: 2, expiryDate: "2026-03-01" },
-        { id: 402, name: "Ice Cream", quantity: 1, expiryDate: "2025-12-01" },
-      ],
-    },
-  ];
+  // TODO: Implement pantry API integration
+  categories.value = [];
   isLoading.value = false;
 });
 

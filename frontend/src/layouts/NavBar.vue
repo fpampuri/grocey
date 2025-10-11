@@ -33,55 +33,30 @@ async function getListName(id: string): Promise<string> {
 
 async function getCategoryName(id: string): Promise<string> {
   try {
-    // Try to fetch from API endpoints first (for future use)
-    const response = await fetch("/api/categories.json");
-    if (response.ok) {
-      const categories = await response.json();
-      const category = categories.find((c: any) => c.id === parseInt(id));
-      return category?.title || `Product Category ${id}`;
-    }
-  } catch (apiError) {
-    // API endpoint doesn't exist, fall back to the same data structure used in ProductsView
-    console.log(
-      "API endpoint /api/categories.json not found, using ProductsView data structure"
-    );
+    // Try to fetch from real API
+    const { data } = await apiClient.get(`/categories/${id}`);
+    const category = data?.category ?? data;
+    if (category?.name) return category.name;
+    if (category?.title) return category.title;
+  } catch (error) {
+    console.error("Error fetching category name:", error);
   }
-
-  // Fallback to match the exact same data as ProductsView uses
-  const categories: Record<string, string> = {
-    "1": "Fruits",
-    "2": "Vegetables",
-    "3": "Dairy",
-  };
-
-  return categories[id] || `Product Category ${id}`;
+  
+  return `Product Category ${id}`;
 }
 
 async function getPantryName(id: string): Promise<string> {
   try {
-    // Try to fetch from API endpoints first (for future use)
-    const response = await fetch("/api/pantry.json");
-    if (response.ok) {
-      const pantryItems = await response.json();
-      const pantryItem = pantryItems.find((p: any) => p.id === parseInt(id));
-      return pantryItem?.title || `Pantry Item ${id}`;
-    }
-  } catch (apiError) {
-    // API endpoint doesn't exist, fall back to the same data structure used in PantryView
-    console.log(
-      "API endpoint /api/pantry.json not found, using PantryView data structure"
-    );
+    // Try to fetch from real API (pantry items would be different from categories)
+    const { data } = await apiClient.get(`/pantry/${id}`);
+    const pantryItem = data?.pantryItem ?? data;
+    if (pantryItem?.name) return pantryItem.name;
+    if (pantryItem?.title) return pantryItem.title;
+  } catch (error) {
+    console.error("Error fetching pantry item name:", error);
   }
-
-  // Fallback to match the exact same data as PantryView.vue uses
-  const pantryCategories: Record<string, string> = {
-    "1": "Fresh Produce",
-    "2": "Pantry Staples",
-    "3": "Refrigerated",
-    "4": "Frozen",
-  };
-
-  return pantryCategories[id] || `Pantry Item ${id}`;
+  
+  return `Pantry Item ${id}`;
 }
 
 // Function to fetch dynamic title based on route

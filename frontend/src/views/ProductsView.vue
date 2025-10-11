@@ -72,11 +72,8 @@ onMounted(async () => {
   
   // Fetch categories from API
   const apiCategoriesResponse = await CategoryApi.getAll();
-  console.log('Categories API response:', apiCategoriesResponse);
-  
   // Fetch all products to group by category
   const apiProductsResponse = await ProductApi.getAll();
-  console.log('Products API response:', apiProductsResponse);
   
   // Handle different possible response formats
   const apiCategories: CategoryApiType[] = Array.isArray(apiCategoriesResponse) 
