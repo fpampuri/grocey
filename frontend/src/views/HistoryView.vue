@@ -46,6 +46,7 @@
   const sortBy = ref('Date')
   const showDeleteDialog = ref(false)
   const showRestoreDialog = ref(false)
+  const showBulkDeleteDialog = ref(false)
   const isLoading = ref(false)
   const loadError = ref<string | null>(null)
   const listItemCountCache = new Map<number, number>()
@@ -153,6 +154,38 @@
     }
   }
 
+  async function ensureAllItemsCompleted (listId: number) {
+    try {
+      // Get all items for this list
+      const data = await ListItemApi.getAll(listId)
+      const items = Array.isArray(data)
+        ? data
+        : Array.isArray((data as any)?.data)
+          ? (data as any).data
+          : Array.isArray((data as any)?.items)
+            ? (data as any).items
+            : []
+
+      // Mark any incomplete items as completed
+      for (const item of items) {
+        const itemData = item?.item ?? item
+        const isPurchased = Boolean(itemData?.purchased ?? itemData?.completed)
+        
+        if (!isPurchased && itemData?.id) {
+          try {
+            await ListItemApi.markAsPurchased(listId, itemData.id)
+          } catch (error) {
+            console.warn(`Failed to mark item ${itemData.id} as completed:`, error)
+            // Continue with other items even if one fails
+          }
+        }
+      }
+    } catch (error) {
+      console.warn(`Failed to ensure all items completed for list ${listId}:`, error)
+      // Don't throw error as this is background cleanup
+    }
+  }
+
   async function loadLists () {
     isLoading.value = true
     loadError.value = null
@@ -175,13 +208,16 @@
         list.metadata && list.metadata.status === 'completed'
       )
 
-      // Fetch item counts for each list
+      // Fetch item counts for each list and ensure all items are completed
       for (const list of completedLists) {
         if (list.itemsCount) {
           listItemCountCache.set(list.id, list.itemsCount)
         } else {
           list.itemsCount = await fetchListItemsCount(list.id)
         }
+        
+        // Ensure all items in this completed list are marked as completed
+        await ensureAllItemsCompleted(list.id)
       }
 
       lists.value = completedLists
@@ -214,11 +250,81 @@
     }
   }
 
-  function handleRestoreList (listId: number) {
+  function handleMarkUncompleted (listId: number) {
     const list = lists.value.find(l => l.id === listId)
     if (list) {
       toRestoreList.value = list
       showRestoreDialog.value = true
+    }
+  }
+
+  function handleBulkDelete () {
+    showBulkDeleteDialog.value = true
+  }
+
+  async function handleBulkMarkUncompleted () {
+    try {
+      const listIds = Array.from(selectedLists.value)
+      let restoredCount = 0
+
+      // Process lists sequentially to avoid conflicts
+      for (const listId of listIds) {
+        const list = lists.value.find(l => l.id === listId)
+        if (!list) continue
+
+        try {
+          // Update list metadata to mark as active
+          await ShoppingListApi.modify(listId, {
+            name: list.name,
+            description: list.description,
+            recurring: list.recurring,
+            metadata: {
+              ...list.metadata,
+              status: 'active'
+            }
+          })
+
+          // Mark all items as not purchased (reset)
+          const response = await ListItemApi.getAll(listId)
+          const items = Array.isArray(response) ? response : (response as any)?.data || []
+          
+          for (const item of items) {
+            const itemData = item?.item ?? item
+            if (itemData?.purchased || itemData?.completed) {
+              await ListItemApi.markAsNotPurchased(listId, itemData.id || itemData.itemId)
+            }
+          }
+
+          restoredCount++
+        } catch (error) {
+          console.error(`Error restoring list ${listId}:`, error)
+        }
+      }
+
+      // Remove restored lists from history view
+      const restoredIds = Array.from(selectedLists.value)
+      lists.value = lists.value.filter(list => !restoredIds.includes(list.id))
+      
+      // Clear selections
+      selectedLists.value.clear()
+
+      // Show success message
+      if (restoredCount === listIds.length) {
+        showSuccess(
+          restoredCount === 1 
+            ? 'List marked as uncompleted successfully' 
+            : `${restoredCount} lists marked as uncompleted successfully`
+        )
+      } else if (restoredCount > 0) {
+        showSuccess(
+          `${restoredCount} of ${listIds.length} lists marked as uncompleted successfully`
+        )
+      } else {
+        showError('Failed to mark lists as uncompleted')
+      }
+    } catch (error) {
+      console.error('Error in bulk mark uncompleted:', error)
+      showError('Failed to mark lists as uncompleted')
     }
   }
 
@@ -289,6 +395,51 @@
     }
   }
 
+  async function confirmBulkDelete () {
+    try {
+      const listIds = Array.from(selectedLists.value)
+      let deletedCount = 0
+
+      // Delete lists sequentially to avoid conflicts
+      for (const listId of listIds) {
+        try {
+          await ShoppingListApi.remove(listId)
+          listItemCountCache.delete(listId)
+          deletedCount++
+        } catch (error) {
+          console.error(`Error deleting list ${listId}:`, error)
+        }
+      }
+
+      // Remove deleted lists from view
+      const deletedIds = Array.from(selectedLists.value)
+      lists.value = lists.value.filter(list => !deletedIds.includes(list.id))
+      
+      // Clear selections
+      selectedLists.value.clear()
+
+      // Show success message
+      if (deletedCount === listIds.length) {
+        showSuccess(
+          deletedCount === 1 
+            ? 'List deleted successfully' 
+            : `${deletedCount} lists deleted successfully`
+        )
+      } else if (deletedCount > 0) {
+        showSuccess(
+          `${deletedCount} of ${listIds.length} lists deleted successfully`
+        )
+      } else {
+        showError('Failed to delete lists')
+      }
+    } catch (error) {
+      console.error('Error in bulk delete:', error)
+      showError('Failed to delete lists')
+    } finally {
+      showBulkDeleteDialog.value = false
+    }
+  }
+
   function cancelDelete () {
     showDeleteDialog.value = false
     toDeleteList.value = null
@@ -329,7 +480,7 @@
         </v-col>
       </v-row>
 
-      <!-- Header with Back Button -->
+      <!-- Back Button and Bulk Actions -->
       <v-row align="center" class="mb-4">
         <v-col cols="auto">
           <v-btn
@@ -337,6 +488,22 @@
             size="large"
             variant="text"
             @click="goBack"
+          />
+        </v-col>
+        <v-col v-if="selectedCount > 0" cols="auto">
+          <StandardButton
+            icon="mdi-delete"
+            :title="`Delete (${selectedCount})`"
+            variant="danger"
+            @click="handleBulkDelete"
+          />
+        </v-col>
+        <v-col v-if="selectedCount > 0" cols="auto">
+          <StandardButton
+            icon="mdi-backup-restore"
+            :title="`Mark as Uncompleted (${selectedCount})`"
+            variant="secondary"
+            @click="handleBulkMarkUncompleted"
           />
         </v-col>
         <v-spacer />
@@ -388,9 +555,13 @@
             :selected="selectedLists.has(item.id)"
             :starred="item.isFavorite || false"
             :title="item.title"
+            :show-edit="false"
+            :show-share="false"
+            :show-send-to-history="false"
+            :show-mark-uncompleted="true"
             @click="() => handleListClick(item)"
             @delete="() => handleDeleteList(item.id)"
-            @restore="() => handleRestoreList(item.id)"
+            @mark-uncompleted="() => handleMarkUncompleted(item.id)"
             @toggle-selection="(isSelected) => handleSelectionToggle(item.id, isSelected)"
           />
         </v-col>
@@ -442,6 +613,17 @@
       confirm-text="Restore"
       @confirm="confirmRestore"
       @cancel="cancelRestore"
+    />
+
+    <!-- Bulk Delete Confirmation Dialog -->
+    <ConfirmDeleteDialog
+      v-model="showBulkDeleteDialog"
+      :confirm-text="selectedCount === 1 ? 'Delete List' : `Delete ${selectedCount} Lists`"
+      :description="selectedCount === 1 ? 'This action cannot be undone. The list will be permanently deleted.' : `This action cannot be undone. ${selectedCount} lists will be permanently deleted.`"
+      item-name=""
+      :item-type="selectedCount === 1 ? 'list' : 'lists'"
+      :title="selectedCount === 1 ? 'Delete List' : `Delete ${selectedCount} Lists`"
+      @confirm="confirmBulkDelete"
     />
 
     <!-- Toast Notification -->

@@ -356,9 +356,64 @@
     showBulkDeleteDialog.value = true
   }
 
-  function handleBulkSendToHistory () {
-    // TODO: Implement bulk send to history functionality
-    console.log('Bulk send to history:', Array.from(selectedLists.value))
+  async function handleBulkSendToHistory () {
+    try {
+      const listIds = Array.from(selectedLists.value)
+      let completedCount = 0
+
+      // Process lists sequentially to avoid conflicts
+      for (const listId of listIds) {
+        const list = lists.value.find(l => l.id === listId)
+        if (!list) continue
+
+        try {
+          // Call the API to update the list
+          await ShoppingListApi.modify(listId, {
+            name: list.name,
+            description: list.description,
+            recurring: list.recurring,
+            metadata: {
+              icon: list.icon,
+              isFavorite: list.isFavorite,
+              itemsCount: list.itemsCount,
+              ...list.metadata,
+              status: 'completed'
+            }
+          })
+
+          // Update local state
+          const updatedMetadata = {
+            ...list.metadata,
+            status: 'completed'
+          }
+          list.metadata = updatedMetadata
+          completedCount++
+        } catch (error) {
+          console.error(`Error sending list ${listId} to history:`, error)
+        }
+      }
+
+      // Clear selections
+      selectedLists.value.clear()
+
+      // Show success message
+      if (completedCount === listIds.length) {
+        showSuccess(
+          completedCount === 1 
+            ? 'List sent to history successfully' 
+            : `${completedCount} lists sent to history successfully`
+        )
+      } else if (completedCount > 0) {
+        showSuccess(
+          `${completedCount} of ${listIds.length} lists sent to history successfully`
+        )
+      } else {
+        showError('Failed to send lists to history')
+      }
+    } catch (error) {
+      console.error('Error in bulk send to history:', error)
+      showError('Failed to send lists to history')
+    }
   }
 
   async function confirmBulkDelete () {

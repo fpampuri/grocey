@@ -261,6 +261,11 @@
       showSuccess(
         completed ? 'Marked item as purchased.' : 'Marked item as pending.',
       )
+      
+      // Check if all items are completed and auto-send to history
+      if (completed) {
+        await checkAndAutoCompleteList()
+      }
     } catch (error) {
       console.error('Error toggling item state:', error)
       target.completed = previous
@@ -269,6 +274,40 @@
           ? (error as { message: string }).message
           : 'Unable to update item.',
       )
+    }
+  }
+
+  async function checkAndAutoCompleteList () {
+    // Check if all items are completed
+    if (listItems.value.length === 0) return // Don't auto-complete empty lists
+    
+    const allCompleted = listItems.value.every(item => item.completed)
+    if (!allCompleted || !listData.value) return
+
+    try {
+      // Send list to history by updating metadata
+      await ShoppingListApi.modify(listId.value, {
+        name: listData.value.name,
+        description: listData.value.description,
+        recurring: listData.value.recurring,
+        metadata: {
+          icon: listData.value.icon,
+          isFavorite: listData.value.metadata?.isFavorite || false,
+          itemsCount: listItems.value.length,
+          ...listData.value.metadata,
+          status: 'completed'
+        }
+      })
+
+      showSuccess('🎉 All items completed! List sent to history.')
+      
+      // Navigate back to lists after a short delay to let user see the message
+      setTimeout(() => {
+        goBack()
+      }, 2000)
+    } catch (error) {
+      console.error('Error auto-completing list:', error)
+      // Don't show error to user as this is automatic behavior
     }
   }
 
@@ -282,6 +321,9 @@
     try {
       await ListItemApi.remove(listId.value, numericId)
       showSuccess('Item removed from the list.')
+      
+      // Check if all remaining items are completed after deletion
+      await checkAndAutoCompleteList()
     } catch (error) {
       console.error('Error deleting item:', error)
       listItems.value = previousItems
