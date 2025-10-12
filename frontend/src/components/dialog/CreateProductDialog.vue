@@ -1,94 +1,94 @@
 <script setup lang="ts">
-import { ref, watch, computed } from "vue";
-import BaseDialog from "@/components/dialog/BaseDialog.vue";
-import StandardButton from "@/components/StandardButton.vue";
+  import { computed, ref, watch } from 'vue'
+  import BaseDialog from '@/components/dialog/BaseDialog.vue'
+  import StandardButton from '@/components/StandardButton.vue'
 
-type CategoryOption = { value: number; label: string; icon?: string };
+  type CategoryOption = { value: number, label: string, icon?: string }
 
-const props = defineProps({
-  modelValue: { type: Boolean, default: false },
-  categories: { type: Array as () => CategoryOption[], default: () => [] },
-  defaultCategoryId: { type: Number, default: null },
-});
+  const props = defineProps({
+    modelValue: { type: Boolean, default: false },
+    categories: { type: Array as () => CategoryOption[], default: () => [] },
+    defaultCategoryId: { type: Number, default: null },
+  })
 
-const emit = defineEmits(["update:modelValue", "create-product"]);
+  const emit = defineEmits(['update:modelValue', 'create-product'])
 
-const productName = ref("");
-const selectedCategoryId = ref<number | null>(null);
-const isDropdownOpen = ref(false);
-const DEFAULT_CATEGORY_NAME = "Miscellaneous";
-const DEFAULT_CATEGORY_NAME_LOWER = DEFAULT_CATEGORY_NAME.toLowerCase();
+  const productName = ref('')
+  const selectedCategoryId = ref<number | null>(null)
+  const isDropdownOpen = ref(false)
+  const DEFAULT_CATEGORY_NAME = 'Miscellaneous'
+  const DEFAULT_CATEGORY_NAME_LOWER = DEFAULT_CATEGORY_NAME.toLowerCase()
 
-const selectedCategory = computed(() => {
-  if (!selectedCategoryId.value) return null;
-  return props.categories.find(cat => cat.value === selectedCategoryId.value) || null;
-});
+  const selectedCategory = computed(() => {
+    if (!selectedCategoryId.value) return null
+    return props.categories.find(cat => cat.value === selectedCategoryId.value) || null
+  })
 
-function resolveDefaultCategoryId(): number | null {
-  if (typeof props.defaultCategoryId === "number") {
-    return props.defaultCategoryId;
-  }
-  const miscOption = props.categories.find(
-    (category) => category.label?.toLowerCase() === DEFAULT_CATEGORY_NAME_LOWER
-  );
-  if (miscOption) return miscOption.value;
-  return props.categories[0]?.value ?? null;
-}
-
-watch(() => props.modelValue, (open) => {
-  if (open) {
-    productName.value = "";
-    selectedCategoryId.value = resolveDefaultCategoryId();
-  }
-});
-
-watch(
-  () => [props.categories, props.defaultCategoryId] as const,
-  () => {
-    if (!props.modelValue) return;
-    const optionValues = props.categories.map((category) => category.value);
-    if (
-      selectedCategoryId.value === null ||
-      !optionValues.includes(selectedCategoryId.value)
-    ) {
-      selectedCategoryId.value = resolveDefaultCategoryId();
+  function resolveDefaultCategoryId (): number | null {
+    if (typeof props.defaultCategoryId === 'number') {
+      return props.defaultCategoryId
     }
+    const miscOption = props.categories.find(
+      category => category.label?.toLowerCase() === DEFAULT_CATEGORY_NAME_LOWER,
+    )
+    if (miscOption) return miscOption.value
+    return props.categories[0]?.value ?? null
   }
-);
 
-const canCreate = computed(
-  () => !!productName.value.trim() && selectedCategoryId.value !== null
-);
+  watch(() => props.modelValue, open => {
+    if (open) {
+      productName.value = ''
+      selectedCategoryId.value = resolveDefaultCategoryId()
+    }
+  })
 
-function toggleDropdown() {
-  isDropdownOpen.value = !isDropdownOpen.value;
-}
+  watch(
+    () => [props.categories, props.defaultCategoryId] as const,
+    () => {
+      if (!props.modelValue) return
+      const optionValues = props.categories.map(category => category.value)
+      if (
+        selectedCategoryId.value === null
+        || !optionValues.includes(selectedCategoryId.value)
+      ) {
+        selectedCategoryId.value = resolveDefaultCategoryId()
+      }
+    },
+  )
 
-function selectCategory(category: CategoryOption) {
-  selectedCategoryId.value = category.value;
-  isDropdownOpen.value = false;
-}
+  const canCreate = computed(
+    () => !!productName.value.trim() && selectedCategoryId.value !== null,
+  )
 
-function closeDialog() {
-  emit("update:modelValue", false);
-  isDropdownOpen.value = false;
-}
-
-function handleModelValueUpdate(value: boolean) {
-  if (!value) {
-    isDropdownOpen.value = false;
+  function toggleDropdown () {
+    isDropdownOpen.value = !isDropdownOpen.value
   }
-  emit("update:modelValue", value);
-}
 
-function createProduct() {
-  if (!canCreate.value) return;
-  emit("create-product", {
-    name: productName.value.trim(),
-    categoryId: selectedCategoryId.value,
-  });
-  closeDialog();
-}
+  function selectCategory (category: CategoryOption) {
+    selectedCategoryId.value = category.value
+    isDropdownOpen.value = false
+  }
+
+  function closeDialog () {
+    emit('update:modelValue', false)
+    isDropdownOpen.value = false
+  }
+
+  function handleModelValueUpdate (value: boolean) {
+    if (!value) {
+      isDropdownOpen.value = false
+    }
+    emit('update:modelValue', value)
+  }
+
+  function createProduct () {
+    if (!canCreate.value) return
+    emit('create-product', {
+      name: productName.value.trim(),
+      categoryId: selectedCategoryId.value,
+    })
+    closeDialog()
+  }
 </script>
 
 <template>
@@ -96,7 +96,7 @@ function createProduct() {
     <div class="dialog-header">
       <h2 class="dialog-title">Add Product</h2>
       <button class="close-button" @click="closeDialog">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
         </svg>
       </button>
@@ -107,11 +107,11 @@ function createProduct() {
         <label class="field-label">Product Name</label>
         <input
           v-model="productName"
-          type="text"
-          placeholder="Enter product name"
           class="text-input"
+          placeholder="Enter product name"
+          type="text"
           @keyup.enter="createProduct"
-        />
+        >
       </div>
 
       <div class="form-field">
@@ -143,8 +143,8 @@ function createProduct() {
     </div>
 
     <div class="dialog-footer">
-      <button @click="closeDialog" class="cancel-button">Cancel</button>
-      <StandardButton title="Add" icon="mdi-plus" :disabled="!canCreate" @click="createProduct" />
+      <button class="cancel-button" @click="closeDialog">Cancel</button>
+      <StandardButton :disabled="!canCreate" icon="mdi-plus" title="Add" @click="createProduct" />
     </div>
   </BaseDialog>
 </template>

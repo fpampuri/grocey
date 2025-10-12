@@ -55,28 +55,46 @@ export const useUserStore = defineStore('user', {
     loading: false,
     error: null as string | null,
     profileLoaded: false,
+    initialized: false,
   }),
 
   actions: {
     init () {
-      if (typeof window === 'undefined') {
+      if (this.initialized) {
         return
       }
-      const storedToken = window.localStorage.getItem(TOKEN_STORAGE_KEY)
-      if (storedToken) {
-        this.setToken(storedToken)
-        this.fetchUserProfile()
+      if (typeof window === 'undefined') {
+        this.initialized = true
+        return
       }
+      const { localStorage, sessionStorage } = window
+      const localToken = localStorage.getItem(TOKEN_STORAGE_KEY)
+      const sessionToken = sessionStorage.getItem(TOKEN_STORAGE_KEY)
+      const storedToken = localToken ?? sessionToken
+      if (storedToken) {
+        const remember = storedToken === localToken
+        this.setToken(storedToken, remember)
+        void this.fetchUserProfile()
+      }
+      this.initialized = true
     },
 
-    setToken (token: string | null) {
+    setToken (token: string | null, remember = false) {
       this.token = token
       Api.setAuthToken(token)
       if (typeof window !== 'undefined') {
+        const { localStorage, sessionStorage } = window
         if (token) {
-          window.localStorage.setItem(TOKEN_STORAGE_KEY, token)
+          if (remember) {
+            localStorage.setItem(TOKEN_STORAGE_KEY, token)
+            sessionStorage.removeItem(TOKEN_STORAGE_KEY)
+          } else {
+            sessionStorage.setItem(TOKEN_STORAGE_KEY, token)
+            localStorage.removeItem(TOKEN_STORAGE_KEY)
+          }
         } else {
-          window.localStorage.removeItem(TOKEN_STORAGE_KEY)
+          localStorage.removeItem(TOKEN_STORAGE_KEY)
+          sessionStorage.removeItem(TOKEN_STORAGE_KEY)
         }
       }
     },

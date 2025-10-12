@@ -70,9 +70,9 @@
 
       successMessage.value = `We sent a password reset code to ${email.value}. Check your email and enter the code below.`
       switchToResetMode()
-    } catch (caught: unknown) {
-      console.error('Password recovery request error', caught)
-      error.value = caught instanceof Error ? caught.message : 'Unable to send password reset email. Please try again.'
+    } catch (error_: unknown) {
+      console.error('Password recovery request error', error_)
+      error.value = error_ instanceof Error ? error_.message : 'Unable to send password reset email. Please try again.'
     } finally {
       isSubmitting.value = false
     }
@@ -99,9 +99,9 @@
       setTimeout(() => {
         router.push({ name: 'login' })
       }, 2000)
-    } catch (caught: unknown) {
-      console.error('Password reset error', caught)
-      error.value = caught instanceof Error ? caught.message : 'Unable to reset password. Please check your code and try again.'
+    } catch (error_: unknown) {
+      console.error('Password reset error', error_)
+      error.value = error_ instanceof Error ? error_.message : 'Unable to reset password. Please check your code and try again.'
     } finally {
       isSubmitting.value = false
     }

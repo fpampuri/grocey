@@ -1,9 +1,9 @@
 <template>
   <component
     :is="to ? 'RouterLink' : 'button'"
-    :to="to"
     :class="['link-button', { disabled }]"
     :disabled="disabled"
+    :to="to"
     type="button"
     @click="handleClick"
   >
@@ -12,20 +12,20 @@
 </template>
 
 <script setup lang="ts">
-interface Props {
-  to?: string;
-  disabled?: boolean;
-}
+  interface Props {
+    to?: string
+    disabled?: boolean
+  }
 
-defineProps<Props>();
+  defineProps<Props>()
 
-const emit = defineEmits<{
-  click: [];
-}>();
+  const emit = defineEmits<{
+    click: []
+  }>()
 
-function handleClick() {
-  emit("click");
-}
+  function handleClick () {
+    emit('click')
+  }
 </script>
 
 <style scoped>

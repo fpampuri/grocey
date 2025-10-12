@@ -5,6 +5,8 @@
  */
 
 import { createRouter, createWebHistory } from 'vue-router'
+import pinia from '@/stores'
+import { useUserStore } from '@/stores/user'
 
 const routes = [
   { path: '/', redirect: '/login' },
@@ -79,6 +81,31 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
+})
+
+const publicRouteNames = new Set(['login', 'forgot-password'])
+
+router.beforeEach((to, _from, next) => {
+  const userStore = useUserStore(pinia)
+
+  if (!userStore.initialized) {
+    userStore.init()
+  }
+
+  const routeName = typeof to.name === 'string' ? to.name : null
+  const isAuthenticated = Boolean(userStore.token)
+
+  if (routeName === 'login' && isAuthenticated) {
+    next({ name: 'lists' })
+    return
+  }
+
+  if (!isAuthenticated && routeName && !publicRouteNames.has(routeName)) {
+    next({ name: 'login' })
+    return
+  }
+
+  next()
 })
 
 // Workaround for https://github.com/vitejs/vite/issues/11804

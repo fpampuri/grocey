@@ -170,7 +170,7 @@
       for (const item of items) {
         const itemData = item?.item ?? item
         const isPurchased = Boolean(itemData?.purchased ?? itemData?.completed)
-        
+
         if (!isPurchased && itemData?.id) {
           try {
             await ListItemApi.markAsPurchased(listId, itemData.id)
@@ -204,8 +204,8 @@
       const mapped = rawLists.map(mapApiList)
 
       // Filter only completed lists (status === 'completed' in metadata)
-      const completedLists = mapped.filter(list => 
-        list.metadata && list.metadata.status === 'completed'
+      const completedLists = mapped.filter(list =>
+        list.metadata && list.metadata.status === 'completed',
       )
 
       // Fetch item counts for each list and ensure all items are completed
@@ -215,7 +215,7 @@
         } else {
           list.itemsCount = await fetchListItemsCount(list.id)
         }
-        
+
         // Ensure all items in this completed list are marked as completed
         await ensureAllItemsCompleted(list.id)
       }
@@ -280,14 +280,14 @@
             recurring: list.recurring,
             metadata: {
               ...list.metadata,
-              status: 'active'
-            }
+              status: 'active',
+            },
           })
 
           // Mark all items as not purchased (reset)
           const response = await ListItemApi.getAll(listId)
           const items = Array.isArray(response) ? response : (response as any)?.data || []
-          
+
           for (const item of items) {
             const itemData = item?.item ?? item
             if (itemData?.purchased || itemData?.completed) {
@@ -302,22 +302,22 @@
       }
 
       // Remove restored lists from history view
-      const restoredIds = Array.from(selectedLists.value)
-      lists.value = lists.value.filter(list => !restoredIds.includes(list.id))
-      
+      const restoredIds = new Set(Array.from(selectedLists.value))
+      lists.value = lists.value.filter(list => !restoredIds.has(list.id))
+
       // Clear selections
       selectedLists.value.clear()
 
       // Show success message
       if (restoredCount === listIds.length) {
         showSuccess(
-          restoredCount === 1 
-            ? 'List restored successfully' 
-            : `${restoredCount} lists restored successfully`
+          restoredCount === 1
+            ? 'List restored successfully'
+            : `${restoredCount} lists restored successfully`,
         )
       } else if (restoredCount > 0) {
         showSuccess(
-          `${restoredCount} of ${listIds.length} lists restored successfully`
+          `${restoredCount} of ${listIds.length} lists restored successfully`,
         )
       } else {
         showError('Failed to restore lists')
@@ -356,11 +356,11 @@
 
     try {
       // Update list metadata to mark as active
-      const updatedMetadata = { 
-        ...toRestoreList.value.metadata, 
-        status: 'active' 
+      const updatedMetadata = {
+        ...toRestoreList.value.metadata,
+        status: 'active',
       }
-      
+
       await ShoppingListApi.modify(targetId, {
         name: toRestoreList.value.name,
         description: toRestoreList.value.description,
@@ -371,7 +371,7 @@
       // Mark all items as not purchased (reset)
       const response = await ListItemApi.getAll(targetId)
       const items = Array.isArray(response) ? response : (response as any)?.data || []
-      
+
       for (const item of items) {
         if (item.purchased || item.completed) {
           await ListItemApi.markAsNotPurchased(targetId, item.id || item.itemId)
@@ -412,22 +412,22 @@
       }
 
       // Remove deleted lists from view
-      const deletedIds = Array.from(selectedLists.value)
-      lists.value = lists.value.filter(list => !deletedIds.includes(list.id))
-      
+      const deletedIds = new Set(Array.from(selectedLists.value))
+      lists.value = lists.value.filter(list => !deletedIds.has(list.id))
+
       // Clear selections
       selectedLists.value.clear()
 
       // Show success message
       if (deletedCount === listIds.length) {
         showSuccess(
-          deletedCount === 1 
-            ? 'List deleted successfully' 
-            : `${deletedCount} lists deleted successfully`
+          deletedCount === 1
+            ? 'List deleted successfully'
+            : `${deletedCount} lists deleted successfully`,
         )
       } else if (deletedCount > 0) {
         showSuccess(
-          `${deletedCount} of ${listIds.length} lists deleted successfully`
+          `${deletedCount} of ${listIds.length} lists deleted successfully`,
         )
       } else {
         showError('Failed to delete lists')
@@ -553,12 +553,12 @@
             :icon="item.icon"
             :items-count="item.itemsCount"
             :selected="selectedLists.has(item.id)"
+            :show-edit="false"
+            :show-restore="true"
+            :show-send-to-history="false"
+            :show-share="false"
             :starred="item.isFavorite || false"
             :title="item.title"
-            :show-edit="false"
-            :show-share="false"
-            :show-send-to-history="false"
-            :show-restore="true"
             @click="() => handleListClick(item)"
             @delete="() => handleDeleteList(item.id)"
             @restore="() => handleRestore(item.id)"
@@ -606,15 +606,15 @@
     <!-- Restore Confirmation Dialog -->
     <ConfirmDeleteDialog
       v-model="showRestoreDialog"
+      button-color="green"
+      confirm-text="Restore"
       description="Restore this list? All items will be reset to incomplete and it will return to your active lists."
+      icon="mdi-backup-restore"
       :item-name="toRestoreList?.title"
       item-type="list"
       title="Restore List"
-      confirm-text="Restore"
-      icon="mdi-backup-restore"
-      button-color="green"
-      @confirm="confirmRestore"
       @cancel="cancelRestore"
+      @confirm="confirmRestore"
     />
 
     <!-- Bulk Delete Confirmation Dialog -->

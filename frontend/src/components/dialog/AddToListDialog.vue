@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref, computed } from 'vue'
+  import { computed, ref } from 'vue'
   import BaseDialog from '@/components/dialog/BaseDialog.vue'
   import StandardButton from '@/components/StandardButton.vue'
 

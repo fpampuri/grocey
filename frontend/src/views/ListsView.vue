@@ -313,14 +313,14 @@
           icon: list.icon,
           itemsCount: list.itemsCount,
           ...list.metadata,
-          status: 'completed'
-        }
+          status: 'completed',
+        },
       })
 
       // Update local state
       const updatedMetadata = {
         ...list.metadata,
-        status: 'completed'
+        status: 'completed',
       }
 
       // Update local state
@@ -368,14 +368,14 @@
               icon: list.icon,
               itemsCount: list.itemsCount,
               ...list.metadata,
-              status: 'completed'
-            }
+              status: 'completed',
+            },
           })
 
           // Update local state
           const updatedMetadata = {
             ...list.metadata,
-            status: 'completed'
+            status: 'completed',
           }
           list.metadata = updatedMetadata
           completedCount++
@@ -390,13 +390,13 @@
       // Show success message
       if (completedCount === listIds.length) {
         showSuccess(
-          completedCount === 1 
-            ? 'List sent to history successfully' 
-            : `${completedCount} lists sent to history successfully`
+          completedCount === 1
+            ? 'List sent to history successfully'
+            : `${completedCount} lists sent to history successfully`,
         )
       } else if (completedCount > 0) {
         showSuccess(
-          `${completedCount} of ${listIds.length} lists sent to history successfully`
+          `${completedCount} of ${listIds.length} lists sent to history successfully`,
         )
       } else {
         showError('Failed to send lists to history')

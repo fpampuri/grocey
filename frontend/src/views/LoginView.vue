@@ -1,244 +1,244 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { useRouter } from "vue-router";
-import { UserApi } from "@/services";
-import { useUserStore } from "@/stores/user";
+  import { computed, ref } from 'vue'
+  import { useRouter } from 'vue-router'
+  import { UserApi } from '@/services'
+  import { useUserStore } from '@/stores/user'
 
-type VuetifyForm = {
-  validate: () => Promise<{ valid: boolean }>;
-  resetValidation: () => void;
-};
-type Mode = "login" | "register" | "verify";
-
-const router = useRouter();
-const userStore = useUserStore();
-
-const formRef = ref<VuetifyForm | null>(null);
-const mode = ref<Mode>("login");
-const email = ref("");
-const password = ref("");
-const confirmPassword = ref("");
-const firstName = ref("");
-const lastName = ref("");
-const rememberMe = ref(false);
-const showPassword = ref(false);
-const isSubmitting = ref(false);
-const authError = ref("");
-const successMessage = ref("");
-const verificationCode = ref("");
-const verificationEmail = ref("");
-const isResending = ref(false);
-const resendMessage = ref("");
-const resendError = ref("");
-
-const isLoginMode = computed(() => mode.value === "login");
-const isRegisterMode = computed(() => mode.value === "register");
-const isVerifyMode = computed(() => mode.value === "verify");
-const formSubtitle = computed(() => {
-  if (isRegisterMode.value) {
-    return "Fill out the details below to start using Grocey.";
+  type VuetifyForm = {
+    validate: () => Promise<{ valid: boolean }>
+    resetValidation: () => void
   }
-  if (isVerifyMode.value) {
-    return verificationEmail.value
-      ? `Enter the verification code we sent to ${verificationEmail.value}.`
-      : "Enter the verification code we emailed you.";
-  }
-  return "Enter your credentials to continue.";
-});
+  type Mode = 'login' | 'register' | 'verify'
 
-const emailRules = [
-  (value: string) => !!value || "Enter your email address",
-  (value: string) => /.+@.+\..+/.test(value) || "Enter a valid email",
-];
+  const router = useRouter()
+  const userStore = useUserStore()
 
-const passwordRules = [
-  (value: string) => !!value || "Enter your password",
-  (value: string) => value.length >= 6 || "Must be at least 6 characters",
-];
+  const formRef = ref<VuetifyForm | null>(null)
+  const mode = ref<Mode>('login')
+  const email = ref('')
+  const password = ref('')
+  const confirmPassword = ref('')
+  const firstName = ref('')
+  const lastName = ref('')
+  const rememberMe = ref(false)
+  const showPassword = ref(false)
+  const isSubmitting = ref(false)
+  const authError = ref('')
+  const successMessage = ref('')
+  const verificationCode = ref('')
+  const verificationEmail = ref('')
+  const isResending = ref(false)
+  const resendMessage = ref('')
+  const resendError = ref('')
 
-const confirmPasswordRules = [
-  (value: string) => !!value || "Confirm your password",
-  (value: string) => value === password.value || "Passwords must match",
-];
-
-const firstNameRules = [(value: string) => !!value || "Enter your first name"];
-const lastNameRules = [(value: string) => !!value || "Enter your last name"];
-const verificationCodeRules = [
-  (value: string) => !!value || "Enter the verification code",
-  (value: string) => value.length >= 4 || "Code must be at least 4 characters",
-];
-
-function changeMode(next: Mode, { keepSuccess = false } = {}) {
-  mode.value = next;
-  authError.value = "";
-  if (!keepSuccess) {
-    successMessage.value = "";
-  }
-  isSubmitting.value = false;
-  formRef.value?.resetValidation();
-
-  if (next === "register") {
-    rememberMe.value = false;
-    password.value = "";
-    confirmPassword.value = "";
-  }
-
-  if (next !== "register") {
-    firstName.value = "";
-    lastName.value = "";
-    confirmPassword.value = "";
-  }
-
-  if (next !== "verify") {
-    verificationCode.value = "";
-    resendMessage.value = "";
-    resendError.value = "";
-    isResending.value = false;
-  }
-}
-
-function switchToRegister() {
-  changeMode("register");
-}
-
-function switchToLogin() {
-  changeMode("login");
-}
-
-function switchToVerify() {
-  changeMode("verify");
-  if (!verificationEmail.value && email.value) {
-    verificationEmail.value = email.value;
-  }
-  if (!successMessage.value) {
-    successMessage.value = verificationEmail.value
-      ? `Enter the verification code we sent to ${verificationEmail.value}.`
-      : "Enter the verification code we emailed you.";
-  }
-}
-
-function openVerification(emailAddress?: string, message?: string) {
-  changeMode("verify", { keepSuccess: true });
-  if (emailAddress) {
-    verificationEmail.value = emailAddress;
-  } else if (!verificationEmail.value) {
-    verificationEmail.value = email.value;
-  }
-  verificationCode.value = "";
-  resendMessage.value = "";
-  resendError.value = "";
-  if (message) {
-    successMessage.value = message;
-  } else if (verificationEmail.value) {
-    successMessage.value = `Enter the verification code we sent to ${verificationEmail.value}.`;
-  } else if (!successMessage.value) {
-    successMessage.value = "Enter the verification code we emailed you.";
-  }
-}
-
-async function resendVerification() {
-  resendMessage.value = "";
-  resendError.value = "";
-
-  const targetEmail = verificationEmail.value || email.value;
-  if (!targetEmail) {
-    resendError.value = "Enter your email to resend the verification code.";
-    return;
-  }
-
-  if (!/.+@.+\..+/.test(targetEmail)) {
-    resendError.value = "Enter a valid email address.";
-    return;
-  }
-
-  isResending.value = true;
-  try {
-    await UserApi.resendVerification(targetEmail);
-    verificationEmail.value = targetEmail;
-    resendMessage.value = `We sent a new verification code to ${targetEmail}.`;
-  } catch (error: unknown) {
-    console.error("Resend verification error", error);
-    resendError.value =
-      error instanceof Error
-        ? error.message
-        : "Unable to resend the verification code.";
-  } finally {
-    isResending.value = false;
-  }
-}
-
-async function handleSubmit() {
-  authError.value = "";
-
-  const validation = await formRef.value?.validate();
-  if (!validation?.valid) return;
-
-  isSubmitting.value = true;
-
-  try {
+  const isLoginMode = computed(() => mode.value === 'login')
+  const isRegisterMode = computed(() => mode.value === 'register')
+  const isVerifyMode = computed(() => mode.value === 'verify')
+  const formSubtitle = computed(() => {
     if (isRegisterMode.value) {
-      await UserApi.register({
-        name: firstName.value,
-        surname: lastName.value,
-        email: email.value,
-        password: password.value,
-      });
-
-      successMessage.value =
-        "Account created! Enter the verification code we emailed to activate your account.";
-      openVerification(email.value, successMessage.value);
-      password.value = "";
-      confirmPassword.value = "";
-    } else if (isVerifyMode.value) {
-      await UserApi.verify({
-        code: verificationCode.value,
-      });
-
-      successMessage.value =
-        "Account verified! You can now sign in with your email and password.";
-      changeMode("login", { keepSuccess: true });
-      verificationCode.value = "";
-    } else {
-      const authResult = await UserApi.login({
-        email: email.value,
-        password: password.value,
-      });
-
-      if (!authResult?.token) {
-        throw new Error("Invalid response from server.");
-      }
-
-      userStore.setToken(authResult.token);
-      await userStore.fetchUserProfile();
-
-      if (!userStore.profileLoaded) {
-        throw new Error(userStore.error ?? "Unable to load your profile.");
-      }
-
-      router.push({ name: "lists" });
+      return 'Fill out the details below to start using Grocey.'
     }
-  } catch (error: unknown) {
-    console.error("Authentication error", error);
-    if (isLoginMode.value) {
-      userStore.setToken(null);
+    if (isVerifyMode.value) {
+      return verificationEmail.value
+        ? `Enter the verification code we sent to ${verificationEmail.value}.`
+        : 'Enter the verification code we emailed you.'
     }
+    return 'Enter your credentials to continue.'
+  })
 
-    let message = "We couldn't complete your request. Please try again.";
-    if (error instanceof Error) {
-      message = error.message;
+  const emailRules = [
+    (value: string) => !!value || 'Enter your email address',
+    (value: string) => /.+@.+\..+/.test(value) || 'Enter a valid email',
+  ]
+
+  const passwordRules = [
+    (value: string) => !!value || 'Enter your password',
+    (value: string) => value.length >= 6 || 'Must be at least 6 characters',
+  ]
+
+  const confirmPasswordRules = [
+    (value: string) => !!value || 'Confirm your password',
+    (value: string) => value === password.value || 'Passwords must match',
+  ]
+
+  const firstNameRules = [(value: string) => !!value || 'Enter your first name']
+  const lastNameRules = [(value: string) => !!value || 'Enter your last name']
+  const verificationCodeRules = [
+    (value: string) => !!value || 'Enter the verification code',
+    (value: string) => value.length >= 4 || 'Code must be at least 4 characters',
+  ]
+
+  function changeMode (next: Mode, { keepSuccess = false } = {}) {
+    mode.value = next
+    authError.value = ''
+    if (!keepSuccess) {
+      successMessage.value = ''
+    }
+    isSubmitting.value = false
+    formRef.value?.resetValidation()
+
+    if (next === 'register') {
+      rememberMe.value = false
+      password.value = ''
+      confirmPassword.value = ''
     }
 
-    if (isLoginMode.value && message.toLowerCase().includes("not verified")) {
-      authError.value = message;
-      openVerification(email.value);
-      return;
+    if (next !== 'register') {
+      firstName.value = ''
+      lastName.value = ''
+      confirmPassword.value = ''
     }
 
-    authError.value = message;
-  } finally {
-    isSubmitting.value = false;
+    if (next !== 'verify') {
+      verificationCode.value = ''
+      resendMessage.value = ''
+      resendError.value = ''
+      isResending.value = false
+    }
   }
-}
+
+  function switchToRegister () {
+    changeMode('register')
+  }
+
+  function switchToLogin () {
+    changeMode('login')
+  }
+
+  function switchToVerify () {
+    changeMode('verify')
+    if (!verificationEmail.value && email.value) {
+      verificationEmail.value = email.value
+    }
+    if (!successMessage.value) {
+      successMessage.value = verificationEmail.value
+        ? `Enter the verification code we sent to ${verificationEmail.value}.`
+        : 'Enter the verification code we emailed you.'
+    }
+  }
+
+  function openVerification (emailAddress?: string, message?: string) {
+    changeMode('verify', { keepSuccess: true })
+    if (emailAddress) {
+      verificationEmail.value = emailAddress
+    } else if (!verificationEmail.value) {
+      verificationEmail.value = email.value
+    }
+    verificationCode.value = ''
+    resendMessage.value = ''
+    resendError.value = ''
+    if (message) {
+      successMessage.value = message
+    } else if (verificationEmail.value) {
+      successMessage.value = `Enter the verification code we sent to ${verificationEmail.value}.`
+    } else if (!successMessage.value) {
+      successMessage.value = 'Enter the verification code we emailed you.'
+    }
+  }
+
+  async function resendVerification () {
+    resendMessage.value = ''
+    resendError.value = ''
+
+    const targetEmail = verificationEmail.value || email.value
+    if (!targetEmail) {
+      resendError.value = 'Enter your email to resend the verification code.'
+      return
+    }
+
+    if (!/.+@.+\..+/.test(targetEmail)) {
+      resendError.value = 'Enter a valid email address.'
+      return
+    }
+
+    isResending.value = true
+    try {
+      await UserApi.resendVerification(targetEmail)
+      verificationEmail.value = targetEmail
+      resendMessage.value = `We sent a new verification code to ${targetEmail}.`
+    } catch (error: unknown) {
+      console.error('Resend verification error', error)
+      resendError.value
+        = error instanceof Error
+          ? error.message
+          : 'Unable to resend the verification code.'
+    } finally {
+      isResending.value = false
+    }
+  }
+
+  async function handleSubmit () {
+    authError.value = ''
+
+    const validation = await formRef.value?.validate()
+    if (!validation?.valid) return
+
+    isSubmitting.value = true
+
+    try {
+      if (isRegisterMode.value) {
+        await UserApi.register({
+          name: firstName.value,
+          surname: lastName.value,
+          email: email.value,
+          password: password.value,
+        })
+
+        successMessage.value
+          = 'Account created! Enter the verification code we emailed to activate your account.'
+        openVerification(email.value, successMessage.value)
+        password.value = ''
+        confirmPassword.value = ''
+      } else if (isVerifyMode.value) {
+        await UserApi.verify({
+          code: verificationCode.value,
+        })
+
+        successMessage.value
+          = 'Account verified! You can now sign in with your email and password.'
+        changeMode('login', { keepSuccess: true })
+        verificationCode.value = ''
+      } else {
+        const authResult = await UserApi.login({
+          email: email.value,
+          password: password.value,
+        })
+
+        if (!authResult?.token) {
+          throw new Error('Invalid response from server.')
+        }
+
+        userStore.setToken(authResult.token, rememberMe.value)
+        await userStore.fetchUserProfile()
+
+        if (!userStore.profileLoaded) {
+          throw new Error(userStore.error ?? 'Unable to load your profile.')
+        }
+
+        router.push({ name: 'lists' })
+      }
+    } catch (error: unknown) {
+      console.error('Authentication error', error)
+      if (isLoginMode.value) {
+        userStore.setToken(null)
+      }
+
+      let message = 'We couldn\'t complete your request. Please try again.'
+      if (error instanceof Error) {
+        message = error.message
+      }
+
+      if (isLoginMode.value && message.toLowerCase().includes('not verified')) {
+        authError.value = message
+        openVerification(email.value)
+        return
+      }
+
+      authError.value = message
+    } finally {
+      isSubmitting.value = false
+    }
+  }
 </script>
 
 <template>
@@ -260,8 +260,8 @@ async function handleSubmit() {
             isRegisterMode
               ? "Create Account"
               : isVerifyMode
-              ? "Verify Account"
-              : "Sign In"
+                ? "Verify Account"
+                : "Sign In"
           }}
         </v-card-title>
         <v-card-subtitle class="text-subtitle-1 mb-4">
@@ -408,8 +408,8 @@ async function handleSubmit() {
                 isRegisterMode
                   ? "Create Account"
                   : isVerifyMode
-                  ? "Verify Account"
-                  : "Sign In"
+                    ? "Verify Account"
+                    : "Sign In"
               }}
             </v-btn>
           </v-form>

@@ -245,7 +245,7 @@
 
       // Get all products in the category that will be deleted
       const productsToDelete = categoryToDelete.value.products || []
-      
+
       // Delete all products in the category first
       for (const product of productsToDelete) {
         if (product.id) {
@@ -415,10 +415,10 @@
           md="6"
         >
           <ProductCard
-            :icon="cat.icon"
-            :itemsCount="cat.products.length"
-            :title="cat.title"
             :disable-actions="isDefaultCategory(cat)"
+            :icon="cat.icon"
+            :items-count="cat.products.length"
+            :title="cat.title"
             @click="() => handleCategoryClick(cat)"
             @delete="() => cat.id && handleDelete(cat.id)"
             @edit="() => cat.id && handleEdit(cat.id)"
