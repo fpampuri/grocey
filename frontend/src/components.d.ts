@@ -23,6 +23,7 @@ declare module 'vue' {
     EditCategoryDialog: typeof import('./components/dialog/EditCategoryDialog.vue')['default']
     EditListDialog: typeof import('./components/dialog/EditListDialog.vue')['default']
     ExampleCustomDialog: typeof import('./components/ExampleCustomDialog.vue')['default']
+    LinkButton: typeof import('./components/LinkButton.vue')['default']
     ListCard: typeof import('./components/List/ListCard.vue')['default']
     ListItemCard: typeof import('./components/List/ListItemCard.vue')['default']
     MoveToCategoryDialog: typeof import('./components/dialog/MoveToCategoryDialog.vue')['default']
