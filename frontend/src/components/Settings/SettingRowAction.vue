@@ -1,13 +1,13 @@
 <script setup lang="ts">
 
-const props = defineProps<{ icon: string; title: string; subtitle?: string; actionText?: string }>();
-const emit = defineEmits(['click']);
+  const props = defineProps<{ icon: string, title: string, subtitle?: string, actionText?: string }>()
+  const emit = defineEmits(['click'])
 </script>
 
 <template>
   <div class="setting-row" @click="emit('click')">
     <div class="left">
-      <v-icon :icon="icon" class="left-icon" />
+      <v-icon class="left-icon" :icon="icon" />
       <div class="text">
         <div class="title">{{ title }}</div>
         <div v-if="subtitle" class="subtitle">{{ subtitle }}</div>
@@ -15,10 +15,10 @@ const emit = defineEmits(['click']);
     </div>
     <div class="right">
       <v-btn
-        variant="outlined"
-        color="primary"
         class="action-btn"
+        color="primary"
         size="small"
+        variant="outlined"
       >
         {{ actionText ?? 'View' }}
       </v-btn>

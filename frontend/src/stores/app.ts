@@ -10,10 +10,20 @@ export const useAppStore = defineStore('app', {
     dataBackupEnabled: true,
   }),
   actions: {
-    setDarkMode(val: boolean) { this.darkMode = val },
-    setNotifications(val: boolean) { this.notificationsEnabled = val },
-    setAutoSortItems(val: boolean) { this.autoSortItems = val },
-    setAutoDeleteCompleted(val: boolean) { this.autoDeleteCompleted = val },
-    setDataBackupEnabled(val: boolean) { this.dataBackupEnabled = val },
+    setDarkMode (val: boolean) {
+      this.darkMode = val
+    },
+    setNotifications (val: boolean) {
+      this.notificationsEnabled = val
+    },
+    setAutoSortItems (val: boolean) {
+      this.autoSortItems = val
+    },
+    setAutoDeleteCompleted (val: boolean) {
+      this.autoDeleteCompleted = val
+    },
+    setDataBackupEnabled (val: boolean) {
+      this.dataBackupEnabled = val
+    },
   },
 })

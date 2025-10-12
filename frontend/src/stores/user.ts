@@ -1,41 +1,43 @@
-import { defineStore } from 'pinia';
-import { UserApi, Api } from '@/services';
+import { defineStore } from 'pinia'
+import { Api, UserApi } from '@/services'
 
 export interface UserProfile {
-  firstName: string;
-  lastName: string;
-  email: string;
-  memberSince: string;
-  listsCreated: number;
-  metadata?: Record<string, any>;
+  firstName: string
+  lastName: string
+  email: string
+  memberSince: string
+  listsCreated: number
+  metadata?: Record<string, any>
 }
 
-type SaveChangesInput = Partial<Pick<UserProfile, 'firstName' | 'lastName'>>;
+type SaveChangesInput = Partial<Pick<UserProfile, 'firstName' | 'lastName'>>
 
-const TOKEN_STORAGE_KEY = 'grocey.authToken';
+const TOKEN_STORAGE_KEY = 'grocey.authToken'
 
-function formatDate(value?: string | null): string {
-  if (!value) return '';
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString();
+function formatDate (value?: string | null): string {
+  if (!value) {
+    return ''
+  }
+  const parsed = new Date(value)
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString()
 }
 
-function mapServerUser(data: any): UserProfile {
+function mapServerUser (data: any): UserProfile {
   return {
     firstName: data?.name ?? '',
     lastName: data?.surname ?? '',
     email: data?.email ?? '',
     memberSince: formatDate(data?.createdAt),
     listsCreated:
-      data?.metadata?.listsCreated ??
-      data?.metadata?.lists ??
-      data?.metadata?.lists_count ??
-      0,
+      data?.metadata?.listsCreated
+      ?? data?.metadata?.lists
+      ?? data?.metadata?.lists_count
+      ?? 0,
     metadata: data?.metadata ?? {},
-  };
+  }
 }
 
-function defaultUser(): UserProfile {
+function defaultUser (): UserProfile {
   return {
     firstName: '',
     lastName: '',
@@ -43,7 +45,7 @@ function defaultUser(): UserProfile {
     memberSince: '',
     listsCreated: 0,
     metadata: {},
-  };
+  }
 }
 
 export const useUserStore = defineStore('user', {
@@ -56,89 +58,95 @@ export const useUserStore = defineStore('user', {
   }),
 
   actions: {
-    init() {
-      if (typeof window === 'undefined') return;
-      const storedToken = window.localStorage.getItem(TOKEN_STORAGE_KEY);
+    init () {
+      if (typeof window === 'undefined') {
+        return
+      }
+      const storedToken = window.localStorage.getItem(TOKEN_STORAGE_KEY)
       if (storedToken) {
-        this.setToken(storedToken);
-        this.fetchUserProfile();
+        this.setToken(storedToken)
+        this.fetchUserProfile()
       }
     },
 
-    setToken(token: string | null) {
-      this.token = token;
-      Api.setAuthToken(token);
+    setToken (token: string | null) {
+      this.token = token
+      Api.setAuthToken(token)
       if (typeof window !== 'undefined') {
         if (token) {
-          window.localStorage.setItem(TOKEN_STORAGE_KEY, token);
+          window.localStorage.setItem(TOKEN_STORAGE_KEY, token)
         } else {
-          window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+          window.localStorage.removeItem(TOKEN_STORAGE_KEY)
         }
       }
     },
 
-    updateProfile(userData: Partial<UserProfile>) {
-      this.user = { ...this.user, ...userData };
+    updateProfile (userData: Partial<UserProfile>) {
+      this.user = { ...this.user, ...userData }
     },
 
-    async fetchUserProfile() {
-      if (!this.token) return;
-      this.loading = true;
-      this.error = null;
+    async fetchUserProfile () {
+      if (!this.token) {
+        return
+      }
+      this.loading = true
+      this.error = null
       try {
-        const data = await UserApi.getProfile();
-        this.user = mapServerUser(data);
-        this.profileLoaded = true;
-      } catch (err: any) {
-        this.error =
-          typeof err === 'string'
-            ? err
-            : err?.message ?? 'Unable to load profile';
+        const data = await UserApi.getProfile()
+        this.user = mapServerUser(data)
+        this.profileLoaded = true
+      } catch (error: any) {
+        this.error
+          = typeof error === 'string'
+            ? error
+            : error?.message ?? 'Unable to load profile'
       } finally {
-        this.loading = false;
+        this.loading = false
       }
     },
 
-    async saveChanges(changes?: SaveChangesInput) {
-      if (!this.token) return;
-      this.loading = true;
-      this.error = null;
+    async saveChanges (changes?: SaveChangesInput) {
+      if (!this.token) {
+        return
+      }
+      this.loading = true
+      this.error = null
 
       const payload = {
         name: changes?.firstName ?? this.user.firstName,
         surname: changes?.lastName ?? this.user.lastName,
         metadata: this.user.metadata ?? {},
-      };
+      }
 
       try {
-        const data = await UserApi.updateProfile(payload);
-        this.user = mapServerUser(data);
-        this.profileLoaded = true;
-      } catch (err: any) {
-        this.error =
-          typeof err === 'string'
-            ? err
-            : err?.message ?? 'Unable to update profile';
-        throw err;
+        const data = await UserApi.updateProfile(payload)
+        this.user = mapServerUser(data)
+        this.profileLoaded = true
+      } catch (error: any) {
+        this.error
+          = typeof error === 'string'
+            ? error
+            : error?.message ?? 'Unable to update profile'
+        throw error
       } finally {
-        this.loading = false;
+        this.loading = false
       }
     },
 
-    async logout() {
+    async logout () {
       try {
         if (this.token) {
-          await UserApi.logout();
+          await UserApi.logout()
         }
-      } catch (err) {
+      } catch (error) {
         // Failing to call logout shouldn't block clearing the session
-        console.warn('Logout request failed', err);
+        console.warn('Logout request failed', error)
       } finally {
-        this.setToken(null);
-        this.user = defaultUser();
-        this.profileLoaded = false;
-        this.error = null;
+        this.setToken(null)
+        this.user = defaultUser()
+        this.profileLoaded = false
+        this.error = null
       }
     },
   },
-});
+})

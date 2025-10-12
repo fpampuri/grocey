@@ -1,13 +1,13 @@
 <script setup lang="ts">
 
-const props = defineProps<{ icon: string; title: string; subtitle?: string; modelValue: boolean }>();
-const emit = defineEmits(['update:modelValue']);
+  const props = defineProps<{ icon: string, title: string, subtitle?: string, modelValue: boolean }>()
+  const emit = defineEmits(['update:modelValue'])
 </script>
 
 <template>
   <div class="setting-row">
     <div class="left">
-      <v-icon :icon="icon" class="left-icon" />
+      <v-icon class="left-icon" :icon="icon" />
       <div class="text">
         <div class="title">{{ title }}</div>
         <div v-if="subtitle" class="subtitle">{{ subtitle }}</div>
@@ -15,10 +15,10 @@ const emit = defineEmits(['update:modelValue']);
     </div>
     <div class="right">
       <v-switch
-        :model-value="modelValue"
         color="green"
         hide-details
         inset
+        :model-value="modelValue"
         @update:model-value="(v: boolean | null) => emit('update:modelValue', !!v)"
       />
     </div>

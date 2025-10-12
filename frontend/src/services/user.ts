@@ -1,266 +1,266 @@
-import Api from './api';
+import Api from './api'
 
 // Types based on Swagger documentation
 export interface UserMetadata {
-  [key: string]: any;
+  [key: string]: any
 }
 
 export interface User {
-  id?: number;
-  name: string;
-  surname: string;
-  email: string;
-  password?: string;
-  metadata?: UserMetadata;
-  createdAt?: string;
-  updatedAt?: string;
+  id?: number
+  name: string
+  surname: string
+  email: string
+  password?: string
+  metadata?: UserMetadata
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface NewUser {
-  id?: number;
-  email: string;
-  name: string;
-  surname: string;
-  metadata?: UserMetadata;
-  updatedAt?: string;
-  createdAt?: string;
+  id?: number
+  email: string
+  name: string
+  surname: string
+  metadata?: UserMetadata
+  updatedAt?: string
+  createdAt?: string
 }
 
 export interface GetUser {
-  id?: number;
-  name: string;
-  surname: string;
-  email: string;
-  metadata?: UserMetadata;
-  createdAt?: string;
-  updatedAt?: string;
+  id?: number
+  name: string
+  surname: string
+  email: string
+  metadata?: UserMetadata
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface Credentials {
-  email: string;
-  password: string;
+  email: string
+  password: string
 }
 
 export interface RegistrationData {
-  email: string;
-  name: string;
-  surname: string;
-  password: string;
-  metadata?: UserMetadata;
+  email: string
+  name: string
+  surname: string
+  password: string
+  metadata?: UserMetadata
 }
 
 export interface RegisteredUser {
-  user: NewUser;
-  verificationToken: string;
+  user: NewUser
+  verificationToken: string
 }
 
 export interface AuthenticationToken {
-  token: string;
+  token: string
 }
 
 export interface VerificationCode {
-  code: string;
+  code: string
 }
 
 export interface PasswordRecovery {
-  email: string;
+  email: string
 }
 
 export interface PasswordReset {
-  code: string;
-  password: string;
+  code: string
+  password: string
 }
 
 export interface UpdateUserProfile {
-  name: string;
-  surname: string;
-  metadata?: UserMetadata;
+  name: string
+  surname: string
+  metadata?: UserMetadata
 }
 
 export interface PasswordChange {
-  currentPassword: string;
-  newPassword: string;
+  currentPassword: string
+  newPassword: string
 }
 
 export class UserApi {
-  private static getUrl(slug?: string): string {
-    return `/users${slug ? `/${slug}` : ""}`;
+  private static getUrl (slug?: string): string {
+    return `/users${slug ? `/${slug}` : ''}`
   }
 
   // Authentication endpoints
-  static async login(
-    credentials: Credentials, 
-    controller?: AbortController
+  static async login (
+    credentials: Credentials,
+    controller?: AbortController,
   ): Promise<AuthenticationToken> {
     return await Api.post<AuthenticationToken>(
-      UserApi.getUrl("login"), 
+      UserApi.getUrl('login'),
       false, // Login doesn't require auth token
-      credentials, 
-      controller
-    );
+      credentials,
+      controller,
+    )
   }
 
-  static async register(
+  static async register (
     registrationData: RegistrationData,
-    controller?: AbortController
+    controller?: AbortController,
   ): Promise<RegisteredUser> {
     return await Api.post<RegisteredUser>(
-      UserApi.getUrl("register"),
+      UserApi.getUrl('register'),
       false, // Registration doesn't require auth token
       registrationData,
-      controller
-    );
+      controller,
+    )
   }
 
-  static async verify(
+  static async verify (
     verificationCode: VerificationCode,
-    controller?: AbortController
+    controller?: AbortController,
   ): Promise<AuthenticationToken> {
     return await Api.post<AuthenticationToken>(
-      UserApi.getUrl("verify-account"),
+      UserApi.getUrl('verify-account'),
       false, // Verification doesn't require auth token
       verificationCode,
-      controller
-    );
+      controller,
+    )
   }
 
-  static async logout(
-    controller?: AbortController
+  static async logout (
+    controller?: AbortController,
   ): Promise<void> {
     return await Api.post<void>(
-      UserApi.getUrl("logout"), 
-      true, 
+      UserApi.getUrl('logout'),
+      true,
       undefined,
-      controller
-    );
+      controller,
+    )
   }
 
   // Password recovery
-  static async requestPasswordRecovery(
+  static async requestPasswordRecovery (
     passwordRecovery: PasswordRecovery,
-    controller?: AbortController
+    controller?: AbortController,
   ): Promise<void> {
     return await Api.post<void>(
-      `${UserApi.getUrl("forgot-password")}?email=${encodeURIComponent(passwordRecovery.email)}`,
+      `${UserApi.getUrl('forgot-password')}?email=${encodeURIComponent(passwordRecovery.email)}`,
       false, // Password recovery doesn't require auth token
-      undefined, 
-      controller
-    );
+      undefined,
+      controller,
+    )
   }
 
-  static async resetPassword(
+  static async resetPassword (
     passwordReset: PasswordReset,
-    controller?: AbortController
+    controller?: AbortController,
   ): Promise<void> {
     return await Api.post<void>(
-      UserApi.getUrl("reset-password"),
+      UserApi.getUrl('reset-password'),
       false, // Password reset doesn't require auth token
       passwordReset,
-      controller
-    );
+      controller,
+    )
   }
 
   // Profile management
-  static async getProfile(
-    controller?: AbortController
+  static async getProfile (
+    controller?: AbortController,
   ): Promise<GetUser> {
     return await Api.get<GetUser>(
-      UserApi.getUrl("profile"), 
-      true, 
-      controller
-    );
+      UserApi.getUrl('profile'),
+      true,
+      controller,
+    )
   }
 
-  static async updateProfile(
+  static async updateProfile (
     profileData: UpdateUserProfile,
-    controller?: AbortController
+    controller?: AbortController,
   ): Promise<GetUser> {
     return await Api.put<GetUser>(
-      UserApi.getUrl("profile"),
+      UserApi.getUrl('profile'),
       true,
       profileData,
-      controller
-    );
+      controller,
+    )
   }
 
-  static async changePassword(
+  static async changePassword (
     passwordChange: PasswordChange,
-    controller?: AbortController
+    controller?: AbortController,
   ): Promise<void> {
     return await Api.post<void>(
-      UserApi.getUrl("change-password"),
+      UserApi.getUrl('change-password'),
       true,
       passwordChange,
-      controller
-    );
+      controller,
+    )
   }
 
-  static async resendVerification(
+  static async resendVerification (
     email: string,
-    controller?: AbortController
+    controller?: AbortController,
   ): Promise<void> {
     return await Api.post<void>(
-      UserApi.getUrl("send-verification"),
+      UserApi.getUrl('send-verification'),
       false, // Resend verification doesn't require auth token
       { email },
-      controller
-    );
+      controller,
+    )
   }
 
-  static async deleteAccount(
-    controller?: AbortController
+  static async deleteAccount (
+    controller?: AbortController,
   ): Promise<void> {
     return await Api.delete<void>(
-      UserApi.getUrl("profile"),
+      UserApi.getUrl('profile'),
       true,
-      controller
-    );
+      controller,
+    )
   }
 }
 
 // User model classes
 export class CredentialsModel {
-  email: string;
-  password: string;
+  email: string
+  password: string
 
-  constructor(email: string, password: string) {
-    this.email = email;
-    this.password = password;
+  constructor (email: string, password: string) {
+    this.email = email
+    this.password = password
   }
 }
 
 export class UserModel {
-  id?: number;
-  name: string;
-  surname: string;
-  email: string;
-  metadata: UserMetadata;
-  createdAt?: string;
-  updatedAt?: string;
+  id?: number
+  name: string
+  surname: string
+  email: string
+  metadata: UserMetadata
+  createdAt?: string
+  updatedAt?: string
 
-  constructor(
+  constructor (
     name: string,
     surname: string,
     email: string,
     metadata?: UserMetadata,
     id?: number,
     createdAt?: string,
-    updatedAt?: string
+    updatedAt?: string,
   ) {
     if (id) {
-      this.id = id;
+      this.id = id
     }
-    this.name = name;
-    this.surname = surname;
-    this.email = email;
-    this.metadata = metadata || {};
-    this.createdAt = createdAt;
-    this.updatedAt = updatedAt;
+    this.name = name
+    this.surname = surname
+    this.email = email
+    this.metadata = metadata || {}
+    this.createdAt = createdAt
+    this.updatedAt = updatedAt
   }
 
-  toString(): string {
-    return JSON.stringify(this, null, 2);
+  toString (): string {
+    return JSON.stringify(this, null, 2)
   }
 }
 
-export default UserApi;
+export default UserApi

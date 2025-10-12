@@ -1,38 +1,38 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+  import { computed } from 'vue'
 
-interface Props {
-  modelValue: boolean;
-  maxWidth?: string;
-  persistent?: boolean;
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  maxWidth: '480px',
-  persistent: false,
-});
-
-const emit = defineEmits<{
-  'update:modelValue': [value: boolean];
-}>();
-
-const dialogModel = computed({
-  get: () => props.modelValue,
-  set: (value: boolean) => emit('update:modelValue', value)
-});
-
-function handleBackdropClick() {
-  if (!props.persistent) {
-    emit('update:modelValue', false);
+  interface Props {
+    modelValue: boolean
+    maxWidth?: string
+    persistent?: boolean
   }
-}
+
+  const props = withDefaults(defineProps<Props>(), {
+    maxWidth: '480px',
+    persistent: false,
+  })
+
+  const emit = defineEmits<{
+    'update:modelValue': [value: boolean]
+  }>()
+
+  const dialogModel = computed({
+    get: () => props.modelValue,
+    set: (value: boolean) => emit('update:modelValue', value),
+  })
+
+  function handleBackdropClick () {
+    if (!props.persistent) {
+      emit('update:modelValue', false)
+    }
+  }
 </script>
 
 <template>
   <!-- Dialog Backdrop -->
   <div v-if="modelValue" class="dialog-backdrop" @click="handleBackdropClick">
     <!-- Dialog Container with consistent styling -->
-    <div class="dialog-container" @click.stop :style="{ maxWidth }">
+    <div class="dialog-container" :style="{ maxWidth }" @click.stop>
       <!-- Completely customizable content via slot -->
       <slot />
     </div>

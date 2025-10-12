@@ -1,209 +1,209 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { useUserStore } from '@/stores/user'
-import { useRouter } from 'vue-router'
+  import { computed, ref, watch } from 'vue'
+  import { useRouter } from 'vue-router'
+  import { useUserStore } from '@/stores/user'
 
-const props = defineProps({
-  modelValue: { type: Boolean, default: false },
-})
+  const props = defineProps({
+    modelValue: { type: Boolean, default: false },
+  })
 
-const emit = defineEmits(['update:modelValue'])
+  const emit = defineEmits(['update:modelValue'])
 
-const userStore = useUserStore()
-const router = useRouter()
+  const userStore = useUserStore()
+  const router = useRouter()
 
-// Local form data
-const firstName = ref(userStore.user.firstName)
-const lastName = ref(userStore.user.lastName)
-// Email is not editable, so we don't need a ref for it
+  // Local form data
+  const firstName = ref(userStore.user.firstName)
+  const lastName = ref(userStore.user.lastName)
+  // Email is not editable, so we don't need a ref for it
 
-// Password change form data
-const currentPassword = ref('')
-const newPassword = ref('')
-const confirmPassword = ref('')
-const showCurrentPassword = ref(false)
-const showNewPassword = ref(false)
-const showConfirmPassword = ref(false)
+  // Password change form data
+  const currentPassword = ref('')
+  const newPassword = ref('')
+  const confirmPassword = ref('')
+  const showCurrentPassword = ref(false)
+  const showNewPassword = ref(false)
+  const showConfirmPassword = ref(false)
 
-// Toast notifications
-const toastMessage = ref('')
-const toastType = ref<'success' | 'error'>('success')
-const showToastNotification = ref(false)
+  // Toast notifications
+  const toastMessage = ref('')
+  const toastType = ref<'success' | 'error'>('success')
+  const showToastNotification = ref(false)
 
-// Computed to check if there are changes (only for editable fields)
-const hasChanges = computed(() => {
-  return (
-    firstName.value !== userStore.user.firstName ||
-    lastName.value !== userStore.user.lastName
-  )
-})
+  // Computed to check if there are changes (only for editable fields)
+  const hasChanges = computed(() => {
+    return (
+      firstName.value !== userStore.user.firstName
+      || lastName.value !== userStore.user.lastName
+    )
+  })
 
-// Computed to check if password can be changed
-const canChangePassword = computed(() => {
-  return (
-    currentPassword.value.trim() !== '' &&
-    newPassword.value.trim() !== '' &&
-    confirmPassword.value.trim() !== '' &&
-    newPassword.value === confirmPassword.value &&
-    newPassword.value.length >= 8
-  )
-})
+  // Computed to check if password can be changed
+  const canChangePassword = computed(() => {
+    return (
+      currentPassword.value.trim() !== ''
+      && newPassword.value.trim() !== ''
+      && confirmPassword.value.trim() !== ''
+      && newPassword.value === confirmPassword.value
+      && newPassword.value.length >= 8
+    )
+  })
 
-// Computed to get password validation messages
-const passwordValidationMessage = computed(() => {
-  if (currentPassword.value.trim() === '' && newPassword.value.trim() === '' && confirmPassword.value.trim() === '') {
-    return 'Fill in all password fields to continue'
-  }
-  
-  if (currentPassword.value.trim() === '') {
-    return 'Enter your current password'
-  }
-  
-  if (newPassword.value.trim() === '') {
-    return 'Enter a new password'
-  }
-  
-  if (newPassword.value.length > 0 && newPassword.value.length < 8) {
-    return 'New password must be at least 8 characters long'
-  }
-  
-  if (confirmPassword.value.trim() === '') {
-    return 'Confirm your new password'
-  }
-  
-  if (newPassword.value !== confirmPassword.value) {
-    return 'Passwords do not match'
-  }
-  
-  return 'Ready to change password'
-})
-
-watch(
-  () => userStore.user.firstName,
-  (value) => {
-    if (!hasChanges.value) {
-      firstName.value = value
+  // Computed to get password validation messages
+  const passwordValidationMessage = computed(() => {
+    if (currentPassword.value.trim() === '' && newPassword.value.trim() === '' && confirmPassword.value.trim() === '') {
+      return 'Fill in all password fields to continue'
     }
-  },
-  { immediate: true }
-)
 
-watch(
-  () => userStore.user.lastName,
-  (value) => {
-    if (!hasChanges.value) {
-      lastName.value = value
+    if (currentPassword.value.trim() === '') {
+      return 'Enter your current password'
     }
-  },
-  { immediate: true }
-)
 
-watch(
-  () => props.modelValue,
-  (isOpen) => {
-    if (isOpen) {
-      if (!userStore.profileLoaded && !userStore.loading) {
-        userStore.fetchUserProfile()
+    if (newPassword.value.trim() === '') {
+      return 'Enter a new password'
+    }
+
+    if (newPassword.value.length > 0 && newPassword.value.length < 8) {
+      return 'New password must be at least 8 characters long'
+    }
+
+    if (confirmPassword.value.trim() === '') {
+      return 'Confirm your new password'
+    }
+
+    if (newPassword.value !== confirmPassword.value) {
+      return 'Passwords do not match'
+    }
+
+    return 'Ready to change password'
+  })
+
+  watch(
+    () => userStore.user.firstName,
+    value => {
+      if (!hasChanges.value) {
+        firstName.value = value
       }
-      // Only reset form fields when opening, not password fields
-      firstName.value = userStore.user.firstName
-      lastName.value = userStore.user.lastName
-    } else {
-      // Reset everything when closing
-      firstName.value = userStore.user.firstName
-      lastName.value = userStore.user.lastName
-      currentPassword.value = ''
-      newPassword.value = ''
-      confirmPassword.value = ''
-      showCurrentPassword.value = false
-      showNewPassword.value = false
-      showConfirmPassword.value = false
-    }
-  },
-  { immediate: true }
-)
+    },
+    { immediate: true },
+  )
 
-function showToast(message: string, type: 'success' | 'error') {
-  toastMessage.value = message
-  toastType.value = type
-  showToastNotification.value = true
-  setTimeout(() => {
-    showToastNotification.value = false
-  }, 2000)
-}
+  watch(
+    () => userStore.user.lastName,
+    value => {
+      if (!hasChanges.value) {
+        lastName.value = value
+      }
+    },
+    { immediate: true },
+  )
 
-function closePanel() {
-  emit('update:modelValue', false)
-  // Reset form to original values
-  firstName.value = userStore.user.firstName
-  lastName.value = userStore.user.lastName
-  // Reset password fields
-  currentPassword.value = ''
-  newPassword.value = ''
-  confirmPassword.value = ''
-  showCurrentPassword.value = false
-  showNewPassword.value = false
-  showConfirmPassword.value = false
-}
+  watch(
+    () => props.modelValue,
+    isOpen => {
+      if (isOpen) {
+        if (!userStore.profileLoaded && !userStore.loading) {
+          userStore.fetchUserProfile()
+        }
+        // Only reset form fields when opening, not password fields
+        firstName.value = userStore.user.firstName
+        lastName.value = userStore.user.lastName
+      } else {
+        // Reset everything when closing
+        firstName.value = userStore.user.firstName
+        lastName.value = userStore.user.lastName
+        currentPassword.value = ''
+        newPassword.value = ''
+        confirmPassword.value = ''
+        showCurrentPassword.value = false
+        showNewPassword.value = false
+        showConfirmPassword.value = false
+      }
+    },
+    { immediate: true },
+  )
 
-function saveChanges() {
-  userStore
-    .saveChanges({
-      firstName: firstName.value,
-      lastName: lastName.value,
-    })
-    .then(() => {
-      // Show success toast
-      showToast('Profile updated successfully!', 'success')
-    })
-    .catch((err) => {
-      console.error('Failed to update profile', err)
-      showToast('Failed to update profile. Please try again.', 'error')
-    })
-}
-
-async function changePassword() {
-  // Check if new password is same as current password
-  if (currentPassword.value === newPassword.value) {
-    showToast('New password must be different from your current password', 'error')
-    return
+  function showToast (message: string, type: 'success' | 'error') {
+    toastMessage.value = message
+    toastType.value = type
+    showToastNotification.value = true
+    setTimeout(() => {
+      showToastNotification.value = false
+    }, 2000)
   }
 
-  try {
-    const { UserApi } = await import('@/services')
-    await UserApi.changePassword({
-      currentPassword: currentPassword.value,
-      newPassword: newPassword.value,
-    })
-    // Reset password fields on success
+  function closePanel () {
+    emit('update:modelValue', false)
+    // Reset form to original values
+    firstName.value = userStore.user.firstName
+    lastName.value = userStore.user.lastName
+    // Reset password fields
     currentPassword.value = ''
     newPassword.value = ''
     confirmPassword.value = ''
     showCurrentPassword.value = false
     showNewPassword.value = false
     showConfirmPassword.value = false
-    showToast('Password changed successfully!', 'success')
-  } catch (err) {
-    console.error('Failed to change password', err)
-    showToast('Failed to change password. Please check your current password.', 'error')
   }
-}
 
-async function logout() {
-  await userStore.logout()
-  closePanel()
-  router.push({ name: 'login' })
-}
+  function saveChanges () {
+    userStore
+      .saveChanges({
+        firstName: firstName.value,
+        lastName: lastName.value,
+      })
+      .then(() => {
+        // Show success toast
+        showToast('Profile updated successfully!', 'success')
+      })
+      .catch(error => {
+        console.error('Failed to update profile', error)
+        showToast('Failed to update profile. Please try again.', 'error')
+      })
+  }
+
+  async function changePassword () {
+    // Check if new password is same as current password
+    if (currentPassword.value === newPassword.value) {
+      showToast('New password must be different from your current password', 'error')
+      return
+    }
+
+    try {
+      const { UserApi } = await import('@/services')
+      await UserApi.changePassword({
+        currentPassword: currentPassword.value,
+        newPassword: newPassword.value,
+      })
+      // Reset password fields on success
+      currentPassword.value = ''
+      newPassword.value = ''
+      confirmPassword.value = ''
+      showCurrentPassword.value = false
+      showNewPassword.value = false
+      showConfirmPassword.value = false
+      showToast('Password changed successfully!', 'success')
+    } catch (error) {
+      console.error('Failed to change password', error)
+      showToast('Failed to change password. Please check your current password.', 'error')
+    }
+  }
+
+  async function logout () {
+    await userStore.logout()
+    closePanel()
+    router.push({ name: 'login' })
+  }
 </script>
 
 <template>
   <v-navigation-drawer
-    :model-value="modelValue"
-    @update:model-value="emit('update:modelValue', $event)"
+    class="profile-panel"
     location="end"
+    :model-value="modelValue"
     temporary
     width="400"
-    class="profile-panel"
+    @update:model-value="emit('update:modelValue', $event)"
   >
     <div class="d-flex flex-column h-100">
       <!-- Header -->
@@ -212,22 +212,22 @@ async function logout() {
           <h2 class="text-h5 font-weight-bold">Profile</h2>
           <v-btn
             icon="mdi-close"
-            variant="text"
             size="small"
+            variant="text"
             @click="closePanel"
           />
         </div>
-        
+
         <!-- Avatar -->
         <div class="d-flex justify-center mb-6">
           <v-avatar
-            size="80"
             class="profile-avatar"
+            size="80"
           >
             <v-icon
+              color="white"
               icon="mdi-account"
               size="50"
-              color="white"
             />
           </v-avatar>
         </div>
@@ -238,16 +238,16 @@ async function logout() {
         <!-- User Information -->
         <div class="user-info mb-6">
           <h3 class="user-info-title mb-3">Personal Information</h3>
-          
+
           <!-- First Name -->
           <div class="mb-4">
             <label class="form-label">First Name</label>
             <v-text-field
               v-model="firstName"
-              variant="outlined"
+              class="form-field"
               density="compact"
               hide-details
-              class="form-field"
+              variant="outlined"
             />
           </div>
 
@@ -256,10 +256,10 @@ async function logout() {
             <label class="form-label">Last Name</label>
             <v-text-field
               v-model="lastName"
-              variant="outlined"
+              class="form-field"
               density="compact"
               hide-details
-              class="form-field"
+              variant="outlined"
             />
           </div>
 
@@ -267,12 +267,12 @@ async function logout() {
           <div class="mb-4">
             <label class="form-label">Email</label>
             <v-text-field
-              :value="userStore.user.email"
-              readonly
-              variant="outlined"
+              class="form-field email-field"
               density="compact"
               hide-details
-              class="form-field email-field"
+              readonly
+              :value="userStore.user.email"
+              variant="outlined"
             />
           </div>
 
@@ -290,19 +290,19 @@ async function logout() {
         <!-- Change Password -->
         <div class="password-change mb-6">
           <h3 class="password-change-title mb-3">Change Password</h3>
-          
+
           <div class="mb-4">
             <label class="form-label">Current Password</label>
             <v-text-field
               v-model="currentPassword"
-              :type="showCurrentPassword ? 'text' : 'password'"
               :append-inner-icon="showCurrentPassword ? 'mdi-eye' : 'mdi-eye-off'"
-              @click:append-inner="showCurrentPassword = !showCurrentPassword"
-              variant="outlined"
+              class="form-field"
               density="compact"
               hide-details
-              class="form-field"
               placeholder="Enter your current password"
+              :type="showCurrentPassword ? 'text' : 'password'"
+              variant="outlined"
+              @click:append-inner="showCurrentPassword = !showCurrentPassword"
             />
           </div>
 
@@ -310,14 +310,14 @@ async function logout() {
             <label class="form-label">New Password</label>
             <v-text-field
               v-model="newPassword"
-              :type="showNewPassword ? 'text' : 'password'"
               :append-inner-icon="showNewPassword ? 'mdi-eye' : 'mdi-eye-off'"
-              @click:append-inner="showNewPassword = !showNewPassword"
-              variant="outlined"
+              class="form-field"
               density="compact"
               hide-details
-              class="form-field"
               placeholder="Enter your new password"
+              :type="showNewPassword ? 'text' : 'password'"
+              variant="outlined"
+              @click:append-inner="showNewPassword = !showNewPassword"
             />
           </div>
 
@@ -325,28 +325,28 @@ async function logout() {
             <label class="form-label">Confirm New Password</label>
             <v-text-field
               v-model="confirmPassword"
-              :type="showConfirmPassword ? 'text' : 'password'"
               :append-inner-icon="showConfirmPassword ? 'mdi-eye' : 'mdi-eye-off'"
-              @click:append-inner="showConfirmPassword = !showConfirmPassword"
-              variant="outlined"
+              class="form-field"
               density="compact"
               hide-details
-              class="form-field"
               placeholder="Confirm your new password"
+              :type="showConfirmPassword ? 'text' : 'password'"
+              variant="outlined"
+              @click:append-inner="showConfirmPassword = !showConfirmPassword"
             />
           </div>
 
           <!-- Password Validation Message -->
           <div class="password-validation-message mb-3">
-            <v-icon 
-              :icon="canChangePassword ? 'mdi-check-circle' : 'mdi-information'"
-              :color="canChangePassword ? 'success' : 'warning'"
-              size="small"
+            <v-icon
               class="mr-2"
+              :color="canChangePassword ? 'success' : 'warning'"
+              :icon="canChangePassword ? 'mdi-check-circle' : 'mdi-information'"
+              size="small"
             />
-            <span 
-              :class="canChangePassword ? 'text-success' : 'text-warning'"
+            <span
               class="validation-text"
+              :class="canChangePassword ? 'text-success' : 'text-warning'"
             >
               {{ passwordValidationMessage }}
             </span>

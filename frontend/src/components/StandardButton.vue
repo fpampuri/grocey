@@ -1,28 +1,27 @@
 <script setup lang="ts">
-    const props = defineProps({
-      title: { type: String, required: true },
-      icon: { type: String, default: "mdi-plus" },
-      disabled: { type: Boolean, default: false },
-      variant: { type: String, default: "primary" }, // primary, danger
-    });
-    
-    const emits = defineEmits(["click"]);
+  const props = defineProps({
+    title: { type: String, required: true },
+    icon: { type: String, default: 'mdi-plus' },
+    disabled: { type: Boolean, default: false },
+    variant: { type: String, default: 'primary' }, // primary, danger
+  })
 
+  const emits = defineEmits(['click'])
 
-  function handleClick() {
+  function handleClick () {
     if (!props.disabled) {
-      emits("click");
+      emits('click')
     }
   }
 </script>
 
 <template>
   <button
-    @click="handleClick"
     :class="['standard-button', `standard-button--${variant}`]"
     :disabled="disabled"
+    @click="handleClick"
   >
-    <v-icon v-if="icon" :icon="icon" class="button-icon" />
+    <v-icon v-if="icon" class="button-icon" :icon="icon" />
     <span class="button-text">{{ title }}</span>
   </button>
 </template>
@@ -42,7 +41,7 @@
   min-width: 120px;
   cursor: pointer;
   transition: all 0.2s ease-in-out;
-  
+
   background-color: var(--primary-green-light);
   color: white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);

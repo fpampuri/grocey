@@ -1,35 +1,65 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
-import StandardButton from '@/components/StandardButton.vue';
+import { ref, watch, computed } from "vue";
+import StandardButton from "@/components/StandardButton.vue";
 
 type CategoryOption = { value: number; label: string; icon?: string };
 
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
   categories: { type: Array as () => CategoryOption[], default: () => [] },
+  defaultCategoryId: { type: Number, default: null },
 });
 
-const emit = defineEmits(['update:modelValue', 'create-product']);
+const emit = defineEmits(["update:modelValue", "create-product"]);
 
-const productName = ref('');
+const productName = ref("");
 const selectedCategoryId = ref<number | null>(null);
+const DEFAULT_CATEGORY_NAME = "Miscellaneous";
+const DEFAULT_CATEGORY_NAME_LOWER = DEFAULT_CATEGORY_NAME.toLowerCase();
+
+function resolveDefaultCategoryId(): number | null {
+  if (typeof props.defaultCategoryId === "number") {
+    return props.defaultCategoryId;
+  }
+  const miscOption = props.categories.find(
+    (category) => category.label?.toLowerCase() === DEFAULT_CATEGORY_NAME_LOWER
+  );
+  if (miscOption) return miscOption.value;
+  return props.categories[0]?.value ?? null;
+}
 
 watch(() => props.modelValue, (open) => {
   if (open) {
-    productName.value = '';
-    selectedCategoryId.value = props.categories[0]?.value ?? null;
+    productName.value = "";
+    selectedCategoryId.value = resolveDefaultCategoryId();
   }
 });
 
-const canCreate = computed(() => !!productName.value.trim() && selectedCategoryId.value !== null);
+watch(
+  () => [props.categories, props.defaultCategoryId] as const,
+  () => {
+    if (!props.modelValue) return;
+    const optionValues = props.categories.map((category) => category.value);
+    if (
+      selectedCategoryId.value === null ||
+      !optionValues.includes(selectedCategoryId.value)
+    ) {
+      selectedCategoryId.value = resolveDefaultCategoryId();
+    }
+  }
+);
+
+const canCreate = computed(
+  () => !!productName.value.trim() && selectedCategoryId.value !== null
+);
 
 function closeDialog() {
-  emit('update:modelValue', false);
+  emit("update:modelValue", false);
 }
 
 function createProduct() {
   if (!canCreate.value) return;
-  emit('create-product', {
+  emit("create-product", {
     name: productName.value.trim(),
     categoryId: selectedCategoryId.value,
   });

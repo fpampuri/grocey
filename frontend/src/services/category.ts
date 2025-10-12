@@ -1,129 +1,129 @@
-import Api from './api';
+import Api from './api'
 
 // Types based on Swagger documentation
 export interface CategoryMetadata {
-  icon: string;
-  [key: string]: any;
+  icon: string
+  [key: string]: any
 }
 
 export interface Category {
-  id?: number;
-  name: string;
-  metadata?: CategoryMetadata;
-  createdAt?: string;
-  updatedAt?: string;
+  id?: number
+  name: string
+  metadata?: CategoryMetadata
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface CategoryRegistrationData {
-  name: string;
-  metadata?: CategoryMetadata;
+  name: string
+  metadata?: CategoryMetadata
 }
 
 export interface UpdateCategoryProfile {
-  name?: string;
-  metadata?: CategoryMetadata;
+  name?: string
+  metadata?: CategoryMetadata
 }
 
 export class CategoryApi {
-  private static getUrl(slug?: string | number, query?: string): string {
-    return `/categories${slug ? `/${slug}` : ""}${query ? `?${query}` : ""}`;
+  private static getUrl (slug?: string | number, query?: string): string {
+    return `/categories${slug ? `/${slug}` : ''}${query ? `?${query}` : ''}`
   }
 
-  static async add(
-    category: CategoryRegistrationData, 
-    controller?: AbortController
+  static async add (
+    category: CategoryRegistrationData,
+    controller?: AbortController,
   ): Promise<Category> {
     return await Api.post<Category>(
-      CategoryApi.getUrl(), 
-      true, 
-      category, 
-      controller
-    );
+      CategoryApi.getUrl(),
+      true,
+      category,
+      controller,
+    )
   }
 
-  static async modify(
+  static async modify (
     categoryId: number,
-    category: UpdateCategoryProfile, 
-    controller?: AbortController
+    category: UpdateCategoryProfile,
+    controller?: AbortController,
   ): Promise<Category> {
     return await Api.put<Category>(
-      CategoryApi.getUrl(categoryId), 
-      true, 
-      category, 
-      controller
-    );
+      CategoryApi.getUrl(categoryId),
+      true,
+      category,
+      controller,
+    )
   }
 
-  static async remove(
-    id: number, 
-    controller?: AbortController
+  static async remove (
+    id: number,
+    controller?: AbortController,
   ): Promise<void> {
     return await Api.delete<void>(
-      CategoryApi.getUrl(id), 
-      true, 
-      controller
-    );
+      CategoryApi.getUrl(id),
+      true,
+      controller,
+    )
   }
 
-  static async get(
-    id: number, 
-    controller?: AbortController
+  static async get (
+    id: number,
+    controller?: AbortController,
   ): Promise<Category> {
     return await Api.get<Category>(
-      CategoryApi.getUrl(id), 
-      true, 
-      controller
-    );
+      CategoryApi.getUrl(id),
+      true,
+      controller,
+    )
   }
 
-  static async getAll(
-    controller?: AbortController
+  static async getAll (
+    controller?: AbortController,
   ): Promise<Category[]> {
     return await Api.get<Category[]>(
-      CategoryApi.getUrl(), 
-      true, 
-      controller
-    );
+      CategoryApi.getUrl(),
+      true,
+      controller,
+    )
   }
 
-  static async getByName(
-    name: string, 
-    controller?: AbortController
+  static async getByName (
+    name: string,
+    controller?: AbortController,
   ): Promise<Category[]> {
     return await Api.get<Category[]>(
-      CategoryApi.getUrl(undefined, `name=${encodeURIComponent(name)}`), 
-      true, 
-      controller
-    );
+      CategoryApi.getUrl(undefined, `name=${encodeURIComponent(name)}`),
+      true,
+      controller,
+    )
   }
 }
 
 // Category class for creating category instances
 export class CategoryModel {
-  id?: number;
-  name: string;
-  metadata: CategoryMetadata;
-  createdAt?: string;
-  updatedAt?: string;
+  id?: number
+  name: string
+  metadata: CategoryMetadata
+  createdAt?: string
+  updatedAt?: string
 
-  constructor(
+  constructor (
     name: string,
     metadata?: CategoryMetadata,
     id?: number,
     createdAt?: string,
-    updatedAt?: string
+    updatedAt?: string,
   ) {
     if (id) {
-      this.id = id;
+      this.id = id
     }
-    this.name = name;
-    this.metadata = metadata || { icon: 'mdi-box' };
-    this.createdAt = createdAt;
-    this.updatedAt = updatedAt;
+    this.name = name
+    this.metadata = metadata || { icon: 'mdi-box' }
+    this.createdAt = createdAt
+    this.updatedAt = updatedAt
   }
 
-  toString(): string {
-    return JSON.stringify(this, null, 2);
+  toString (): string {
+    return JSON.stringify(this, null, 2)
   }
 }
 
@@ -132,11 +132,11 @@ export class CategoryMetadataModel {
   color?: string;
   [key: string]: any;
 
-  constructor(color?: string) {
+  constructor (color?: string) {
     if (color) {
-      this.color = color;
+      this.color = color
     }
   }
 }
 
-export default CategoryApi;
+export default CategoryApi

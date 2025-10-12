@@ -1,168 +1,164 @@
 <script setup lang="ts">
-  import { ref, computed } from "vue";
-  import { useRouter } from "vue-router";
-  import { UserApi } from "@/services";
-  import { useUserStore } from "@/stores/user";
+  import { computed, ref } from 'vue'
+  import { useRouter } from 'vue-router'
+  import { UserApi } from '@/services'
+  import { useUserStore } from '@/stores/user'
 
   type VuetifyForm = {
-    validate: () => Promise<{ valid: boolean }>;
-    resetValidation: () => void;
-  };
-  type Mode = "login" | "register" | "verify";
+    validate: () => Promise<{ valid: boolean }>
+    resetValidation: () => void
+  }
+  type Mode = 'login' | 'register' | 'verify'
 
-  const router = useRouter();
-  const userStore = useUserStore();
+  const router = useRouter()
+  const userStore = useUserStore()
 
-  const formRef = ref<VuetifyForm | null>(null);
-  const mode = ref<Mode>("login");
-  const email = ref("");
-  const password = ref("");
-  const confirmPassword = ref("");
-  const firstName = ref("");
-  const lastName = ref("");
-  const rememberMe = ref(false);
-  const showPassword = ref(false);
-  const isSubmitting = ref(false);
-  const authError = ref("");
-  const successMessage = ref("");
-  const verificationCode = ref("");
-  const verificationEmail = ref("");
-  const isResending = ref(false);
-  const resendMessage = ref("");
-  const resendError = ref("");
+  const formRef = ref<VuetifyForm | null>(null)
+  const mode = ref<Mode>('login')
+  const email = ref('')
+  const password = ref('')
+  const confirmPassword = ref('')
+  const firstName = ref('')
+  const lastName = ref('')
+  const rememberMe = ref(false)
+  const showPassword = ref(false)
+  const isSubmitting = ref(false)
+  const authError = ref('')
+  const successMessage = ref('')
+  const verificationCode = ref('')
+  const verificationEmail = ref('')
+  const isResending = ref(false)
+  const resendMessage = ref('')
+  const resendError = ref('')
 
-  const isLoginMode = computed(() => mode.value === "login");
-  const isRegisterMode = computed(() => mode.value === "register");
-  const isVerifyMode = computed(() => mode.value === "verify");
+  const isLoginMode = computed(() => mode.value === 'login')
+  const isRegisterMode = computed(() => mode.value === 'register')
+  const isVerifyMode = computed(() => mode.value === 'verify')
   const formSubtitle = computed(() => {
     if (isRegisterMode.value) {
-      return "Fill out the details below to start using Grocey.";
+      return 'Fill out the details below to start using Grocey.'
     }
     if (isVerifyMode.value) {
       return verificationEmail.value
         ? `Enter the verification code we sent to ${verificationEmail.value}.`
-        : "Enter the verification code we emailed you.";
+        : 'Enter the verification code we emailed you.'
     }
-    return "Enter your credentials to continue.";
-  });
+    return 'Enter your credentials to continue.'
+  })
 
   const emailRules = [
-    (value: string) => !!value || "Enter your email address",
-    (value: string) => /.+@.+\..+/.test(value) || "Enter a valid email",
-  ];
+    (value: string) => !!value || 'Enter your email address',
+    (value: string) => /.+@.+\..+/.test(value) || 'Enter a valid email',
+  ]
 
   const passwordRules = [
-    (value: string) => !!value || "Enter your password",
-    (value: string) => value.length >= 8 || "Must be at least 8 characters",
-  ];
+    (value: string) => !!value || 'Enter your password',
+    (value: string) => value.length >= 6 || 'Must be at least 6 characters',
+  ]
 
   const confirmPasswordRules = [
-    (value: string) => !!value || "Confirm your password",
-    (value: string) => value === password.value || "Passwords must match",
-  ];
+    (value: string) => !!value || 'Confirm your password',
+    (value: string) => value === password.value || 'Passwords must match',
+  ]
 
-  const firstNameRules = [(value: string) => !!value || "Enter your first name"];
-  const lastNameRules = [(value: string) => !!value || "Enter your last name"];
+  const firstNameRules = [(value: string) => !!value || 'Enter your first name']
+  const lastNameRules = [(value: string) => !!value || 'Enter your last name']
   const verificationCodeRules = [
-    (value: string) => !!value || "Enter the verification code",
-    (value: string) => value.length >= 4 || "Code must be at least 4 characters",
-  ];
+    (value: string) => !!value || 'Enter the verification code',
+    (value: string) => value.length >= 4 || 'Code must be at least 4 characters',
+  ]
 
-  function changeMode(next: Mode, { keepSuccess = false } = {}) {
-    mode.value = next;
-    authError.value = "";
+  function changeMode (next: Mode, { keepSuccess = false } = {}) {
+    mode.value = next
+    authError.value = ''
     if (!keepSuccess) {
-      successMessage.value = "";
+      successMessage.value = ''
     }
-    isSubmitting.value = false;
-    formRef.value?.resetValidation();
+    isSubmitting.value = false
+    formRef.value?.resetValidation()
 
-    if (next === "register") {
-      rememberMe.value = false;
-      password.value = "";
-      confirmPassword.value = "";
-    }
-
-    if (next !== "register") {
-      firstName.value = "";
-      lastName.value = "";
-      confirmPassword.value = "";
+    if (next === 'register') {
+      rememberMe.value = false
+      password.value = ''
+      confirmPassword.value = ''
     }
 
-    if (next !== "verify") {
-      verificationCode.value = "";
-      resendMessage.value = "";
-      resendError.value = "";
-      isResending.value = false;
+    if (next !== 'register') {
+      firstName.value = ''
+      lastName.value = ''
+      confirmPassword.value = ''
+    }
+
+    if (next !== 'verify') {
+      verificationCode.value = ''
+      resendMessage.value = ''
+      resendError.value = ''
+      isResending.value = false
     }
   }
 
-  function switchToRegister() {
-    changeMode("register");
+  function switchToRegister () {
+    changeMode('register')
   }
 
-  function switchToLogin() {
-    changeMode("login");
+  function switchToLogin () {
+    changeMode('login')
   }
 
-  function openVerification(emailAddress?: string, message?: string) {
-    changeMode("verify", { keepSuccess: true });
+  function openVerification (emailAddress?: string, message?: string) {
+    changeMode('verify', { keepSuccess: true })
     if (emailAddress) {
-      verificationEmail.value = emailAddress;
+      verificationEmail.value = emailAddress
     } else if (!verificationEmail.value) {
-      verificationEmail.value = email.value;
+      verificationEmail.value = email.value
     }
-    verificationCode.value = "";
-    resendMessage.value = "";
-    resendError.value = "";
+    verificationCode.value = ''
+    resendMessage.value = ''
+    resendError.value = ''
     if (message) {
-      successMessage.value = message;
+      successMessage.value = message
     } else if (verificationEmail.value) {
-      successMessage.value = `Enter the verification code we sent to ${verificationEmail.value}.`;
+      successMessage.value = `Enter the verification code we sent to ${verificationEmail.value}.`
     } else if (!successMessage.value) {
-      successMessage.value = "Enter the verification code we emailed you.";
+      successMessage.value = 'Enter the verification code we emailed you.'
     }
   }
 
-  async function resendVerification() {
-    resendMessage.value = "";
-    resendError.value = "";
+  async function resendVerification () {
+    resendMessage.value = ''
+    resendError.value = ''
 
-    const targetEmail = verificationEmail.value || email.value;
+    const targetEmail = verificationEmail.value || email.value
     if (!targetEmail) {
-      resendError.value = "Enter your email to resend the verification code.";
-      return;
+      resendError.value = 'Enter your email to resend the verification code.'
+      return
     }
 
     if (!/.+@.+\..+/.test(targetEmail)) {
-      resendError.value = "Enter a valid email address.";
-      return;
+      resendError.value = 'Enter a valid email address.'
+      return
     }
 
-    isResending.value = true;
+    isResending.value = true
     try {
-      await UserApi.resendVerification(targetEmail);
-      verificationEmail.value = targetEmail;
-      resendMessage.value = `We sent a new verification code to ${targetEmail}.`;
+      await UserApi.resendVerification(targetEmail)
+      verificationEmail.value = targetEmail
+      resendMessage.value = `We sent a new verification code to ${targetEmail}.`
     } catch (error: unknown) {
-      console.error("Resend verification error", error);
-      if (error instanceof Error) {
-        resendError.value = error.message;
-      } else {
-        resendError.value = "Unable to resend the verification code.";
-      }
+      console.error('Resend verification error', error)
+      resendError.value = error instanceof Error ? error.message : 'Unable to resend the verification code.'
     } finally {
-      isResending.value = false;
+      isResending.value = false
     }
   }
 
-  async function handleSubmit() {
-    authError.value = "";
+  async function handleSubmit () {
+    authError.value = ''
 
-    const validation = await formRef.value?.validate();
-    if (!validation?.valid) return;
+    const validation = await formRef.value?.validate()
+    if (!validation?.valid) return
 
-    isSubmitting.value = true;
+    isSubmitting.value = true
 
     try {
       if (isRegisterMode.value) {
@@ -171,64 +167,64 @@
           surname: lastName.value,
           email: email.value,
           password: password.value,
-        });
+        })
 
-        successMessage.value =
-          "Account created! Enter the verification code we emailed to activate your account.";
-        openVerification(email.value, successMessage.value);
-        password.value = "";
-        confirmPassword.value = "";
+        successMessage.value
+          = 'Account created! Enter the verification code we emailed to activate your account.'
+        openVerification(email.value, successMessage.value)
+        password.value = ''
+        confirmPassword.value = ''
       } else if (isVerifyMode.value) {
         await UserApi.verify({
           code: verificationCode.value,
-        });
+        })
 
-        successMessage.value =
-          "Account verified! You can now sign in with your email and password.";
-        changeMode("login", { keepSuccess: true });
-        verificationCode.value = "";
+        successMessage.value
+          = 'Account verified! You can now sign in with your email and password.'
+        changeMode('login', { keepSuccess: true })
+        verificationCode.value = ''
       } else {
         const authResult = await UserApi.login({
           email: email.value,
           password: password.value,
-        });
+        })
 
         if (!authResult?.token) {
-          throw new Error("Invalid response from server.");
+          throw new Error('Invalid response from server.')
         }
 
-        userStore.setToken(authResult.token);
-        await userStore.fetchUserProfile();
+        userStore.setToken(authResult.token)
+        await userStore.fetchUserProfile()
 
         if (!userStore.profileLoaded) {
-          throw new Error(userStore.error ?? "Unable to load your profile.");
+          throw new Error(userStore.error ?? 'Unable to load your profile.')
         }
 
-        router.push({ name: "lists" });
+        router.push({ name: 'lists' })
       }
     } catch (error: unknown) {
-      console.error("Authentication error", error);
+      console.error('Authentication error', error)
       if (isLoginMode.value) {
-        userStore.setToken(null);
+        userStore.setToken(null)
       }
 
-      let message = "We couldn't complete your request. Please try again.";
+      let message = 'We couldn\'t complete your request. Please try again.'
       if (error instanceof Error) {
-        message = error.message;
+        message = error.message
       }
 
       if (
-        isLoginMode.value &&
-        message.toLowerCase().includes("not verified")
+        isLoginMode.value
+        && message.toLowerCase().includes('not verified')
       ) {
-        authError.value = message;
-        openVerification(email.value);
-        return;
+        authError.value = message
+        openVerification(email.value)
+        return
       }
 
-      authError.value = message;
+      authError.value = message
     } finally {
-      isSubmitting.value = false;
+      isSubmitting.value = false
     }
   }
 </script>
@@ -238,7 +234,7 @@
     <div class="login-content">
       <section class="login-hero">
         <div class="hero-heading">
-          <v-icon icon="mdi-cart" class="hero-logo" />
+          <v-icon class="hero-logo" icon="mdi-cart" />
           <h1>Welcome to Grocey</h1>
         </div>
         <p>Organize your lists and shopping with a simple and smart experience.</p>
@@ -255,18 +251,18 @@
         <v-card-text>
           <v-alert
             v-if="successMessage && !isRegisterMode"
+            class="mb-4"
             type="success"
             variant="tonal"
-            class="mb-4"
           >
             {{ successMessage }}
           </v-alert>
 
           <v-alert
             v-if="authError"
+            class="mb-4"
             type="error"
             variant="tonal"
-            class="mb-4"
           >
             {{ authError }}
           </v-alert>
@@ -275,94 +271,94 @@
             <div v-if="isRegisterMode" class="name-fields mb-2">
               <v-text-field
                 v-model="firstName"
+                color="primary"
+                density="comfortable"
                 label="First name"
                 prepend-inner-icon="mdi-account"
-                density="comfortable"
-                variant="outlined"
-                color="primary"
-                :rules="firstNameRules"
                 required
+                :rules="firstNameRules"
+                variant="outlined"
               />
 
               <v-text-field
                 v-model="lastName"
+                color="primary"
+                density="comfortable"
                 label="Last name"
                 prepend-inner-icon="mdi-account"
-                density="comfortable"
-                variant="outlined"
-                color="primary"
-                :rules="lastNameRules"
                 required
+                :rules="lastNameRules"
+                variant="outlined"
               />
             </div>
 
             <v-text-field
               v-model="email"
-              label="Email address"
-              type="email"
-              prepend-inner-icon="mdi-email"
-              density="comfortable"
-              variant="outlined"
               class="mb-4"
-              color="primary"
               clearable
-              :rules="emailRules"
+              color="primary"
+              density="comfortable"
+              label="Email address"
+              prepend-inner-icon="mdi-email"
               required
+              :rules="emailRules"
+              type="email"
+              variant="outlined"
             />
 
             <v-text-field
               v-if="isVerifyMode"
               v-model="verificationCode"
-              label="Verification code"
-              prepend-inner-icon="mdi-shield-check"
-              density="comfortable"
-              variant="outlined"
+              autocomplete="one-time-code"
               class="mb-2"
               color="primary"
-              autocomplete="one-time-code"
-              :rules="verificationCodeRules"
+              density="comfortable"
+              label="Verification code"
+              prepend-inner-icon="mdi-shield-check"
               required
+              :rules="verificationCodeRules"
+              variant="outlined"
             />
 
             <v-text-field
               v-if="!isVerifyMode"
               v-model="password"
-              :type="showPassword ? 'text' : 'password'"
-              label="Password"
-              prepend-inner-icon="mdi-lock"
               :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
-              @click:append-inner="showPassword = !showPassword"
-              density="comfortable"
-              variant="outlined"
               class="mb-2"
               color="primary"
-              :rules="passwordRules"
+              density="comfortable"
+              label="Password"
+              prepend-inner-icon="mdi-lock"
               required
+              :rules="passwordRules"
+              :type="showPassword ? 'text' : 'password'"
+              variant="outlined"
+              @click:append-inner="showPassword = !showPassword"
             />
 
             <v-text-field
               v-if="isRegisterMode"
               v-model="confirmPassword"
-              :type="showPassword ? 'text' : 'password'"
-              label="Confirm password"
-              prepend-inner-icon="mdi-lock-check"
               :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
-              @click:append-inner="showPassword = !showPassword"
-              density="comfortable"
-              variant="outlined"
               class="mb-2"
               color="primary"
-              :rules="confirmPasswordRules"
+              density="comfortable"
+              label="Confirm password"
+              prepend-inner-icon="mdi-lock-check"
               required
+              :rules="confirmPasswordRules"
+              :type="showPassword ? 'text' : 'password'"
+              variant="outlined"
+              @click:append-inner="showPassword = !showPassword"
             />
 
             <div v-if="isVerifyMode" class="resend-section">
               <span class="resend-label">Didn't receive the email?</span>
               <v-btn
-                type="button"
-                variant="text"
                 class="resend-button"
                 :loading="isResending"
+                type="button"
+                variant="text"
                 @click.prevent="resendVerification"
               >
                 Resend verification code
@@ -378,23 +374,23 @@
             <div v-if="isLoginMode" class="helpers">
               <v-checkbox
                 v-model="rememberMe"
-                label="Remember me"
-                hide-details
                 density="compact"
+                hide-details
+                label="Remember me"
               />
 
-              <RouterLink to="/forgot-password" class="forgot-link">
+              <RouterLink class="forgot-link" to="/forgot-password">
                 Forgot your password?
               </RouterLink>
             </div>
 
             <v-btn
-              type="submit"
-              class="login-button mt-6"
               block
+              class="login-button mt-6"
+              :disabled="isSubmitting"
               height="48"
               :loading="isSubmitting"
-              :disabled="isSubmitting"
+              type="submit"
             >
               {{
                 isRegisterMode
@@ -410,8 +406,8 @@
             <template v-if="isVerifyMode">
               <span>Already verified?</span>
               <v-btn
-                variant="text"
                 class="toggle-button"
+                variant="text"
                 @click="switchToLogin"
               >
                 Sign In
@@ -426,8 +422,8 @@
                 }}
               </span>
               <v-btn
-                variant="text"
                 class="toggle-button"
+                variant="text"
                 @click="isRegisterMode ? switchToLogin() : switchToRegister()"
               >
                 {{ isRegisterMode ? "Sign In" : "Create one" }}

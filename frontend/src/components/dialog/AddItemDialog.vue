@@ -1,43 +1,43 @@
 <script setup lang="ts">
-  import { ref } from "vue";
+  import { ref } from 'vue'
 
-  import StandardButton from "@/components/StandardButton.vue";
-  import BaseDialog from "@/components/dialog/BaseDialog.vue";
+  import BaseDialog from '@/components/dialog/BaseDialog.vue'
+  import StandardButton from '@/components/StandardButton.vue'
 
   const props = defineProps({
     modelValue: { type: Boolean, default: false },
-  });
+  })
 
-  const emit = defineEmits(["update:modelValue", "add-item"]);
+  const emit = defineEmits(['update:modelValue', 'add-item'])
 
   // Form data
-  const productName = ref("");
+  const productName = ref('')
 
-  function closeDialog() {
-    emit("update:modelValue", false);
+  function closeDialog () {
+    emit('update:modelValue', false)
     // Reset form
-    productName.value = "";
+    productName.value = ''
   }
 
-  function handleModelValueUpdate(value: boolean) {
+  function handleModelValueUpdate (value: boolean) {
     if (!value) {
       // Reset form when dialog closes
-      productName.value = "";
+      productName.value = ''
     }
-    emit("update:modelValue", value);
+    emit('update:modelValue', value)
   }
 
-  function addItem() {
+  function addItem () {
     if (!productName.value.trim()) {
       // We should show some type of error message
-      return; // Don't create if name is empty
+      return // Don't create if name is empty
     }
 
-    emit("add-item", {
+    emit('add-item', {
       name: productName.value.trim(),
-    });
+    })
 
-    closeDialog();
+    closeDialog()
   }
 
 </script>
@@ -51,7 +51,7 @@
     <div class="dialog-header">
       <h2 class="dialog-title">Add Item</h2>
       <button class="close-button" @click="closeDialog">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
           />
@@ -67,18 +67,18 @@
         <!-- ESTARIA EPICO SI VA MOSTRANDO LOS PRODUCTOS Q MATCHEAN EN TIEMPO REAL -->
         <input
           v-model="productName"
-          type="text"
-          placeholder="Enter product name"
           class="text-input"
+          placeholder="Enter product name"
+          type="text"
           @keyup.enter="addItem"
-        />
+        >
       </div>
     </div>
 
     <!-- Dialog Footer -->
     <div class="dialog-footer">
-      <button @click="closeDialog" class="cancel-button">Cancel</button>
-      <StandardButton title="Add Item" icon="mdi-plus" @click="addItem" />
+      <button class="cancel-button" @click="closeDialog">Cancel</button>
+      <StandardButton icon="mdi-plus" title="Add Item" @click="addItem" />
     </div>
   </BaseDialog>
 </template>

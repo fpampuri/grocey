@@ -1,106 +1,106 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import BaseDialog from "./BaseDialog.vue";
-import StandardButton from "../StandardButton.vue";
+  import { computed, ref } from 'vue'
+  import StandardButton from '../StandardButton.vue'
+  import BaseDialog from './BaseDialog.vue'
 
-interface Props {
-  modelValue: boolean;
-  listName?: string;
-  listId?: number;
-}
-
-interface ShareData {
-  emails: string[];
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  listName: "Untitled List",
-});
-
-const emit = defineEmits<{
-  "update:modelValue": [value: boolean];
-  "share-list": [data: ShareData];
-}>();
-
-const dialogModel = computed({
-  get: () => props.modelValue,
-  set: (value: boolean) => emit("update:modelValue", value),
-});
-
-const currentEmail = ref("");
-const emailList = ref<string[]>([]);
-const isSharing = ref(false);
-
-const isCurrentEmailValid = computed(() => {
-  return currentEmail.value.trim() !== "" && isValidEmail(currentEmail.value);
-});
-
-const canShare = computed(() => {
-  return emailList.value.length > 0 && !isSharing.value;
-});
-
-function isValidEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-}
-
-function handleCancel() {
-  resetForm();
-  emit("update:modelValue", false);
-}
-
-function addEmail() {
-  if (!isCurrentEmailValid.value) return;
-  
-  const email = currentEmail.value.trim();
-  if (!emailList.value.includes(email)) {
-    emailList.value.push(email);
+  interface Props {
+    modelValue: boolean
+    listName?: string
+    listId?: number
   }
-  currentEmail.value = "";
-}
 
-function removeEmail(index: number) {
-  emailList.value.splice(index, 1);
-}
-
-function resetForm() {
-  currentEmail.value = "";
-  emailList.value = [];
-  isSharing.value = false;
-}
-
-async function handleShare() {
-  if (!canShare.value) return;
-
-  isSharing.value = true;
-
-  const shareData: ShareData = {
-    emails: [...emailList.value],
-  };
-
-  try {
-    emit("share-list", shareData);
-    resetForm();
-    emit("update:modelValue", false);
-  } catch (error) {
-    console.error("Error sharing list:", error);
-  } finally {
-    isSharing.value = false;
+  interface ShareData {
+    emails: string[]
   }
-}
 
-function handleKeyPress(event: KeyboardEvent) {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    addEmail();
-  }
-}
+  const props = withDefaults(defineProps<Props>(), {
+    listName: 'Untitled List',
+  })
 
-function handleClose() {
-  if (!isSharing.value) {
-    handleCancel();
+  const emit = defineEmits<{
+    'update:modelValue': [value: boolean]
+    'share-list': [data: ShareData]
+  }>()
+
+  const dialogModel = computed({
+    get: () => props.modelValue,
+    set: (value: boolean) => emit('update:modelValue', value),
+  })
+
+  const currentEmail = ref('')
+  const emailList = ref<string[]>([])
+  const isSharing = ref(false)
+
+  const isCurrentEmailValid = computed(() => {
+    return currentEmail.value.trim() !== '' && isValidEmail(currentEmail.value)
+  })
+
+  const canShare = computed(() => {
+    return emailList.value.length > 0 && !isSharing.value
+  })
+
+  function isValidEmail (email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
   }
-}
+
+  function handleCancel () {
+    resetForm()
+    emit('update:modelValue', false)
+  }
+
+  function addEmail () {
+    if (!isCurrentEmailValid.value) return
+
+    const email = currentEmail.value.trim()
+    if (!emailList.value.includes(email)) {
+      emailList.value.push(email)
+    }
+    currentEmail.value = ''
+  }
+
+  function removeEmail (index: number) {
+    emailList.value.splice(index, 1)
+  }
+
+  function resetForm () {
+    currentEmail.value = ''
+    emailList.value = []
+    isSharing.value = false
+  }
+
+  async function handleShare () {
+    if (!canShare.value) return
+
+    isSharing.value = true
+
+    const shareData: ShareData = {
+      emails: [...emailList.value],
+    }
+
+    try {
+      emit('share-list', shareData)
+      resetForm()
+      emit('update:modelValue', false)
+    } catch (error) {
+      console.error('Error sharing list:', error)
+    } finally {
+      isSharing.value = false
+    }
+  }
+
+  function handleKeyPress (event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      addEmail()
+    }
+  }
+
+  function handleClose () {
+    if (!isSharing.value) {
+      handleCancel()
+    }
+  }
 </script>
 
 <template>
@@ -110,9 +110,9 @@ function handleClose() {
       <h2 class="dialog-title">Share "{{ listName }}"</h2>
       <button
         v-if="!isSharing"
+        aria-label="Close dialog"
         class="close-button"
         @click="handleClose"
-        aria-label="Close dialog"
       >
         <svg viewBox="0 0 24 24">
           <path
@@ -138,20 +138,20 @@ function handleClose() {
             <input
               id="share-email"
               v-model="currentEmail"
-              type="email"
               class="text-input email-input"
-              placeholder="Enter email address..."
               :disabled="isSharing"
+              placeholder="Enter email address..."
+              type="email"
               @keypress="handleKeyPress"
-            />
-            <button
-              type="button"
-              class="add-email-button"
-              @click="addEmail"
-              :disabled="!isCurrentEmailValid || isSharing"
             >
-              <svg viewBox="0 0 24 24" class="add-icon">
-                <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+            <button
+              class="add-email-button"
+              :disabled="!isCurrentEmailValid || isSharing"
+              type="button"
+              @click="addEmail"
+            >
+              <svg class="add-icon" viewBox="0 0 24 24">
+                <path d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
               </svg>
             </button>
           </div>
@@ -164,21 +164,21 @@ function handleClose() {
         <div v-if="emailList.length > 0" class="form-field">
           <label class="field-label">People to share with ({{ emailList.length }})</label>
           <div class="email-list">
-            <div 
-              v-for="(email, index) in emailList" 
-              :key="index" 
+            <div
+              v-for="(email, index) in emailList"
+              :key="index"
               class="email-item"
             >
               <span class="email-text">{{ email }}</span>
               <button
-                type="button"
-                class="remove-email-button"
-                @click="removeEmail(index)"
-                :disabled="isSharing"
                 aria-label="Remove email"
+                class="remove-email-button"
+                :disabled="isSharing"
+                type="button"
+                @click="removeEmail(index)"
               >
-                <svg viewBox="0 0 24 24" class="remove-icon">
-                  <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+                <svg class="remove-icon" viewBox="0 0 24 24">
+                  <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
                 </svg>
               </button>
             </div>
@@ -189,14 +189,14 @@ function handleClose() {
 
     <!-- Dialog Footer -->
     <div class="dialog-footer">
-      <button class="cancel-button" @click="handleCancel" :disabled="isSharing">
+      <button class="cancel-button" :disabled="isSharing" @click="handleCancel">
         Cancel
       </button>
       <StandardButton
-        :title="isSharing ? 'Sharing...' : `Share with ${emailList.length} ${emailList.length === 1 ? 'person' : 'people'}`"
-        icon="mdi-share"
-        @click="handleShare"
         :disabled="!canShare"
+        icon="mdi-share"
+        :title="isSharing ? 'Sharing...' : `Share with ${emailList.length} ${emailList.length === 1 ? 'person' : 'people'}`"
+        @click="handleShare"
       />
     </div>
   </BaseDialog>

@@ -1,19 +1,20 @@
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue';
+  import { nextTick, ref, watch } from 'vue'
 
-const props = defineProps({
-  title: { type: String, required: true },
-  icon: { type: String, default: 'mdi-tag-outline' },
-  itemsCount: { type: Number, default: 0 },
-});
+  const props = defineProps({
+    title: { type: String, required: true },
+    icon: { type: String, default: 'mdi-tag-outline' },
+    itemsCount: { type: Number, default: 0 },
+    disableActions: { type: Boolean, default: false },
+  })
 
-const emits = defineEmits(["click", "edit", "delete"]);
+  const emits = defineEmits(['click', 'edit', 'delete'])
 </script>
 
 <template>
   <v-card class="product-card" outlined @click="$emit('click')">
     <!-- Main content row with all elements in one line -->
-    <v-row class="card-main-row" align="center" no-gutters>
+    <v-row align="center" class="card-main-row" no-gutters>
 
       <v-col cols="auto">
         <v-icon class="category-icon text-green">{{ icon }}</v-icon>
@@ -27,24 +28,24 @@ const emits = defineEmits(["click", "edit", "delete"]);
         </div>
       </v-col>
 
-      <v-col cols="auto">
+      <v-col v-if="!disableActions" cols="auto">
         <div class="actions" @click.stop>
           <v-menu offset-y>
             <template #activator="{ props: activator }">
-              <button v-bind="activator" class="action-btn dots-btn" aria-label="more actions" @click.stop>
+              <button v-bind="activator" aria-label="more actions" class="action-btn dots-btn" @click.stop>
                 <v-icon>mdi-dots-horizontal</v-icon>
               </button>
             </template>
             <v-list class="action-menu">
 
-              <v-list-item @click="$emit('edit')" class="menu-item">
+              <v-list-item class="menu-item" @click="$emit('edit')">
                 <template #prepend>
                   <v-icon class="menu-icon">mdi-pencil</v-icon>
                 </template>
                 <v-list-item-title class="menu-title">Edit</v-list-item-title>
               </v-list-item>
 
-              <v-list-item @click="$emit('delete')" class="menu-item delete-item">
+              <v-list-item class="menu-item delete-item" @click="$emit('delete')">
                 <template #prepend>
                   <v-icon class="menu-icon">mdi-delete</v-icon>
                 </template>
@@ -66,7 +67,7 @@ const emits = defineEmits(["click", "edit", "delete"]);
       </v-col>
     </v-row>
   </v-card>
-  
+
 </template>
 
 <style scoped>

@@ -1,11 +1,10 @@
 <script setup lang="ts">
 
-
   const props = defineProps({
     icon: { type: String, required: true },
     title: { type: String, required: true },
     selected: { type: Boolean, default: false },
-    to: { type: [String, Object], default: null }
+    to: { type: [String, Object], default: null },
   })
 
   const emits = defineEmits(['click'])
@@ -17,12 +16,12 @@
   <v-hover v-slot="{ isHovering, props }">
     <v-list-item
       v-bind="props"
+      :class="['py-2 mx-2 my-3 nav-item', (selected || isHovering) ? 'selected' : '']"
       link
       rounded="lg"
-      @click="onClick"
-      :to="to"
-      :class="['py-2 mx-2 my-3 nav-item', (selected || isHovering) ? 'selected' : '']"
       :style="{ opacity: (isHovering && !selected) ? 0.6 : 1 }"
+      :to="to"
+      @click="onClick"
     >
       <v-row align="center">
         <v-icon :class="['text-h4 ma-4', (selected || isHovering) ? 'icon-selected' : 'icon-default']">

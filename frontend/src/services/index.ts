@@ -1,85 +1,85 @@
 // Main API client
-export { default as Api } from './api';
-export { setAuthToken } from './api';
+export { default as Api } from './api'
+export { setAuthToken } from './api'
 
-// User service
-export { default as UserApi } from './user';
-export type {
-  User,
-  NewUser,
-  GetUser,
-  Credentials,
-  RegistrationData,
-  RegisteredUser,
-  AuthenticationToken,
-  VerificationCode,
-  PasswordRecovery,
-  PasswordReset,
-  UpdateUserProfile,
-  PasswordChange,
-  UserMetadata
-} from './user';
-export { CredentialsModel, UserModel } from './user';
-
+// Re-export the main API client as default
+export { default } from './api'
 // Category service
-export { default as CategoryApi } from './category';
+export { default as CategoryApi } from './category'
 export type {
   Category,
+  CategoryMetadata,
   CategoryRegistrationData,
   UpdateCategoryProfile,
-  CategoryMetadata
-} from './category';
-export { CategoryModel, CategoryMetadataModel } from './category';
+} from './category'
 
-// Product service
-export { default as ProductApi } from './product';
-export type {
-  Product,
-  ProductCreationData,
-  ProductRegistrationData,
-  ProductMetadata
-} from './product';
-export { ProductModel } from './product';
-
-// Shopping List service
-export { default as ShoppingListApi } from './shoppingList';
-export type {
-  ShoppingList,
-  ShoppingListCreate,
-  ShoppingListUpdate,
-  ShoppingListMetadata
-} from './shoppingList';
-export { ShoppingListModel } from './shoppingList';
-
+export { CategoryMetadataModel, CategoryModel } from './category'
 // List Item service
-export { default as ListItemApi } from './listItem';
+export { default as ListItemApi } from './listItem'
 export type {
   ListItem,
   ListItemCreate,
+  ListItemMetadata,
   ListItemUpdate,
-  ListItemMetadata
-} from './listItem';
-export { ListItemModel } from './listItem';
+} from './listItem'
 
+export { ListItemModel } from './listItem'
 // Pantry service
-export { default as PantryApi } from './pantry';
+export { default as PantryApi } from './pantry'
 export type {
   Pantry,
   PantryCreate,
+  PantryMetadata,
   PantryUpdate,
-  PantryMetadata
-} from './pantry';
-export { PantryModel } from './pantry';
+} from './pantry'
 
+export { PantryModel } from './pantry'
 // Pantry Item service
-export { default as PantryItemApi } from './pantryItem';
+export { default as PantryItemApi } from './pantryItem'
 export type {
   PantryItem,
   PantryItemCreate,
+  PantryItemMetadata,
   PantryItemUpdate,
-  PantryItemMetadata
-} from './pantryItem';
-export { PantryItemModel } from './pantryItem';
+} from './pantryItem'
 
-// Re-export the main API client as default
-export { default } from './api';
+export { PantryItemModel } from './pantryItem'
+// Product service
+export { default as ProductApi } from './product'
+export type {
+  Product,
+  ProductCreationData,
+  ProductMetadata,
+  ProductRegistrationData,
+} from './product'
+
+export { ProductModel } from './product'
+// Shopping List service
+export { default as ShoppingListApi } from './shoppingList'
+export type {
+  ShoppingList,
+  ShoppingListCreate,
+  ShoppingListMetadata,
+  ShoppingListUpdate,
+} from './shoppingList'
+
+export { ShoppingListModel } from './shoppingList'
+// User service
+export { default as UserApi } from './user'
+export type {
+  AuthenticationToken,
+  Credentials,
+  GetUser,
+  NewUser,
+  PasswordChange,
+  PasswordRecovery,
+  PasswordReset,
+  RegisteredUser,
+  RegistrationData,
+  UpdateUserProfile,
+  User,
+  UserMetadata,
+  VerificationCode,
+} from './user'
+
+export { CredentialsModel, UserModel } from './user'

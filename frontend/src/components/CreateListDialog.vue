@@ -1,66 +1,66 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import StandardButton from "@/components/StandardButton.vue";
-import BaseDialog from "@/components/dialog/BaseDialog.vue";
+  import { ref } from 'vue'
+  import BaseDialog from '@/components/dialog/BaseDialog.vue'
+  import StandardButton from '@/components/StandardButton.vue'
 
-const props = defineProps({
-  modelValue: { type: Boolean, default: false },
-});
+  const props = defineProps({
+    modelValue: { type: Boolean, default: false },
+  })
 
-const emit = defineEmits(["update:modelValue", "create-list"]);
+  const emit = defineEmits(['update:modelValue', 'create-list'])
 
-// Form data
-const listName = ref("");
-const selectedIcon = ref("mdi-cart");
+  // Form data
+  const listName = ref('')
+  const selectedIcon = ref('mdi-cart')
 
-// Available icons for selection
-const iconOptions = [
-  { value: "mdi-cart", label: "Shopping Cart", icon: "mdi-cart" },
-  { value: "mdi-apple", label: "Apple", icon: "mdi-apple" },
-  { value: "mdi-broom", label: "Cleaning", icon: "mdi-broom" },
-  { value: "mdi-home", label: "Home", icon: "mdi-home" },
-  { value: "mdi-food", label: "Food", icon: "mdi-food" },
-  { value: "mdi-gift", label: "Gift", icon: "mdi-gift" },
-];
+  // Available icons for selection
+  const iconOptions = [
+    { value: 'mdi-cart', label: 'Shopping Cart', icon: 'mdi-cart' },
+    { value: 'mdi-apple', label: 'Apple', icon: 'mdi-apple' },
+    { value: 'mdi-broom', label: 'Cleaning', icon: 'mdi-broom' },
+    { value: 'mdi-home', label: 'Home', icon: 'mdi-home' },
+    { value: 'mdi-food', label: 'Food', icon: 'mdi-food' },
+    { value: 'mdi-gift', label: 'Gift', icon: 'mdi-gift' },
+  ]
 
-function closeDialog() {
-  emit("update:modelValue", false);
-  // Reset form
-  listName.value = "";
-  selectedIcon.value = "mdi-cart";
-  iconOptionsOpen.value = false;
-}
-
-function handleModelValueUpdate(value: boolean) {
-  if (!value) {
-    // Reset form when dialog closes
-    listName.value = "";
-    selectedIcon.value = "mdi-cart";
-    iconOptionsOpen.value = false;
-  }
-  emit("update:modelValue", value);
-}
-
-function createList() {
-  if (!listName.value.trim()) {
-    return; // Don't create if name is empty
+  function closeDialog () {
+    emit('update:modelValue', false)
+    // Reset form
+    listName.value = ''
+    selectedIcon.value = 'mdi-cart'
+    iconOptionsOpen.value = false
   }
 
-  emit("create-list", {
-    name: listName.value.trim(),
-    icon: selectedIcon.value,
-  });
+  function handleModelValueUpdate (value: boolean) {
+    if (!value) {
+      // Reset form when dialog closes
+      listName.value = ''
+      selectedIcon.value = 'mdi-cart'
+      iconOptionsOpen.value = false
+    }
+    emit('update:modelValue', value)
+  }
 
-  closeDialog();
-}
+  function createList () {
+    if (!listName.value.trim()) {
+      return // Don't create if name is empty
+    }
 
-function selectIcon(iconValue: string) {
-  selectedIcon.value = iconValue;
-  iconOptionsOpen.value = false;
-}
+    emit('create-list', {
+      name: listName.value.trim(),
+      icon: selectedIcon.value,
+    })
 
-// Toggle icon options on click instead of hover
-const iconOptionsOpen = ref(false);
+    closeDialog()
+  }
+
+  function selectIcon (iconValue: string) {
+    selectedIcon.value = iconValue
+    iconOptionsOpen.value = false
+  }
+
+  // Toggle icon options on click instead of hover
+  const iconOptionsOpen = ref(false)
 </script>
 
 <template>
@@ -72,7 +72,7 @@ const iconOptionsOpen = ref(false);
     <div class="dialog-header">
       <h2 class="dialog-title">Create New List</h2>
       <button class="close-button" @click="closeDialog">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
           />
@@ -87,11 +87,11 @@ const iconOptionsOpen = ref(false);
         <label class="field-label">List Name</label>
         <input
           v-model="listName"
-          type="text"
-          placeholder="Enter list name"
           class="text-input"
+          placeholder="Enter list name"
+          type="text"
           @keyup.enter="createList"
-        />
+        >
       </div>
 
       <!-- Icon Selection -->
@@ -108,21 +108,21 @@ const iconOptionsOpen = ref(false);
             </span>
             <svg
               class="dropdown-arrow"
-              xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
             >
               <path d="M7,10L12,15L17,10H7Z" />
             </svg>
           </div>
 
           <!-- Icon Grid -->
-          <div class="icon-options" v-if="iconOptionsOpen">
+          <div v-if="iconOptionsOpen" class="icon-options">
             <button
               v-for="option in iconOptions"
               :key="option.value"
-              @click="selectIcon(option.value)"
               class="icon-option"
               :class="{ active: selectedIcon === option.value }"
+              @click="selectIcon(option.value)"
             >
               <v-icon :icon="option.icon" size="20" />
               <span>{{ option.label }}</span>
@@ -134,8 +134,8 @@ const iconOptionsOpen = ref(false);
 
     <!-- Dialog Footer -->
     <div class="dialog-footer">
-      <button @click="closeDialog" class="cancel-button">Cancel</button>
-      <StandardButton title="Create List" icon="mdi-plus" @click="createList" />
+      <button class="cancel-button" @click="closeDialog">Cancel</button>
+      <StandardButton icon="mdi-plus" title="Create List" @click="createList" />
     </div>
   </BaseDialog>
 </template>

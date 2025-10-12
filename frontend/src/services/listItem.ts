@@ -1,145 +1,145 @@
-import Api from './api';
-import type { Product } from './product';
+import type { Product } from './product'
+import Api from './api'
 
 // Types based on Swagger documentation
 export interface ListItemMetadata {
-  [key: string]: any;
+  [key: string]: any
 }
 
 export interface ListItem {
-  id?: number;
-  quantity: number;
-  unit: string;
-  metadata?: ListItemMetadata;
-  purchased?: boolean;
-  lastPurchasedAt?: string | null;
-  createdAt?: string;
-  updatedAt?: string;
-  product?: Product;
+  id?: number
+  quantity: number
+  unit: string
+  metadata?: ListItemMetadata
+  purchased?: boolean
+  lastPurchasedAt?: string | null
+  createdAt?: string
+  updatedAt?: string
+  product?: Product
 }
 
 export interface ListItemCreate {
-  product: { id: number };
-  quantity: number;
-  unit: string;
-  metadata?: ListItemMetadata;
+  product: { id: number }
+  quantity: number
+  unit: string
+  metadata?: ListItemMetadata
 }
 
 export interface ListItemUpdate {
-  quantity?: number;
-  unit?: string;
-  metadata?: ListItemMetadata;
+  quantity?: number
+  unit?: string
+  metadata?: ListItemMetadata
 }
 
 export class ListItemApi {
-  private static getUrl(listId: number, itemId?: number): string {
-    return `/shopping-lists/${listId}/items${itemId ? `/${itemId}` : ""}`;
+  private static getUrl (listId: number, itemId?: number): string {
+    return `/shopping-lists/${listId}/items${itemId ? `/${itemId}` : ''}`
   }
 
-  static async add(
+  static async add (
     listId: number,
-    listItem: ListItemCreate, 
-    controller?: AbortController
+    listItem: ListItemCreate,
+    controller?: AbortController,
   ): Promise<ListItem> {
     return await Api.post<ListItem>(
-      ListItemApi.getUrl(listId), 
-      true, 
-      listItem, 
-      controller
-    );
+      ListItemApi.getUrl(listId),
+      true,
+      listItem,
+      controller,
+    )
   }
 
-  static async modify(
+  static async modify (
     listId: number,
     itemId: number,
-    listItem: ListItemUpdate, 
-    controller?: AbortController
+    listItem: ListItemUpdate,
+    controller?: AbortController,
   ): Promise<ListItem> {
     return await Api.put<ListItem>(
-      ListItemApi.getUrl(listId, itemId), 
-      true, 
-      listItem, 
-      controller
-    );
+      ListItemApi.getUrl(listId, itemId),
+      true,
+      listItem,
+      controller,
+    )
   }
 
-  static async remove(
+  static async remove (
     listId: number,
-    itemId: number, 
-    controller?: AbortController
+    itemId: number,
+    controller?: AbortController,
   ): Promise<void> {
     return await Api.delete<void>(
-      ListItemApi.getUrl(listId, itemId), 
-      true, 
-      controller
-    );
+      ListItemApi.getUrl(listId, itemId),
+      true,
+      controller,
+    )
   }
 
-  static async get(
+  static async get (
     listId: number,
-    itemId: number, 
-    controller?: AbortController
+    itemId: number,
+    controller?: AbortController,
   ): Promise<ListItem> {
     return await Api.get<ListItem>(
-      ListItemApi.getUrl(listId, itemId), 
-      true, 
-      controller
-    );
+      ListItemApi.getUrl(listId, itemId),
+      true,
+      controller,
+    )
   }
 
-  static async getAll(
+  static async getAll (
     listId: number,
-    controller?: AbortController
+    controller?: AbortController,
   ): Promise<ListItem[]> {
     return await Api.get<ListItem[]>(
-      ListItemApi.getUrl(listId), 
-      true, 
-      controller
-    );
+      ListItemApi.getUrl(listId),
+      true,
+      controller,
+    )
   }
 
   // Mark item as purchased
-  static async markAsPurchased(
+  static async markAsPurchased (
     listId: number,
     itemId: number,
-    controller?: AbortController
+    controller?: AbortController,
   ): Promise<ListItem> {
     return await Api.patch<ListItem>(
       ListItemApi.getUrl(listId, itemId),
       true,
       { purchased: true },
-      controller
-    );
+      controller,
+    )
   }
 
   // Mark item as not purchased
-  static async markAsNotPurchased(
+  static async markAsNotPurchased (
     listId: number,
     itemId: number,
-    controller?: AbortController
+    controller?: AbortController,
   ): Promise<ListItem> {
     return await Api.patch<ListItem>(
       ListItemApi.getUrl(listId, itemId),
       true,
       { purchased: false },
-      controller
-    );
+      controller,
+    )
   }
 }
 
 // List Item model class
 export class ListItemModel {
-  id?: number;
-  quantity: number;
-  unit: string;
-  metadata: ListItemMetadata;
-  purchased: boolean;
-  lastPurchasedAt?: string | null;
-  createdAt?: string;
-  updatedAt?: string;
-  product?: Product;
+  id?: number
+  quantity: number
+  unit: string
+  metadata: ListItemMetadata
+  purchased: boolean
+  lastPurchasedAt?: string | null
+  createdAt?: string
+  updatedAt?: string
+  product?: Product
 
-  constructor(
+  constructor (
     quantity: number,
     unit: string,
     product?: Product,
@@ -148,24 +148,24 @@ export class ListItemModel {
     id?: number,
     lastPurchasedAt?: string | null,
     createdAt?: string,
-    updatedAt?: string
+    updatedAt?: string,
   ) {
     if (id) {
-      this.id = id;
+      this.id = id
     }
-    this.quantity = quantity;
-    this.unit = unit;
-    this.metadata = metadata || {};
-    this.purchased = purchased || false;
-    this.lastPurchasedAt = lastPurchasedAt;
-    this.createdAt = createdAt;
-    this.updatedAt = updatedAt;
-    this.product = product;
+    this.quantity = quantity
+    this.unit = unit
+    this.metadata = metadata || {}
+    this.purchased = purchased || false
+    this.lastPurchasedAt = lastPurchasedAt
+    this.createdAt = createdAt
+    this.updatedAt = updatedAt
+    this.product = product
   }
 
-  toString(): string {
-    return JSON.stringify(this, null, 2);
+  toString (): string {
+    return JSON.stringify(this, null, 2)
   }
 }
 
-export default ListItemApi;
+export default ListItemApi

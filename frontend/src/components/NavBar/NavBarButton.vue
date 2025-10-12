@@ -2,9 +2,9 @@
   <v-hover v-slot="{ isHovering, props }">
     <v-btn
       v-bind="props"
+      :class="[isHovering ? hoverClass : '']"
       icon
       :rounded="rounded"
-      :class="[isHovering ? hoverClass : '']"
       :style="{ opacity: isHovering ? hoverOpacity : 1, transition: 'background-color 150ms ease, color 150ms ease, opacity 150ms ease' }"
       @click="$emit('click')"
     >
@@ -20,15 +20,14 @@
 
 <script setup lang="ts">
 
-
-const props = defineProps({
-  icon: { type: String, required: true },
-  rounded: { type: [String, Boolean], default: '3xl' },
-  hoverClass: { type: String, default: 'bg-green' },
-  iconClass: { type: String, default: 'text-h4' },
-  iconColor: { type: String, default: 'text-green' },
-  hoverOpacity: { type: Number, default: 0.75 }
-})
+  const props = defineProps({
+    icon: { type: String, required: true },
+    rounded: { type: [String, Boolean], default: '3xl' },
+    hoverClass: { type: String, default: 'bg-green' },
+    iconClass: { type: String, default: 'text-h4' },
+    iconColor: { type: String, default: 'text-green' },
+    hoverOpacity: { type: Number, default: 0.75 },
+  })
 </script>
 
 <style scoped>

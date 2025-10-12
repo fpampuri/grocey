@@ -1,8 +1,8 @@
 <script lang="ts" setup>
   import { computed, onBeforeMount } from 'vue'
   import { RouterView, useRoute } from 'vue-router'
-  import NavBar from './layouts/NavBar.vue'
   import { useUserStore } from '@/stores/user'
+  import NavBar from './layouts/NavBar.vue'
 
   const route = useRoute()
   const useNavLayout = computed(() => (route.meta?.layout as string | undefined) !== 'plain')

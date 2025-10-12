@@ -1,50 +1,50 @@
 <script setup lang="ts">
-    import { ref, watch } from "vue";
+  import { ref, watch } from 'vue'
 
-    const props = defineProps({
-      title: { type: String, required: true },
-      icon: { type: String, default: "mdi-format-list-bulleted" },
-      itemsCount: { type: Number, default: 0 },
-      starred: { type: Boolean, default: false },
-      selected: { type: Boolean, default: false },
-    });
+  const props = defineProps({
+    title: { type: String, required: true },
+    icon: { type: String, default: 'mdi-format-list-bulleted' },
+    itemsCount: { type: Number, default: 0 },
+    starred: { type: Boolean, default: false },
+    selected: { type: Boolean, default: false },
+  })
 
-    const emits = defineEmits(["click", "toggle-star", "toggle-selection", "edit", "delete", "share"]);
+  const emits = defineEmits(['click', 'toggle-star', 'toggle-selection', 'edit', 'delete', 'share'])
 
-    // local reactive starred state so UI updates immediately
-    const localStarred = ref(props.starred);
+  // local reactive starred state so UI updates immediately
+  const localStarred = ref(props.starred)
 
-    // keep local state in sync when prop changes
-    watch(() => props.starred, (v) => (localStarred.value = v));
+  // keep local state in sync when prop changes
+  watch(() => props.starred, v => (localStarred.value = v))
 
-    function toggleStar() {
-      localStarred.value = !localStarred.value;
-      emits("toggle-star", localStarred.value);
-    }
+  function toggleStar () {
+    localStarred.value = !localStarred.value
+    emits('toggle-star', localStarred.value)
+  }
 
-    const selectedForAction = ref(false);
+  const selectedForAction = ref(false)
 
-    watch(() => props.selected, (v) => (selectedForAction.value = v));
+  watch(() => props.selected, v => (selectedForAction.value = v))
 
-    function toggleSelection() {
-      selectedForAction.value = !selectedForAction.value;
-      emits("toggle-selection", selectedForAction.value);
-    }
+  function toggleSelection () {
+    selectedForAction.value = !selectedForAction.value
+    emits('toggle-selection', selectedForAction.value)
+  }
 
 </script>
 
 <template>
   <v-card class="list-card" outlined @click="$emit('click')">
     <!-- Main content row with all elements in one line -->
-    <v-row class="card-main-row" align="center" no-gutters>
+    <v-row align="center" class="card-main-row" no-gutters>
       <v-col cols="auto">
         <v-checkbox
           v-model="selectedForAction"
-          hide-details
-          dense
-          color="green"
-          class="green-border-checkbox"
           aria-label="select list"
+          class="green-border-checkbox"
+          color="green"
+          dense
+          hide-details
           @click.stop="toggleSelection"
         />
       </v-col>
@@ -62,10 +62,10 @@
       <v-col cols="auto">
         <div class="actions" @click.stop>
           <button
+            aria-label="toggle star"
+            :aria-pressed="localStarred"
             class="action-btn star-btn"
             @click.stop="toggleStar()"
-            :aria-pressed="localStarred"
-            aria-label="toggle star"
           >
             <v-icon :class="localStarred ? 'text-star-gold' : ''">
               {{ localStarred ? 'mdi-star' : 'mdi-star-outline' }}
@@ -74,27 +74,27 @@
 
           <v-menu offset-y>
             <template #activator="{ props: activator }">
-              <button v-bind="activator" class="action-btn dots-btn" aria-label="more actions" @click.stop>
+              <button v-bind="activator" aria-label="more actions" class="action-btn dots-btn" @click.stop>
                 <v-icon>mdi-dots-horizontal</v-icon>
               </button>
             </template>
             <v-list class="action-menu">
 
-              <v-list-item @click="$emit('edit')" class="menu-item">
+              <v-list-item class="menu-item" @click="$emit('edit')">
                 <template #prepend>
                   <v-icon class="menu-icon">mdi-pencil</v-icon>
                 </template>
                 <v-list-item-title class="menu-title">Edit</v-list-item-title>
               </v-list-item>
 
-              <v-list-item @click="$emit('share')" class="menu-item">
+              <v-list-item class="menu-item" @click="$emit('share')">
                 <template #prepend>
                   <v-icon class="menu-icon">mdi-share-variant</v-icon>
                 </template>
                 <v-list-item-title class="menu-title">Share</v-list-item-title>
               </v-list-item>
 
-              <v-list-item @click="$emit('delete')" class="menu-item delete-item">
+              <v-list-item class="menu-item delete-item" @click="$emit('delete')">
                 <template #prepend>
                   <v-icon class="menu-icon">mdi-delete</v-icon>
                 </template>
@@ -188,7 +188,7 @@
 }
 
 .text-star-gold {
-  color: var(--star-gold) !important; 
+  color: var(--star-gold) !important;
 }
 
 .text-green {

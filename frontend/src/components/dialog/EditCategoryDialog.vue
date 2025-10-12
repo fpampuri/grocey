@@ -1,117 +1,117 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import StandardButton from '@/components/StandardButton.vue';
+  import { ref, watch } from 'vue'
+  import StandardButton from '@/components/StandardButton.vue'
 
-interface CategoryData {
-  id: number;
-  title: string;
-  icon: string;
-}
-
-const props = defineProps({
-  modelValue: { type: Boolean, default: false },
-  categoryData: { type: Object as () => CategoryData | null, default: null },
-});
-
-const emit = defineEmits(['update:modelValue', 'edit-category']);
-
-// Form data
-const categoryName = ref('');
-const selectedIcon = ref('mdi-tag-outline');
-
-// Available icons for selection
-const iconOptions = [
-  'mdi-cart',
-  'mdi-apple',
-  'mdi-food-apple',
-  'mdi-food',
-  'mdi-carrot',
-  'mdi-cheese',
-  'mdi-fish',
-  'mdi-egg',
-  'mdi-bread-slice',
-  'mdi-baguette',
-  'mdi-grain',
-  'mdi-pasta',
-  'mdi-rice',
-  'mdi-bottle-wine',
-  'mdi-coffee',
-  'mdi-tea',
-  'mdi-beer',
-  'mdi-glass-cocktail',
-  'mdi-cupcake',
-  'mdi-cake',
-  'mdi-ice-cream',
-  'mdi-candy',
-  'mdi-fruit-cherries',
-  'mdi-fruit-grapes',
-  'mdi-fruit-watermelon',
-  'mdi-leaf',
-  'mdi-tree',
-  'mdi-sprout',
-  'mdi-flower',
-  'mdi-home',
-  'mdi-fridge',
-  'mdi-microwave',
-  'mdi-silverware-fork-knife',
-  'mdi-grill',
-  'mdi-pot',
-  'mdi-broom',
-  'mdi-gift',
-  'mdi-party-popper',
-  'mdi-star',
-  'mdi-heart',
-  'mdi-tag',
-  'mdi-tag-outline',
-  'mdi-bookmark',
-  'mdi-shopping',
-  'mdi-basket',
-  'mdi-package',
-  'mdi-package-variant',
-  'mdi-snowflake',
-];
-
-// Watch for changes in categoryData prop to populate form
-watch(
-  () => props.categoryData,
-  (newData) => {
-    if (newData) {
-      categoryName.value = newData.title;
-      selectedIcon.value = newData.icon;
-    }
-  },
-  { immediate: true }
-);
-
-function closeDialog() {
-  emit('update:modelValue', false);
-  // Reset form
-  categoryName.value = '';
-  selectedIcon.value = 'mdi-tag-outline';
-  iconOptionsOpen.value = false;
-}
-
-function editCategory() {
-  if (!categoryName.value.trim() || !props.categoryData) {
-    return; // Don't edit if name is empty or no category data
+  interface CategoryData {
+    id: number
+    title: string
+    icon: string
   }
 
-  emit('edit-category', {
-    id: props.categoryData.id,
-    name: categoryName.value.trim(),
-    icon: selectedIcon.value,
-  });
+  const props = defineProps({
+    modelValue: { type: Boolean, default: false },
+    categoryData: { type: Object as () => CategoryData | null, default: null },
+  })
 
-  closeDialog();
-}
+  const emit = defineEmits(['update:modelValue', 'edit-category'])
 
-function selectIcon(iconValue: string) {
-  selectedIcon.value = iconValue;
-  iconOptionsOpen.value = false;
-}
+  // Form data
+  const categoryName = ref('')
+  const selectedIcon = ref('mdi-tag-outline')
 
-// Toggle icon options on click instead of hover
-const iconOptionsOpen = ref(false);
+  // Available icons for selection
+  const iconOptions = [
+    'mdi-cart',
+    'mdi-apple',
+    'mdi-food-apple',
+    'mdi-food',
+    'mdi-carrot',
+    'mdi-cheese',
+    'mdi-fish',
+    'mdi-egg',
+    'mdi-bread-slice',
+    'mdi-baguette',
+    'mdi-grain',
+    'mdi-pasta',
+    'mdi-rice',
+    'mdi-bottle-wine',
+    'mdi-coffee',
+    'mdi-tea',
+    'mdi-beer',
+    'mdi-glass-cocktail',
+    'mdi-cupcake',
+    'mdi-cake',
+    'mdi-ice-cream',
+    'mdi-candy',
+    'mdi-fruit-cherries',
+    'mdi-fruit-grapes',
+    'mdi-fruit-watermelon',
+    'mdi-leaf',
+    'mdi-tree',
+    'mdi-sprout',
+    'mdi-flower',
+    'mdi-home',
+    'mdi-fridge',
+    'mdi-microwave',
+    'mdi-silverware-fork-knife',
+    'mdi-grill',
+    'mdi-pot',
+    'mdi-broom',
+    'mdi-gift',
+    'mdi-party-popper',
+    'mdi-star',
+    'mdi-heart',
+    'mdi-tag',
+    'mdi-tag-outline',
+    'mdi-bookmark',
+    'mdi-shopping',
+    'mdi-basket',
+    'mdi-package',
+    'mdi-package-variant',
+    'mdi-snowflake',
+  ]
+
+  // Watch for changes in categoryData prop to populate form
+  watch(
+    () => props.categoryData,
+    newData => {
+      if (newData) {
+        categoryName.value = newData.title
+        selectedIcon.value = newData.icon
+      }
+    },
+    { immediate: true },
+  )
+
+  function closeDialog () {
+    emit('update:modelValue', false)
+    // Reset form
+    categoryName.value = ''
+    selectedIcon.value = 'mdi-tag-outline'
+    iconOptionsOpen.value = false
+  }
+
+  function editCategory () {
+    if (!categoryName.value.trim() || !props.categoryData) {
+      return // Don't edit if name is empty or no category data
+    }
+
+    emit('edit-category', {
+      id: props.categoryData.id,
+      name: categoryName.value.trim(),
+      icon: selectedIcon.value,
+    })
+
+    closeDialog()
+  }
+
+  function selectIcon (iconValue: string) {
+    selectedIcon.value = iconValue
+    iconOptionsOpen.value = false
+  }
+
+  // Toggle icon options on click instead of hover
+  const iconOptionsOpen = ref(false)
 </script>
 
 <template>
@@ -121,9 +121,9 @@ const iconOptionsOpen = ref(false);
     <div class="dialog-container" @click.stop>
       <!-- Dialog Header -->
       <div class="dialog-header">
-  <h2 class="dialog-title">Edit Category</h2>
+        <h2 class="dialog-title">Edit Category</h2>
         <button class="close-button" @click="closeDialog">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
           </svg>
         </button>
@@ -131,17 +131,17 @@ const iconOptionsOpen = ref(false);
 
       <!-- Dialog Body -->
       <div class="dialog-body">
-        
+
         <!-- Category Name Field -->
         <div class="form-field">
           <label class="field-label">Category Name</label>
           <input
             v-model="categoryName"
-            type="text"
-            placeholder="Enter category name"
             class="text-input"
+            placeholder="Enter category name"
+            type="text"
             @keyup.enter="editCategory"
-          />
+          >
         </div>
 
         <!-- Icon Selection -->
@@ -150,19 +150,19 @@ const iconOptionsOpen = ref(false);
           <div class="icon-selector">
             <div class="selected-icon" @click="iconOptionsOpen = !iconOptionsOpen">
               <v-icon :icon="selectedIcon" size="24" />
-              <svg class="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <svg class="dropdown-arrow" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M7,10L12,15L17,10H7Z" />
               </svg>
             </div>
-            
+
             <!-- Icon Grid -->
-            <div class="icon-options" v-if="iconOptionsOpen">
+            <div v-if="iconOptionsOpen" class="icon-options">
               <button
                 v-for="iconValue in iconOptions"
                 :key="iconValue"
-                @click="selectIcon(iconValue)"
                 class="icon-option"
                 :class="{ active: selectedIcon === iconValue }"
+                @click="selectIcon(iconValue)"
               >
                 <v-icon :icon="iconValue" size="24" />
               </button>
@@ -173,12 +173,12 @@ const iconOptionsOpen = ref(false);
 
       <!-- Dialog Footer -->
       <div class="dialog-footer">
-        <button @click="closeDialog" class="cancel-button">
+        <button class="cancel-button" @click="closeDialog">
           Cancel
         </button>
         <StandardButton
-          title="Save Changes"
           icon="mdi-content-save"
+          title="Save Changes"
           @click="editCategory"
         />
       </div>

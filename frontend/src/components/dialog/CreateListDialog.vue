@@ -1,154 +1,154 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import StandardButton from "@/components/StandardButton.vue";
-import BaseDialog from "@/components/dialog/BaseDialog.vue";
+  import { ref } from 'vue'
+  import BaseDialog from '@/components/dialog/BaseDialog.vue'
+  import StandardButton from '@/components/StandardButton.vue'
 
-const props = defineProps({
-  modelValue: { type: Boolean, default: false },
-});
+  const props = defineProps({
+    modelValue: { type: Boolean, default: false },
+  })
 
-const emit = defineEmits(["update:modelValue", "create-list"]);
+  const emit = defineEmits(['update:modelValue', 'create-list'])
 
-// Form data
-const listName = ref("");
-const isRecurring = ref(false);
-const selectedIcon = ref("mdi-cart");
-const selectedDay = ref("Monday");
-const selectedHour = ref(9);
-const selectedMinute = ref(0);
+  // Form data
+  const listName = ref('')
+  const isRecurring = ref(false)
+  const selectedIcon = ref('mdi-cart')
+  const selectedDay = ref('Monday')
+  const selectedHour = ref(9)
+  const selectedMinute = ref(0)
 
-// Available days for recurring lists
-const dayOptions = [
-  "Monday",
-  "Tuesday", 
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-  "Sunday"
-];
+  // Available days for recurring lists
+  const dayOptions = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ]
 
-// Available icons for selection
-const iconOptions = [
-  'mdi-cart',
-  'mdi-apple',
-  'mdi-food-apple',
-  'mdi-food',
-  'mdi-carrot',
-  'mdi-cheese',
-  'mdi-fish',
-  'mdi-egg',
-  'mdi-bread-slice',
-  'mdi-baguette',
-  'mdi-grain',
-  'mdi-pasta',
-  'mdi-rice',
-  'mdi-bottle-wine',
-  'mdi-coffee',
-  'mdi-tea',
-  'mdi-beer',
-  'mdi-glass-cocktail',
-  'mdi-cupcake',
-  'mdi-cake',
-  'mdi-ice-cream',
-  'mdi-candy',
-  'mdi-fruit-cherries',
-  'mdi-fruit-grapes',
-  'mdi-fruit-watermelon',
-  'mdi-leaf',
-  'mdi-tree',
-  'mdi-sprout',
-  'mdi-flower',
-  'mdi-home',
-  'mdi-fridge',
-  'mdi-microwave',
-  'mdi-silverware-fork-knife',
-  'mdi-grill',
-  'mdi-pot',
-  'mdi-broom',
-  'mdi-gift',
-  'mdi-party-popper',
-  'mdi-star',
-  'mdi-heart',
-  'mdi-tag',
-  'mdi-tag-outline',
-  'mdi-bookmark',
-  'mdi-shopping',
-  'mdi-basket',
-  'mdi-package',
-  'mdi-package-variant',
-  'mdi-snowflake',
-];
+  // Available icons for selection
+  const iconOptions = [
+    'mdi-cart',
+    'mdi-apple',
+    'mdi-food-apple',
+    'mdi-food',
+    'mdi-carrot',
+    'mdi-cheese',
+    'mdi-fish',
+    'mdi-egg',
+    'mdi-bread-slice',
+    'mdi-baguette',
+    'mdi-grain',
+    'mdi-pasta',
+    'mdi-rice',
+    'mdi-bottle-wine',
+    'mdi-coffee',
+    'mdi-tea',
+    'mdi-beer',
+    'mdi-glass-cocktail',
+    'mdi-cupcake',
+    'mdi-cake',
+    'mdi-ice-cream',
+    'mdi-candy',
+    'mdi-fruit-cherries',
+    'mdi-fruit-grapes',
+    'mdi-fruit-watermelon',
+    'mdi-leaf',
+    'mdi-tree',
+    'mdi-sprout',
+    'mdi-flower',
+    'mdi-home',
+    'mdi-fridge',
+    'mdi-microwave',
+    'mdi-silverware-fork-knife',
+    'mdi-grill',
+    'mdi-pot',
+    'mdi-broom',
+    'mdi-gift',
+    'mdi-party-popper',
+    'mdi-star',
+    'mdi-heart',
+    'mdi-tag',
+    'mdi-tag-outline',
+    'mdi-bookmark',
+    'mdi-shopping',
+    'mdi-basket',
+    'mdi-package',
+    'mdi-package-variant',
+    'mdi-snowflake',
+  ]
 
-function closeDialog() {
-  emit("update:modelValue", false);
-  // Reset form
-  listName.value = "";
-  isRecurring.value = false;
-  selectedIcon.value = "mdi-cart";
-  selectedDay.value = "Monday";
-  selectedHour.value = 9;
-  selectedMinute.value = 0;
-  iconOptionsOpen.value = false;
-}
-
-function handleModelValueUpdate(value: boolean) {
-  if (!value) {
-    // Reset form when dialog closes
-    listName.value = "";
-    isRecurring.value = false;
-    selectedIcon.value = "mdi-cart";
-    selectedDay.value = "Monday";
-    selectedHour.value = 9;
-    selectedMinute.value = 0;
-    iconOptionsOpen.value = false;
-  }
-  emit("update:modelValue", value);
-}
-
-function createList() {
-  if (!listName.value.trim()) {
-    return; // Don't create if required fields missing
+  function closeDialog () {
+    emit('update:modelValue', false)
+    // Reset form
+    listName.value = ''
+    isRecurring.value = false
+    selectedIcon.value = 'mdi-cart'
+    selectedDay.value = 'Monday'
+    selectedHour.value = 9
+    selectedMinute.value = 0
+    iconOptionsOpen.value = false
   }
 
-  const listData = {
-    name: listName.value.trim(),
-    description: "-", // Minimal placeholder to satisfy backend requirement
-    recurring: isRecurring.value,
-    icon: selectedIcon.value,
-  };
-
-  // Add scheduling info if recurring is enabled
-  if (isRecurring.value) {
-    (listData as any).recurringSchedule = {
-      day: selectedDay.value,
-      hour: selectedHour.value,
-      minute: selectedMinute.value,
-      time: `${String(selectedHour.value).padStart(2, '0')}:${String(selectedMinute.value).padStart(2, '0')}`
-    };
+  function handleModelValueUpdate (value: boolean) {
+    if (!value) {
+      // Reset form when dialog closes
+      listName.value = ''
+      isRecurring.value = false
+      selectedIcon.value = 'mdi-cart'
+      selectedDay.value = 'Monday'
+      selectedHour.value = 9
+      selectedMinute.value = 0
+      iconOptionsOpen.value = false
+    }
+    emit('update:modelValue', value)
   }
 
-  emit("create-list", listData);
-  closeDialog();
-}
+  function createList () {
+    if (!listName.value.trim()) {
+      return // Don't create if required fields missing
+    }
 
-function selectIcon(iconValue: string) {
-  selectedIcon.value = iconValue;
-  iconOptionsOpen.value = false;
-}
+    const listData = {
+      name: listName.value.trim(),
+      description: '-', // Minimal placeholder to satisfy backend requirement
+      recurring: isRecurring.value,
+      icon: selectedIcon.value,
+    }
 
-function validateHour() {
-  if (selectedHour.value < 0) selectedHour.value = 0;
-  if (selectedHour.value > 23) selectedHour.value = 23;
-}
+    // Add scheduling info if recurring is enabled
+    if (isRecurring.value) {
+      (listData as any).recurringSchedule = {
+        day: selectedDay.value,
+        hour: selectedHour.value,
+        minute: selectedMinute.value,
+        time: `${String(selectedHour.value).padStart(2, '0')}:${String(selectedMinute.value).padStart(2, '0')}`,
+      }
+    }
 
-function validateMinute() {
-  if (selectedMinute.value < 0) selectedMinute.value = 0;
-  if (selectedMinute.value > 59) selectedMinute.value = 59;
-}
+    emit('create-list', listData)
+    closeDialog()
+  }
 
-// Toggle icon options on click instead of hover
-const iconOptionsOpen = ref(false);
+  function selectIcon (iconValue: string) {
+    selectedIcon.value = iconValue
+    iconOptionsOpen.value = false
+  }
+
+  function validateHour () {
+    if (selectedHour.value < 0) selectedHour.value = 0
+    if (selectedHour.value > 23) selectedHour.value = 23
+  }
+
+  function validateMinute () {
+    if (selectedMinute.value < 0) selectedMinute.value = 0
+    if (selectedMinute.value > 59) selectedMinute.value = 59
+  }
+
+  // Toggle icon options on click instead of hover
+  const iconOptionsOpen = ref(false)
 </script>
 
 <template>
@@ -160,7 +160,7 @@ const iconOptionsOpen = ref(false);
     <div class="dialog-header">
       <h2 class="dialog-title">Create New List</h2>
       <button class="close-button" @click="closeDialog">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
           />
@@ -175,20 +175,20 @@ const iconOptionsOpen = ref(false);
         <label class="field-label">List Name</label>
         <input
           v-model="listName"
-          type="text"
-          placeholder="Enter list name"
           class="text-input"
+          placeholder="Enter list name"
+          type="text"
           @keyup.enter="createList"
-        />
+        >
       </div>
 
       <div class="form-field toggle-row">
         <label class="field-label">Recurring List</label>
         <v-switch
           v-model="isRecurring"
-          inset
           color="var(--primary-green)"
           hide-details
+          inset
         />
       </div>
 
@@ -212,25 +212,25 @@ const iconOptionsOpen = ref(false);
               <label class="time-label">Hour</label>
               <input
                 v-model.number="selectedHour"
-                type="number"
-                min="0"
-                max="23"
                 class="time-input"
+                max="23"
+                min="0"
+                type="number"
                 @input="validateHour"
-              />
+              >
             </div>
             <span class="time-separator">:</span>
             <div class="time-input-group">
               <label class="time-label">Minute</label>
               <input
                 v-model.number="selectedMinute"
-                type="number"
-                min="0"
-                max="59"
-                step="5"
                 class="time-input"
+                max="59"
+                min="0"
+                step="5"
+                type="number"
                 @input="validateMinute"
-              />
+              >
             </div>
           </div>
           <div class="time-preview">
@@ -250,20 +250,20 @@ const iconOptionsOpen = ref(false);
             <v-icon :icon="selectedIcon" size="24" />
             <svg
               class="dropdown-arrow"
-              xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
             >
               <path d="M7,10L12,15L17,10H7Z" />
             </svg>
           </div>
 
-          <div class="icon-options" v-if="iconOptionsOpen">
+          <div v-if="iconOptionsOpen" class="icon-options">
             <button
               v-for="iconValue in iconOptions"
               :key="iconValue"
-              @click="selectIcon(iconValue)"
               class="icon-option"
               :class="{ active: selectedIcon === iconValue }"
+              @click="selectIcon(iconValue)"
             >
               <v-icon :icon="iconValue" size="24" />
             </button>
@@ -274,8 +274,8 @@ const iconOptionsOpen = ref(false);
 
     <!-- Dialog Footer -->
     <div class="dialog-footer">
-      <button @click="closeDialog" class="cancel-button">Cancel</button>
-      <StandardButton title="Create List" icon="mdi-plus" @click="createList" />
+      <button class="cancel-button" @click="closeDialog">Cancel</button>
+      <StandardButton icon="mdi-plus" title="Create List" @click="createList" />
     </div>
   </BaseDialog>
 </template>

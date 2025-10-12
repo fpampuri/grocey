@@ -1,196 +1,196 @@
 <script setup lang="ts">
-import ProductCard from "@/components/Products/ProductCard.vue";
-import StandardButton from "@/components/StandardButton.vue";
-import SearchBar from "@/components/SearchBar.vue";
-import CreateCategoryDialog from "@/components/dialog/CreateCategoryDialog.vue";
-import EditCategoryDialog from "@/components/dialog/EditCategoryDialog.vue";
-import CreateProductDialog from "@/components/dialog/CreateProductDialog.vue";
-import ConfirmDeleteDialog from "@/components/dialog/ConfirmDeleteDialog.vue";
-import { useRouter } from "vue-router";
-import { ref, onMounted, computed } from "vue";
+  import { computed, onMounted, ref } from 'vue'
+  import { useRouter } from 'vue-router'
+  import ConfirmDeleteDialog from '@/components/dialog/ConfirmDeleteDialog.vue'
+  import CreateCategoryDialog from '@/components/dialog/CreateCategoryDialog.vue'
+  import CreateProductDialog from '@/components/dialog/CreateProductDialog.vue'
+  import EditCategoryDialog from '@/components/dialog/EditCategoryDialog.vue'
+  import ProductCard from '@/components/Products/ProductCard.vue'
+  import SearchBar from '@/components/SearchBar.vue'
+  import StandardButton from '@/components/StandardButton.vue'
 
-const router = useRouter();
+  const router = useRouter()
 
-// Categories and Products state for pantry items
-type Product = {
-  id: number;
-  name: string;
-  quantity?: number;
-  expiryDate?: string;
-};
-type Category = {
-  id: number;
-  title: string;
-  icon: string;
-  products: Product[];
-};
-
-const categories = ref<Category[]>([]);
-const isLoading = ref(true);
-const searchQuery = ref("");
-const sortBy = ref("Name");
-const showCreateDialog = ref(false);
-const showEditDialog = ref(false);
-const showCreateProductDialog = ref(false);
-const showDeleteDialog = ref(false);
-const categoryToDelete = ref<Category | null>(null);
-const categoryToEdit = ref<Category | null>(null);
-
-const filteredCategories = computed<Category[]>(() => {
-  const q = searchQuery.value.trim().toLowerCase();
-  if (!q) return categories.value;
-  return categories.value
-    .map((cat: Category) => ({
-      ...cat,
-      products: cat.products.filter((p: Product) =>
-        p.name.toLowerCase().includes(q)
-      ),
-    }))
-    .filter(
-      (cat: Category) =>
-        cat.title.toLowerCase().includes(q) || cat.products.length > 0
-    );
-});
-
-function sortCategories(list: Category[]): Category[] {
-  if (sortBy.value === "Name") {
-    return [...list].sort((a: Category, b: Category) =>
-      a.title.localeCompare(b.title)
-    );
+  // Categories and Products state for pantry items
+  type Product = {
+    id: number
+    name: string
+    quantity?: number
+    expiryDate?: string
   }
-  if (sortBy.value === "Items") {
-    return [...list].sort(
-      (a: Category, b: Category) => b.products.length - a.products.length
-    );
+  type Category = {
+    id: number
+    title: string
+    icon: string
+    products: Product[]
   }
-  return list;
-}
 
-onMounted(async () => {
-  isLoading.value = true;
-  // TODO: Implement pantry API integration
-  categories.value = [];
-  isLoading.value = false;
-});
+  const categories = ref<Category[]>([])
+  const isLoading = ref(true)
+  const searchQuery = ref('')
+  const sortBy = ref('Name')
+  const showCreateDialog = ref(false)
+  const showEditDialog = ref(false)
+  const showCreateProductDialog = ref(false)
+  const showDeleteDialog = ref(false)
+  const categoryToDelete = ref<Category | null>(null)
+  const categoryToEdit = ref<Category | null>(null)
 
-function handleCategoryClick(cat: Category) {
-  router.push(`/pantry/${cat.id}`);
-}
+  const filteredCategories = computed<Category[]>(() => {
+    const q = searchQuery.value.trim().toLowerCase()
+    if (!q) return categories.value
+    return categories.value
+      .map((cat: Category) => ({
+        ...cat,
+        products: cat.products.filter((p: Product) =>
+          p.name.toLowerCase().includes(q),
+        ),
+      }))
+      .filter(
+        (cat: Category) =>
+          cat.title.toLowerCase().includes(q) || cat.products.length > 0,
+      )
+  })
 
-function handleSelectionToggle(isSelected: boolean) {
-  console.log("Selection toggled:", isSelected ? "SELECTED" : "UNSELECTED");
-}
+  function sortCategories (list: Category[]): Category[] {
+    if (sortBy.value === 'Name') {
+      return [...list].sort((a: Category, b: Category) =>
+        a.title.localeCompare(b.title),
+      )
+    }
+    if (sortBy.value === 'Items') {
+      return [...list].sort(
+        (a: Category, b: Category) => b.products.length - a.products.length,
+      )
+    }
+    return list
+  }
 
-function handleEdit(categoryId: number) {
-  const category = categories.value.find((c) => c.id === categoryId);
-  if (!category) return;
+  onMounted(async () => {
+    isLoading.value = true
+    // TODO: Implement pantry API integration
+    categories.value = []
+    isLoading.value = false
+  })
 
-  categoryToEdit.value = category;
-  showEditDialog.value = true;
-}
+  function handleCategoryClick (cat: Category) {
+    router.push(`/pantry/${cat.id}`)
+  }
 
-function handleEditCategory(data: { id: number; name: string; icon: string }) {
-  const category = categories.value.find((c) => c.id === data.id);
-  if (!category) return;
+  function handleSelectionToggle (isSelected: boolean) {
+    console.log('Selection toggled:', isSelected ? 'SELECTED' : 'UNSELECTED')
+  }
 
-  category.title = data.name;
-  category.icon = data.icon;
+  function handleEdit (categoryId: number) {
+    const category = categories.value.find(c => c.id === categoryId)
+    if (!category) return
 
-  showEditDialog.value = false;
-  categoryToEdit.value = null;
-}
+    categoryToEdit.value = category
+    showEditDialog.value = true
+  }
 
-function handleDelete(categoryId: number) {
-  const category = categories.value.find((c) => c.id === categoryId);
-  if (!category) return;
+  function handleEditCategory (data: { id: number, name: string, icon: string }) {
+    const category = categories.value.find(c => c.id === data.id)
+    if (!category) return
 
-  categoryToDelete.value = category;
-  showDeleteDialog.value = true;
-}
+    category.title = data.name
+    category.icon = data.icon
 
-function confirmDelete() {
-  if (!categoryToDelete.value) return;
+    showEditDialog.value = false
+    categoryToEdit.value = null
+  }
 
-  console.log("🗑️ Deleting pantry category:", categoryToDelete.value.title);
+  function handleDelete (categoryId: number) {
+    const category = categories.value.find(c => c.id === categoryId)
+    if (!category) return
 
-  // Remove the category from the list
-  categories.value = categories.value.filter(
-    (category) => category.id !== categoryToDelete.value!.id
-  );
+    categoryToDelete.value = category
+    showDeleteDialog.value = true
+  }
 
-  console.log("✅ Pantry category deleted successfully");
+  function confirmDelete () {
+    if (!categoryToDelete.value) return
 
-  // Reset state
-  showDeleteDialog.value = false;
-  categoryToDelete.value = null;
-}
+    console.log('🗑️ Deleting pantry category:', categoryToDelete.value.title)
 
-function handleAddProduct() {
-  console.log("Add Pantry Item");
-  showCreateProductDialog.value = true;
-}
+    // Remove the category from the list
+    categories.value = categories.value.filter(
+      category => category.id !== categoryToDelete.value!.id,
+    )
 
-function handleCreateCategory(categoryData: { name: string; icon: string }) {
-  const newCategory: Category = {
-    id: Date.now(),
-    title: categoryData.name,
-    icon: categoryData.icon || "mdi-package-variant",
-    products: [],
-  };
-  categories.value.unshift(newCategory);
-  showCreateDialog.value = false;
-}
+    console.log('✅ Pantry category deleted successfully')
 
-const categoryOptions = computed(() =>
-  categories.value.map((c) => ({ value: c.id, label: c.title, icon: c.icon }))
-);
+    // Reset state
+    showDeleteDialog.value = false
+    categoryToDelete.value = null
+  }
 
-function handleCreateProduct(data: { name: string; categoryId: number }) {
-  const target = categories.value.find((c) => c.id === data.categoryId);
-  if (!target) return;
-  target.products.unshift({ id: Date.now(), name: data.name, quantity: 1 });
-}
+  function handleAddProduct () {
+    console.log('Add Pantry Item')
+    showCreateProductDialog.value = true
+  }
+
+  function handleCreateCategory (categoryData: { name: string, icon: string }) {
+    const newCategory: Category = {
+      id: Date.now(),
+      title: categoryData.name,
+      icon: categoryData.icon || 'mdi-package-variant',
+      products: [],
+    }
+    categories.value.unshift(newCategory)
+    showCreateDialog.value = false
+  }
+
+  const categoryOptions = computed(() =>
+    categories.value.map(c => ({ value: c.id, label: c.title, icon: c.icon })),
+  )
+
+  function handleCreateProduct (data: { name: string, categoryId: number }) {
+    const target = categories.value.find(c => c.id === data.categoryId)
+    if (!target) return
+    target.products.unshift({ id: Date.now(), name: data.name, quantity: 1 })
+  }
 </script>
 
 <template>
   <div class="pa-3">
     <v-container fluid>
       <!-- Search and Add Section -->
-      <v-row class="mb-6" align="center">
+      <v-row align="center" class="mb-6">
         <v-col cols="12" md="8">
           <SearchBar
             v-model="searchQuery"
             placeholder="Search pantry items or categories..."
           />
         </v-col>
-        <v-col cols="12" md="4" class="d-flex flex-column flex-sm-row justify-end align-end">
+        <v-col class="d-flex flex-column flex-sm-row justify-end align-end" cols="12" md="4">
           <StandardButton
             class="mb-2 mb-sm-0 mr-sm-3"
-            title="Add Item"
             icon="mdi-plus"
+            title="Add Item"
             @click="handleAddProduct"
           />
           <StandardButton
-            title="Add Category"
             icon="mdi-plus"
+            title="Add Category"
             @click="showCreateDialog = true"
           />
         </v-col>
       </v-row>
 
       <!-- Sort Section -->
-      <v-row class="mb-4" align="center">
+      <v-row align="center" class="mb-4">
         <v-spacer />
         <v-col cols="auto">
           <div class="d-flex align-center">
             <span class="mr-3 text-medium-emphasis">Sort by:</span>
             <v-select
               v-model="sortBy"
-              :items="['Name', 'Items']"
-              variant="outlined"
-              hide-details
               density="compact"
+              hide-details
+              :items="['Name', 'Items']"
               style="min-width: 100px"
+              variant="outlined"
             />
           </div>
         </v-col>
@@ -205,19 +205,19 @@ function handleCreateProduct(data: { name: string; categoryId: number }) {
       <!-- Categories grid -->
       <v-row v-else>
         <v-col
-          cols="12"
-          md="6"
-          lg="4"
           v-for="cat in sortCategories(filteredCategories)"
           :key="cat.id"
+          cols="12"
+          lg="4"
+          md="6"
         >
           <ProductCard
-            :title="cat.title"
             :icon="cat.icon"
-            :itemsCount="cat.products.length"
+            :items-count="cat.products.length"
+            :title="cat.title"
             @click="() => handleCategoryClick(cat)"
-            @edit="() => handleEdit(cat.id)"
             @delete="() => handleDelete(cat.id)"
+            @edit="() => handleEdit(cat.id)"
           />
         </v-col>
       </v-row>
@@ -227,7 +227,7 @@ function handleCreateProduct(data: { name: string; categoryId: number }) {
         v-if="!isLoading && filteredCategories.length === 0 && searchQuery"
         class="text-center pa-8"
       >
-        <v-icon icon="mdi-magnify" size="64" color="grey-lighten-1" />
+        <v-icon color="grey-lighten-1" icon="mdi-magnify" size="64" />
         <p class="mt-2 text-h6 text-medium-emphasis">No pantry items found</p>
         <p class="text-body-2 text-medium-emphasis">
           Try adjusting your search terms
@@ -258,9 +258,9 @@ function handleCreateProduct(data: { name: string; categoryId: number }) {
     <!-- Delete Confirmation Dialog -->
     <ConfirmDeleteDialog
       v-model="showDeleteDialog"
-      item-type="pantry category"
-      :item-name="categoryToDelete?.title"
       description="This action cannot be undone. All items in this category will be removed from your pantry."
+      :item-name="categoryToDelete?.title"
+      item-type="pantry category"
       @confirm="confirmDelete"
     />
   </div>

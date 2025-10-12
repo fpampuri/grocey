@@ -1,65 +1,67 @@
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue';
-import StandardButton from '@/components/StandardButton.vue';
+  import { nextTick, ref, watch } from 'vue'
+  import StandardButton from '@/components/StandardButton.vue'
 
-const props = defineProps({
-  title: { type: String, required: true },
-  completed: { type: Boolean, default: false },
-  id: { type: [String, Number], required: true },
-});
+  const props = defineProps({
+    title: { type: String, required: true },
+    completed: { type: Boolean, default: false },
+    id: { type: [String, Number], required: true },
+  })
 
-const emits = defineEmits(["toggle-complete", "delete", "move", "add-to-list", "rename"]);
+  const emits = defineEmits(['toggle-complete', 'delete', 'move', 'add-to-list', 'rename'])
 
-const localCompleted = ref(props.completed);
-watch(() => props.completed, (v) => (localCompleted.value = v));
+  const localCompleted = ref(props.completed)
+  watch(() => props.completed, v => (localCompleted.value = v))
 
-function toggleComplete() {
-  localCompleted.value = !localCompleted.value;
-  emits('toggle-complete', localCompleted.value);
-}
-
-function deleteItem() {
-  emits('delete', props.id);
-}
-
-function moveItem() {
-  emits('move', props.id);
-}
-
-function addToList() {
-  emits('add-to-list', props.id);
-}
-
-// Inline rename state
-const editing = ref(false);
-const localTitle = ref(props.title);
-const inputRef = ref<HTMLInputElement | null>(null);
-
-watch(() => props.title, (v) => { if (!editing.value) localTitle.value = v; });
-
-function startEdit() {
-  editing.value = true;
-  localTitle.value = props.title;
-  nextTick(() => inputRef.value?.focus());
-}
-
-function commitEdit() {
-  const newName = localTitle.value.trim();
-  if (newName && newName !== props.title) {
-    emits('rename', { id: props.id, name: newName });
+  function toggleComplete () {
+    localCompleted.value = !localCompleted.value
+    emits('toggle-complete', localCompleted.value)
   }
-  editing.value = false;
-}
 
-function cancelEdit() {
-  localTitle.value = props.title;
-  editing.value = false;
-}
+  function deleteItem () {
+    emits('delete', props.id)
+  }
+
+  function moveItem () {
+    emits('move', props.id)
+  }
+
+  function addToList () {
+    emits('add-to-list', props.id)
+  }
+
+  // Inline rename state
+  const editing = ref(false)
+  const localTitle = ref(props.title)
+  const inputRef = ref<HTMLInputElement | null>(null)
+
+  watch(() => props.title, v => {
+    if (!editing.value) localTitle.value = v
+  })
+
+  function startEdit () {
+    editing.value = true
+    localTitle.value = props.title
+    nextTick(() => inputRef.value?.focus())
+  }
+
+  function commitEdit () {
+    const newName = localTitle.value.trim()
+    if (newName && newName !== props.title) {
+      emits('rename', { id: props.id, name: newName })
+    }
+    editing.value = false
+  }
+
+  function cancelEdit () {
+    localTitle.value = props.title
+    editing.value = false
+  }
 </script>
 
 <template>
   <v-card class="product-item-card" outlined>
-    <v-row class="item-row" align="center" no-gutters>
+    <v-row align="center" class="item-row" no-gutters>
       <!-- Item title -->
       <v-col>
         <div class="title-row">
@@ -69,19 +71,19 @@ function cancelEdit() {
               v-model="localTitle"
               class="rename-input"
               type="text"
+              @blur="commitEdit"
               @keydown.enter.stop.prevent="commitEdit"
               @keydown.esc.stop.prevent="cancelEdit"
-              @blur="commitEdit"
-            />
+            >
           </template>
           <template v-else>
-            <span 
+            <span
               class="item-title"
               :class="{ 'completed': localCompleted }"
             >
               {{ title }}
             </span>
-            <button class="icon-btn edit-btn" @click.stop="startEdit" aria-label="Rename product">
+            <button aria-label="Rename product" class="icon-btn edit-btn" @click.stop="startEdit">
               <v-icon icon="mdi-pencil" size="small" />
             </button>
           </template>
@@ -93,21 +95,21 @@ function cancelEdit() {
         <div class="actions">
           <div class="compact-button">
             <StandardButton
-              title="Move to Category"
               icon="mdi-folder-move"
+              title="Move to Category"
               @click="moveItem"
             />
           </div>
 
           <div class="compact-button">
             <StandardButton
-              title="Add to List"
               icon="mdi-plus"
+              title="Add to List"
               @click="addToList"
             />
           </div>
 
-          <button class="delete-btn" @click="deleteItem" aria-label="delete item">
+          <button aria-label="delete item" class="delete-btn" @click="deleteItem">
             <v-icon icon="mdi-delete" size="small" />
           </button>
         </div>
@@ -185,8 +187,6 @@ function cancelEdit() {
   border-radius: 8px;
   font-size: 0.95rem;
 }
-
-
 
 .compact-button :deep(.standard-button) {
   padding: 6px 12px;

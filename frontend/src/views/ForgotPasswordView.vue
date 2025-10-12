@@ -1,125 +1,117 @@
 <script setup lang="ts">
-  import { ref, computed } from "vue";
-  import { useRouter } from "vue-router";
-  import { UserApi } from "@/services";
+  import { computed, ref } from 'vue'
+  import { useRouter } from 'vue-router'
+  import { UserApi } from '@/services'
 
   type VuetifyForm = {
-    validate: () => Promise<{ valid: boolean }>;
-    resetValidation: () => void;
-  };
+    validate: () => Promise<{ valid: boolean }>
+    resetValidation: () => void
+  }
 
-  const router = useRouter();
-  
-  const formRef = ref<VuetifyForm | null>(null);
-  const email = ref("");
-  const isSubmitting = ref(false);
-  const error = ref("");
-  const successMessage = ref("");
-  const resetCode = ref("");
-  const newPassword = ref("");
-  const confirmPassword = ref("");
-  const showPassword = ref(false);
-  const mode = ref<'request' | 'reset'>('request');
+  const router = useRouter()
 
-  const isRequestMode = computed(() => mode.value === 'request');
-  const isResetMode = computed(() => mode.value === 'reset');
+  const formRef = ref<VuetifyForm | null>(null)
+  const email = ref('')
+  const isSubmitting = ref(false)
+  const error = ref('')
+  const successMessage = ref('')
+  const resetCode = ref('')
+  const newPassword = ref('')
+  const confirmPassword = ref('')
+  const showPassword = ref(false)
+  const mode = ref<'request' | 'reset'>('request')
+
+  const isRequestMode = computed(() => mode.value === 'request')
+  const isResetMode = computed(() => mode.value === 'reset')
 
   const emailRules = [
-    (value: string) => !!value || "Enter your email address",
-    (value: string) => /.+@.+\..+/.test(value) || "Enter a valid email",
-  ];
+    (value: string) => !!value || 'Enter your email address',
+    (value: string) => /.+@.+\..+/.test(value) || 'Enter a valid email',
+  ]
 
   const resetCodeRules = [
-    (value: string) => !!value || "Enter the reset code",
-    (value: string) => value.length >= 4 || "Code must be at least 4 characters",
-  ];
+    (value: string) => !!value || 'Enter the reset code',
+    (value: string) => value.length >= 4 || 'Code must be at least 4 characters',
+  ]
 
   const passwordRules = [
-    (value: string) => !!value || "Enter your new password",
-    (value: string) => value.length >= 8 || "Must be at least 8 characters",
-  ];
+    (value: string) => !!value || 'Enter your new password',
+    (value: string) => value.length >= 8 || 'Must be at least 8 characters',
+  ]
 
   const confirmPasswordRules = [
-    (value: string) => !!value || "Confirm your new password",
-    (value: string) => value === newPassword.value || "Passwords must match",
-  ];
+    (value: string) => !!value || 'Confirm your new password',
+    (value: string) => value === newPassword.value || 'Passwords must match',
+  ]
 
-  function switchToResetMode() {
-    mode.value = 'reset';
-    error.value = "";
-    formRef.value?.resetValidation();
+  function switchToResetMode () {
+    mode.value = 'reset'
+    error.value = ''
+    formRef.value?.resetValidation()
   }
 
-  function backToLogin() {
-    router.push({ name: "login" });
+  function backToLogin () {
+    router.push({ name: 'login' })
   }
 
-  async function handleRequestReset() {
-    error.value = "";
-    successMessage.value = "";
+  async function handleRequestReset () {
+    error.value = ''
+    successMessage.value = ''
 
-    const validation = await formRef.value?.validate();
-    if (!validation?.valid) return;
+    const validation = await formRef.value?.validate()
+    if (!validation?.valid) return
 
-    isSubmitting.value = true;
+    isSubmitting.value = true
 
     try {
       await UserApi.requestPasswordRecovery({
         email: email.value,
-      });
+      })
 
-      successMessage.value = `We sent a password reset code to ${email.value}. Check your email and enter the code below.`;
-      switchToResetMode();
-    } catch (error: unknown) {
-      console.error("Password recovery request error", error);
-      if (error instanceof Error) {
-        error.value = error.message;
-      } else {
-        error.value = "Unable to send password reset email. Please try again.";
-      }
+      successMessage.value = `We sent a password reset code to ${email.value}. Check your email and enter the code below.`
+      switchToResetMode()
+    } catch (caught: unknown) {
+      console.error('Password recovery request error', caught)
+      error.value = caught instanceof Error ? caught.message : 'Unable to send password reset email. Please try again.'
     } finally {
-      isSubmitting.value = false;
+      isSubmitting.value = false
     }
   }
 
-  async function handleResetPassword() {
-    error.value = "";
-    successMessage.value = "";
+  async function handleResetPassword () {
+    error.value = ''
+    successMessage.value = ''
 
-    const validation = await formRef.value?.validate();
-    if (!validation?.valid) return;
+    const validation = await formRef.value?.validate()
+    if (!validation?.valid) return
 
-    isSubmitting.value = true;
+    isSubmitting.value = true
 
     try {
       await UserApi.resetPassword({
         code: resetCode.value,
         password: newPassword.value,
-      });
+      })
 
-      successMessage.value = "Password reset successfully! You can now sign in with your new password.";
-      
+      successMessage.value = 'Password reset successfully! You can now sign in with your new password.'
+
       // Redirect to login after 2 seconds
       setTimeout(() => {
-        router.push({ name: "login" });
-      }, 2000);
-    } catch (error: unknown) {
-      console.error("Password reset error", error);
-      if (error instanceof Error) {
-        error.value = error.message;
-      } else {
-        error.value = "Unable to reset password. Please check your code and try again.";
-      }
+        router.push({ name: 'login' })
+      }, 2000)
+    } catch (caught: unknown) {
+      console.error('Password reset error', caught)
+      error.value = caught instanceof Error ? caught.message : 'Unable to reset password. Please check your code and try again.'
     } finally {
-      isSubmitting.value = false;
+      isSubmitting.value = false
     }
   }
 
-  function handleSubmit() {
+  function handleSubmit () {
     if (isRequestMode.value) {
-      handleRequestReset();
+      handleRequestReset()
     } else {
-      handleResetPassword();
+      handleResetPassword()
     }
   }
 </script>
@@ -129,7 +121,7 @@
     <div class="forgot-password-content">
       <section class="forgot-password-hero">
         <div class="hero-heading">
-          <v-icon icon="mdi-cart" class="hero-logo" />
+          <v-icon class="hero-logo" icon="mdi-cart" />
           <h1>Reset Your Password</h1>
         </div>
         <p>{{ isRequestMode ? "Enter your email to receive a password reset code." : "Enter the code and your new password." }}</p>
@@ -140,27 +132,27 @@
           {{ isRequestMode ? "Forgot Password" : "Reset Password" }}
         </v-card-title>
         <v-card-subtitle class="text-subtitle-1 mb-4">
-          {{ isRequestMode 
-              ? "We'll send you a code to reset your password." 
-              : "Enter the code from your email and choose a new password." 
+          {{ isRequestMode
+            ? "We'll send you a code to reset your password."
+            : "Enter the code from your email and choose a new password."
           }}
         </v-card-subtitle>
 
         <v-card-text>
           <v-alert
             v-if="successMessage"
+            class="mb-4"
             type="success"
             variant="tonal"
-            class="mb-4"
           >
             {{ successMessage }}
           </v-alert>
 
           <v-alert
             v-if="error"
+            class="mb-4"
             type="error"
             variant="tonal"
-            class="mb-4"
           >
             {{ error }}
           </v-alert>
@@ -169,70 +161,70 @@
             <v-text-field
               v-if="isRequestMode"
               v-model="email"
-              label="Email address"
-              type="email"
-              prepend-inner-icon="mdi-email"
-              density="comfortable"
-              variant="outlined"
               class="mb-4"
-              color="primary"
               clearable
-              :rules="emailRules"
+              color="primary"
+              density="comfortable"
+              label="Email address"
+              prepend-inner-icon="mdi-email"
               required
+              :rules="emailRules"
+              type="email"
+              variant="outlined"
             />
 
             <template v-if="isResetMode">
               <v-text-field
                 v-model="resetCode"
-                label="Reset code"
-                prepend-inner-icon="mdi-shield-key"
-                density="comfortable"
-                variant="outlined"
+                autocomplete="one-time-code"
                 class="mb-4"
                 color="primary"
-                autocomplete="one-time-code"
-                :rules="resetCodeRules"
+                density="comfortable"
+                label="Reset code"
+                prepend-inner-icon="mdi-shield-key"
                 required
+                :rules="resetCodeRules"
+                variant="outlined"
               />
 
               <v-text-field
                 v-model="newPassword"
-                :type="showPassword ? 'text' : 'password'"
-                label="New password"
-                prepend-inner-icon="mdi-lock"
                 :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
-                @click:append-inner="showPassword = !showPassword"
-                density="comfortable"
-                variant="outlined"
                 class="mb-2"
                 color="primary"
-                :rules="passwordRules"
+                density="comfortable"
+                label="New password"
+                prepend-inner-icon="mdi-lock"
                 required
+                :rules="passwordRules"
+                :type="showPassword ? 'text' : 'password'"
+                variant="outlined"
+                @click:append-inner="showPassword = !showPassword"
               />
 
               <v-text-field
                 v-model="confirmPassword"
-                :type="showPassword ? 'text' : 'password'"
-                label="Confirm new password"
-                prepend-inner-icon="mdi-lock-check"
                 :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
-                @click:append-inner="showPassword = !showPassword"
-                density="comfortable"
-                variant="outlined"
                 class="mb-4"
                 color="primary"
-                :rules="confirmPasswordRules"
+                density="comfortable"
+                label="Confirm new password"
+                prepend-inner-icon="mdi-lock-check"
                 required
+                :rules="confirmPasswordRules"
+                :type="showPassword ? 'text' : 'password'"
+                variant="outlined"
+                @click:append-inner="showPassword = !showPassword"
               />
             </template>
 
             <v-btn
-              type="submit"
-              class="submit-button mt-2"
               block
+              class="submit-button mt-2"
+              :disabled="isSubmitting"
               height="48"
               :loading="isSubmitting"
-              :disabled="isSubmitting"
+              type="submit"
             >
               {{ isRequestMode ? "Send Reset Code" : "Reset Password" }}
             </v-btn>
@@ -241,8 +233,8 @@
           <div class="actions mt-6 text-center">
             <span>Remember your password?</span>
             <v-btn
-              variant="text"
               class="back-button"
+              variant="text"
               @click="backToLogin"
             >
               Back to Sign In

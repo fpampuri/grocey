@@ -1,27 +1,27 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import StandardButton from '@/components/StandardButton.vue';
+  import { ref } from 'vue'
+  import StandardButton from '@/components/StandardButton.vue'
 
-type ListOption = { value: number; label: string };
+  type ListOption = { value: number, label: string }
 
-const props = defineProps({
-  modelValue: { type: Boolean, default: false },
-  lists: { type: Array as () => ListOption[], default: () => [] },
-});
+  const props = defineProps({
+    modelValue: { type: Boolean, default: false },
+    lists: { type: Array as () => ListOption[], default: () => [] },
+  })
 
-const emit = defineEmits(['update:modelValue', 'add-to-list']);
-const selected = ref<number | null>(null);
+  const emit = defineEmits(['update:modelValue', 'add-to-list'])
+  const selected = ref<number | null>(null)
 
-function closeDialog() {
-  emit('update:modelValue', false);
-  selected.value = null;
-}
+  function closeDialog () {
+    emit('update:modelValue', false)
+    selected.value = null
+  }
 
-function confirmAdd() {
-  if (selected.value == null) return;
-  emit('add-to-list', { listId: selected.value });
-  closeDialog();
-}
+  function confirmAdd () {
+    if (selected.value == null) return
+    emit('add-to-list', { listId: selected.value })
+    closeDialog()
+  }
 </script>
 
 <template>
@@ -30,7 +30,7 @@ function confirmAdd() {
       <div class="dialog-header">
         <h2 class="dialog-title">Add to List</h2>
         <button class="close-button" @click="closeDialog">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" /></svg>
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" /></svg>
         </button>
       </div>
       <div class="dialog-body">
@@ -42,8 +42,8 @@ function confirmAdd() {
         </div>
       </div>
       <div class="dialog-footer">
-        <button @click="closeDialog" class="cancel-button">Cancel</button>
-        <StandardButton title="Add" icon="mdi-plus" @click="confirmAdd" />
+        <button class="cancel-button" @click="closeDialog">Cancel</button>
+        <StandardButton icon="mdi-plus" title="Add" @click="confirmAdd" />
       </div>
     </div>
   </div>

@@ -1,94 +1,99 @@
 <script setup lang="ts">
-import { ref, watch, nextTick } from "vue";
+  import { nextTick, ref, watch } from 'vue'
 
-const props = defineProps({
-  title: { type: String, required: true },
-  quantity: { type: Number, default: 1 },
-  completed: { type: Boolean, default: false },
-  id: { type: [String, Number], required: true }
-});
+  const props = defineProps({
+    title: { type: String, required: true },
+    quantity: { type: Number, default: 1 },
+    completed: { type: Boolean, default: false },
+    id: { type: [String, Number], required: true },
+  })
 
-const emits = defineEmits(["update-quantity", "toggle-complete", "delete"]);
+  const emits = defineEmits(['update-quantity', 'toggle-complete', 'delete'])
 
-const localQuantity = ref(props.quantity);
-const localCompleted = ref(props.completed);
-const isEditingQuantity = ref(false);
-const quantityInput = ref(props.quantity);
-const quantityInputRef = ref<HTMLInputElement | null>(null);
+  const localQuantity = ref(props.quantity)
+  const localCompleted = ref(props.completed)
+  const isEditingQuantity = ref(false)
+  const quantityInput = ref(props.quantity)
+  const quantityInputRef = ref<HTMLInputElement | null>(null)
 
-// Keep local state in sync with props
-watch(() => props.quantity, (v) => {
-  localQuantity.value = v;
-  quantityInput.value = v;
-});
-watch(() => props.completed, (v) => (localCompleted.value = v));
+  // Keep local state in sync with props
+  watch(() => props.quantity, v => {
+    localQuantity.value = v
+    quantityInput.value = v
+  })
+  watch(() => props.completed, v => (localCompleted.value = v))
 
-function decreaseQuantity() {
-  if (localQuantity.value > 1) {
-    localQuantity.value--;
-    quantityInput.value = localQuantity.value;
-    emits("update-quantity", localQuantity.value);
-  }
-}
-
-function increaseQuantity() {
-  localQuantity.value++;
-  quantityInput.value = localQuantity.value;
-  emits("update-quantity", localQuantity.value);
-}
-
-function toggleComplete() {
-  localCompleted.value = !localCompleted.value;
-  emits("toggle-complete", localCompleted.value);
-}
-
-function deleteItem() {
-  emits("delete", props.id);
-}
-
-function startEditingQuantity() {
-  isEditingQuantity.value = true;
-  nextTick(() => {
-    if (quantityInputRef.value) {
-      quantityInputRef.value.focus();
-      quantityInputRef.value.select();
+  function decreaseQuantity () {
+    if (localQuantity.value > 1) {
+      localQuantity.value--
+      quantityInput.value = localQuantity.value
+      emits('update-quantity', localQuantity.value)
     }
-  });
-}
-
-function finishEditingQuantity() {
-  isEditingQuantity.value = false;
-  const newQuantity = Math.max(1, parseInt(quantityInput.value.toString()) || 1);
-  localQuantity.value = newQuantity;
-  quantityInput.value = newQuantity;
-  emits("update-quantity", newQuantity);
-}
-
-function onQuantityKeydown(event: KeyboardEvent) {
-  if (event.key === 'Enter') {
-    finishEditingQuantity();
   }
-}
+
+  function increaseQuantity () {
+    localQuantity.value++
+    quantityInput.value = localQuantity.value
+    emits('update-quantity', localQuantity.value)
+  }
+
+  function toggleComplete () {
+    localCompleted.value = !localCompleted.value
+    emits('toggle-complete', localCompleted.value)
+  }
+
+  function deleteItem () {
+    emits('delete', props.id)
+  }
+
+  function startEditingQuantity () {
+    isEditingQuantity.value = true
+    nextTick(() => {
+      if (quantityInputRef.value) {
+        quantityInputRef.value.focus()
+        quantityInputRef.value.select()
+      }
+    })
+  }
+
+  function finishEditingQuantity () {
+    isEditingQuantity.value = false
+    const newQuantity = Math.max(1, Number.parseInt(quantityInput.value.toString()) || 1)
+    localQuantity.value = newQuantity
+    quantityInput.value = newQuantity
+    emits('update-quantity', newQuantity)
+  }
+
+  function onQuantityKeydown (event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      finishEditingQuantity()
+    }
+  }
+
+  function onQuantityFocus (event: FocusEvent) {
+    const target = event.target as HTMLInputElement | null
+    target?.select()
+  }
 </script>
 
 <template>
   <v-card class="list-item-card" outlined>
-    <v-row class="item-row" align="center" no-gutters>
+    <v-row align="center" class="item-row" no-gutters>
       <!-- Completion checkbox -->
       <v-col cols="auto">
         <v-checkbox
           v-model="localCompleted"
-          hide-details
-          color="green"
-          class="green-border-checkbox"
           aria-label="mark item as completed"
+          class="green-border-checkbox"
+          color="green"
+          hide-details
           @click.stop="toggleComplete"
         />
       </v-col>
-      
+
       <!-- Item title -->
       <v-col>
-        <div 
+        <div
           class="item-title"
           :class="{ 'completed': localCompleted }"
         >
@@ -100,18 +105,18 @@ function onQuantityKeydown(event: KeyboardEvent) {
       <v-col cols="auto">
         <div class="quantity-controls">
           <!-- Decrease button -->
-          <button 
-            class="quantity-btn decrease-btn" 
-            @click="decreaseQuantity"
-            :disabled="localQuantity <= 1"
+          <button
             aria-label="decrease quantity"
+            class="quantity-btn decrease-btn"
+            :disabled="localQuantity <= 1"
+            @click="decreaseQuantity"
           >
             <v-icon icon="mdi-minus" size="small" />
           </button>
 
           <!-- Editable quantity display/input -->
           <div class="quantity-container">
-            <span 
+            <span
               v-if="!isEditingQuantity"
               class="quantity-display"
               @click="startEditingQuantity"
@@ -120,31 +125,31 @@ function onQuantityKeydown(event: KeyboardEvent) {
             </span>
             <input
               v-else
+              ref="quantityInputRef"
               v-model="quantityInput"
               class="quantity-input"
-              type="number"
               min="1"
+              type="number"
               @blur="finishEditingQuantity"
+              @focus="onQuantityFocus"
               @keydown="onQuantityKeydown"
-              @focus="$event.target.select()"
-              ref="quantityInputRef"
-            />
+            >
           </div>
 
           <!-- Increase button -->
-          <button 
-            class="quantity-btn increase-btn" 
-            @click="increaseQuantity"
+          <button
             aria-label="increase quantity"
+            class="quantity-btn increase-btn"
+            @click="increaseQuantity"
           >
             <v-icon icon="mdi-plus" size="small" />
           </button>
 
           <!-- Delete button -->
-          <button 
-            class="delete-btn" 
-            @click="deleteItem"
+          <button
             aria-label="delete item"
+            class="delete-btn"
+            @click="deleteItem"
           >
             <v-icon icon="mdi-delete" size="small" />
           </button>
@@ -265,11 +270,10 @@ function onQuantityKeydown(event: KeyboardEvent) {
     margin: 0;
     }
 
-
     .quantity-input:focus {
     border-color: var(--v-theme-primary, #1976d2);
     box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
-    }    
+    }
 
     .delete-btn {
     background: none;

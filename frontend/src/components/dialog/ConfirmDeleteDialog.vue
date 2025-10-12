@@ -1,16 +1,16 @@
 <script setup lang="ts">
-  import { computed } from "vue";
-  import StandardButton from "@/components/StandardButton.vue";
-  import BaseDialog from "@/components/dialog/BaseDialog.vue";
+  import { computed } from 'vue'
+  import BaseDialog from '@/components/dialog/BaseDialog.vue'
+  import StandardButton from '@/components/StandardButton.vue'
 
   interface Props {
-    modelValue: boolean;
-    itemType?: string;           // "list", "category", "pantry", etc.
-    itemName?: string;           // Name/title of the item to delete
-    title?: string;              // Custom dialog title
-    description?: string;        // Custom description text
-    confirmText?: string;        // Custom confirm button text
-    loading?: boolean;           // Loading state during deletion
+    modelValue: boolean
+    itemType?: string // "list", "category", "pantry", etc.
+    itemName?: string // Name/title of the item to delete
+    title?: string // Custom dialog title
+    description?: string // Custom description text
+    confirmText?: string // Custom confirm button text
+    loading?: boolean // Loading state during deletion
   }
 
   const props = withDefaults(defineProps<Props>(), {
@@ -20,35 +20,35 @@
     description: 'This action cannot be undone.',
     confirmText: 'Delete',
     loading: false,
-  });
+  })
 
   const emit = defineEmits<{
-    'update:modelValue': [value: boolean];
-    'confirm': [];
-  }>();
+    'update:modelValue': [value: boolean]
+    'confirm': []
+  }>()
 
   // Computed properties for dynamic content
   const dialogTitle = computed(() => {
-    if (props.title) return props.title;
-    return `Delete ${props.itemType.charAt(0).toUpperCase() + props.itemType.slice(1)}`;
-  });
+    if (props.title) return props.title
+    return `Delete ${props.itemType.charAt(0).toUpperCase() + props.itemType.slice(1)}`
+  })
 
   const confirmButtonText = computed(() => {
-    if (props.confirmText !== 'Delete') return props.confirmText;
-    return `Delete ${props.itemType.charAt(0).toUpperCase() + props.itemType.slice(1)}`;
-  });
+    if (props.confirmText !== 'Delete') return props.confirmText
+    return `Delete ${props.itemType.charAt(0).toUpperCase() + props.itemType.slice(1)}`
+  })
 
-  function handleModelValueUpdate(value: boolean) {
-    emit("update:modelValue", value);
+  function handleModelValueUpdate (value: boolean) {
+    emit('update:modelValue', value)
   }
 
-  function closeDialog() {
-    emit("update:modelValue", false);
+  function closeDialog () {
+    emit('update:modelValue', false)
   }
 
-  function confirmDelete() {
-    emit("confirm");
-    closeDialog();
+  function confirmDelete () {
+    emit('confirm')
+    closeDialog()
   }
 
 </script>
@@ -62,7 +62,7 @@
     <div class="dialog-header">
       <h2 class="dialog-title">{{ dialogTitle }}</h2>
       <button class="close-button" @click="closeDialog">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path
             d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
           />
@@ -86,16 +86,16 @@
 
     <!-- Dialog Footer -->
     <div class="dialog-footer">
-      <button @click="closeDialog" class="cancel-button" :disabled="loading">
+      <button class="cancel-button" :disabled="loading" @click="closeDialog">
         Cancel
       </button>
-      <StandardButton 
-        :title="confirmButtonText" 
-        icon="mdi-delete" 
-        @click="confirmDelete" 
+      <StandardButton
         class="red-button"
-        :loading="loading"
         :disabled="loading"
+        icon="mdi-delete"
+        :loading="loading"
+        :title="confirmButtonText"
+        @click="confirmDelete"
       />
     </div>
   </BaseDialog>

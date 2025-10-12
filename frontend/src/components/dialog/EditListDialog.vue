@@ -1,127 +1,127 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
-import StandardButton from "@/components/StandardButton.vue";
+  import { ref, watch } from 'vue'
+  import StandardButton from '@/components/StandardButton.vue'
 
-interface ListData {
-  id: number;
-  title: string;
-  description: string;
-  recurring: boolean;
-  icon: string;
-}
-
-const props = defineProps({
-  modelValue: { type: Boolean, default: false },
-  listData: { type: Object as () => ListData | null, default: null },
-});
-
-const emit = defineEmits(["update:modelValue", "edit-list"]);
-
-// Form data
-const listName = ref("");
-const listDescription = ref("");
-const isRecurring = ref(false);
-const selectedIcon = ref("mdi-cart");
-
-// Available icons for selection
-const iconOptions = [
-  'mdi-cart',
-  'mdi-apple',
-  'mdi-food-apple',
-  'mdi-food',
-  'mdi-carrot',
-  'mdi-cheese',
-  'mdi-fish',
-  'mdi-egg',
-  'mdi-bread-slice',
-  'mdi-baguette',
-  'mdi-grain',
-  'mdi-pasta',
-  'mdi-rice',
-  'mdi-bottle-wine',
-  'mdi-coffee',
-  'mdi-tea',
-  'mdi-beer',
-  'mdi-glass-cocktail',
-  'mdi-cupcake',
-  'mdi-cake',
-  'mdi-ice-cream',
-  'mdi-candy',
-  'mdi-fruit-cherries',
-  'mdi-fruit-grapes',
-  'mdi-fruit-watermelon',
-  'mdi-leaf',
-  'mdi-tree',
-  'mdi-sprout',
-  'mdi-flower',
-  'mdi-home',
-  'mdi-fridge',
-  'mdi-microwave',
-  'mdi-silverware-fork-knife',
-  'mdi-grill',
-  'mdi-pot',
-  'mdi-broom',
-  'mdi-gift',
-  'mdi-party-popper',
-  'mdi-star',
-  'mdi-heart',
-  'mdi-tag',
-  'mdi-tag-outline',
-  'mdi-bookmark',
-  'mdi-shopping',
-  'mdi-basket',
-  'mdi-package',
-  'mdi-package-variant',
-  'mdi-snowflake',
-];
-
-// Watch for changes in listData prop to populate form
-watch(
-  () => props.listData,
-  (newData) => {
-    if (newData) {
-      listName.value = newData.title;
-      listDescription.value = newData.description ?? "";
-      isRecurring.value = newData.recurring ?? false;
-      selectedIcon.value = newData.icon;
-    }
-  },
-  { immediate: true }
-);
-
-function closeDialog() {
-  emit("update:modelValue", false);
-  // Reset form
-  listName.value = "";
-  listDescription.value = "";
-  isRecurring.value = false;
-  selectedIcon.value = "mdi-cart";
-  iconOptionsOpen.value = false;
-}
-
-function editList() {
-  if (!listName.value.trim() || !listDescription.value.trim() || !props.listData) {
-    return; // Don't edit if required fields empty or no list data
+  interface ListData {
+    id: number
+    title: string
+    description: string
+    recurring: boolean
+    icon: string
   }
 
-  emit("edit-list", {
-    id: props.listData.id,
-    name: listName.value.trim(),
-    description: listDescription.value.trim(),
-    recurring: isRecurring.value,
-    icon: selectedIcon.value,
-  });
+  const props = defineProps({
+    modelValue: { type: Boolean, default: false },
+    listData: { type: Object as () => ListData | null, default: null },
+  })
 
-  closeDialog();
-}
+  const emit = defineEmits(['update:modelValue', 'edit-list'])
 
-function selectIcon(iconValue: string) {
-  selectedIcon.value = iconValue;
-  iconOptionsOpen.value = false;
-}
+  // Form data
+  const listName = ref('')
+  const listDescription = ref('')
+  const isRecurring = ref(false)
+  const selectedIcon = ref('mdi-cart')
 
-// Toggle icon options on click instead of hover
-const iconOptionsOpen = ref(false);
+  // Available icons for selection
+  const iconOptions = [
+    'mdi-cart',
+    'mdi-apple',
+    'mdi-food-apple',
+    'mdi-food',
+    'mdi-carrot',
+    'mdi-cheese',
+    'mdi-fish',
+    'mdi-egg',
+    'mdi-bread-slice',
+    'mdi-baguette',
+    'mdi-grain',
+    'mdi-pasta',
+    'mdi-rice',
+    'mdi-bottle-wine',
+    'mdi-coffee',
+    'mdi-tea',
+    'mdi-beer',
+    'mdi-glass-cocktail',
+    'mdi-cupcake',
+    'mdi-cake',
+    'mdi-ice-cream',
+    'mdi-candy',
+    'mdi-fruit-cherries',
+    'mdi-fruit-grapes',
+    'mdi-fruit-watermelon',
+    'mdi-leaf',
+    'mdi-tree',
+    'mdi-sprout',
+    'mdi-flower',
+    'mdi-home',
+    'mdi-fridge',
+    'mdi-microwave',
+    'mdi-silverware-fork-knife',
+    'mdi-grill',
+    'mdi-pot',
+    'mdi-broom',
+    'mdi-gift',
+    'mdi-party-popper',
+    'mdi-star',
+    'mdi-heart',
+    'mdi-tag',
+    'mdi-tag-outline',
+    'mdi-bookmark',
+    'mdi-shopping',
+    'mdi-basket',
+    'mdi-package',
+    'mdi-package-variant',
+    'mdi-snowflake',
+  ]
+
+  // Watch for changes in listData prop to populate form
+  watch(
+    () => props.listData,
+    newData => {
+      if (newData) {
+        listName.value = newData.title
+        listDescription.value = newData.description ?? ''
+        isRecurring.value = newData.recurring ?? false
+        selectedIcon.value = newData.icon
+      }
+    },
+    { immediate: true },
+  )
+
+  function closeDialog () {
+    emit('update:modelValue', false)
+    // Reset form
+    listName.value = ''
+    listDescription.value = ''
+    isRecurring.value = false
+    selectedIcon.value = 'mdi-cart'
+    iconOptionsOpen.value = false
+  }
+
+  function editList () {
+    if (!listName.value.trim() || !listDescription.value.trim() || !props.listData) {
+      return // Don't edit if required fields empty or no list data
+    }
+
+    emit('edit-list', {
+      id: props.listData.id,
+      name: listName.value.trim(),
+      description: listDescription.value.trim(),
+      recurring: isRecurring.value,
+      icon: selectedIcon.value,
+    })
+
+    closeDialog()
+  }
+
+  function selectIcon (iconValue: string) {
+    selectedIcon.value = iconValue
+    iconOptionsOpen.value = false
+  }
+
+  // Toggle icon options on click instead of hover
+  const iconOptionsOpen = ref(false)
 </script>
 
 <template>
@@ -133,7 +133,7 @@ const iconOptionsOpen = ref(false);
       <div class="dialog-header">
         <h2 class="dialog-title">Edit List</h2>
         <button class="close-button" @click="closeDialog">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path
               d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
             />
@@ -148,20 +148,20 @@ const iconOptionsOpen = ref(false);
           <label class="field-label">List Name</label>
           <input
             v-model="listName"
-            type="text"
-            placeholder="Enter list name"
             class="text-input"
+            placeholder="Enter list name"
+            type="text"
             @keyup.enter="editList"
-          />
+          >
         </div>
 
         <div class="form-field toggle-row">
           <label class="field-label">Recurring List</label>
           <v-switch
             v-model="isRecurring"
-            inset
             color="var(--primary-green)"
             hide-details
+            inset
           />
         </div>
 
@@ -176,21 +176,21 @@ const iconOptionsOpen = ref(false);
               <v-icon :icon="selectedIcon" size="24" />
               <svg
                 class="dropdown-arrow"
-                xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
               >
                 <path d="M7,10L12,15L17,10H7Z" />
               </svg>
             </div>
 
             <!-- Icon Grid -->
-            <div class="icon-options" v-if="iconOptionsOpen">
+            <div v-if="iconOptionsOpen" class="icon-options">
               <button
                 v-for="iconValue in iconOptions"
                 :key="iconValue"
-                @click="selectIcon(iconValue)"
                 class="icon-option"
                 :class="{ active: selectedIcon === iconValue }"
+                @click="selectIcon(iconValue)"
               >
                 <v-icon :icon="iconValue" size="24" />
               </button>
@@ -201,10 +201,10 @@ const iconOptionsOpen = ref(false);
 
       <!-- Dialog Footer -->
       <div class="dialog-footer">
-        <button @click="closeDialog" class="cancel-button">Cancel</button>
+        <button class="cancel-button" @click="closeDialog">Cancel</button>
         <StandardButton
-          title="Save Changes"
           icon="mdi-content-save"
+          title="Save Changes"
           @click="editList"
         />
       </div>
