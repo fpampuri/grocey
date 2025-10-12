@@ -240,22 +240,38 @@
 
     try {
       const categoryName = categoryToDelete.value.title
+      const categoryId = categoryToDelete.value.id
       console.log('🗑️ Deleting category:', categoryName)
 
+      // Get all products in the category that will be deleted
+      const productsToDelete = categoryToDelete.value.products || []
+      
+      // Delete all products in the category first
+      for (const product of productsToDelete) {
+        if (product.id) {
+          try {
+            await ProductApi.remove(product.id)
+            console.log(`🗑️ Deleted product: ${product.name}`)
+          } catch (error) {
+            console.error(`Failed to delete product ${product.name}:`, error)
+          }
+        }
+      }
+
       // Delete category via API
-      await CategoryApi.remove(categoryToDelete.value.id)
+      await CategoryApi.remove(categoryId)
 
       // Remove the category from local state
       categories.value = categories.value.filter(
-        category => category.id !== categoryToDelete.value!.id,
+        category => category.id !== categoryId,
       )
 
-      console.log('✅ Category deleted successfully')
+      console.log('✅ Category and its products deleted successfully')
 
       // Reset state
       showDeleteDialog.value = false
       categoryToDelete.value = null
-      showSuccess(`Category "${categoryName}" deleted successfully!`)
+      showSuccess(`Category "${categoryName}" and its ${productsToDelete.length} product(s) deleted successfully!`)
     } catch (error) {
       console.error('Error deleting category:', error)
       showError('Failed to delete category. Please try again.')
@@ -449,7 +465,7 @@
     <!-- Delete Confirmation Dialog -->
     <ConfirmDeleteDialog
       v-model="showDeleteDialog"
-      description="This action cannot be undone. All products in this category will be moved to 'Miscellaneous'."
+      description="This action cannot be undone. All products in this category will be permanently deleted."
       :item-name="categoryToDelete?.title"
       item-type="category"
       @confirm="confirmDelete"
