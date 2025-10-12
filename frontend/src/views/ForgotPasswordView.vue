@@ -36,7 +36,7 @@
 
   const passwordRules = [
     (value: string) => !!value || 'Enter your new password',
-    (value: string) => value.length >= 8 || 'Must be at least 8 characters',
+    (value: string) => value.length >= 6 || 'Must be at least 6 characters',
   ]
 
   const confirmPasswordRules = [
