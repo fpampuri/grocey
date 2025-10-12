@@ -74,6 +74,9 @@
   const filteredLists = computed(() => {
     let filtered = lists.value
 
+    // Exclude completed lists (they should only appear in History view)
+    filtered = filtered.filter(list => list.metadata?.status !== 'completed')
+
     if (showFavoritesOnly.value) {
       filtered = filtered.filter(list => list.isFavorite)
     }
@@ -211,6 +214,10 @@
     router.push(`/lists/${listItem.id}`)
   }
 
+  function goToHistory () {
+    router.push('/lists/history')
+  }
+
   async function handleStarToggle (isStarred: boolean, listId: number) {
     const list = lists.value.find(l => l.id === listId)
     if (!list) return
@@ -299,6 +306,44 @@
     showDeleteDialog.value = true
   }
 
+  async function handleSendToHistory (listId: number) {
+    try {
+      const list = lists.value.find(l => l.id === listId)
+      if (!list) return
+
+      // Call the API to update the list
+      await ShoppingListApi.modify(listId, {
+        name: list.name,
+        description: list.description,
+        recurring: list.recurring,
+        metadata: {
+          icon: list.icon,
+          isFavorite: list.isFavorite,
+          itemsCount: list.itemsCount,
+          ...list.metadata,
+          status: 'completed'
+        }
+      })
+
+      // Update local state
+      const updatedMetadata = {
+        ...list.metadata,
+        status: 'completed'
+      }
+
+      // Update local state
+      list.metadata = updatedMetadata
+
+      // Remove from selected lists if it was selected
+      selectedLists.value.delete(listId)
+
+      showSuccess('List sent to history successfully')
+    } catch (error) {
+      console.error('Error sending list to history:', error)
+      showError('Failed to send list to history')
+    }
+  }
+
   function handleSelectionToggle (listId: number, isSelected: boolean) {
     if (isSelected) {
       selectedLists.value.add(listId)
@@ -309,6 +354,11 @@
 
   function handleBulkDelete () {
     showBulkDeleteDialog.value = true
+  }
+
+  function handleBulkSendToHistory () {
+    // TODO: Implement bulk send to history functionality
+    console.log('Bulk send to history:', Array.from(selectedLists.value))
   }
 
   async function confirmBulkDelete () {
@@ -500,7 +550,17 @@
         <v-col cols="12" md="8">
           <SearchBar v-model="searchQuery" placeholder="Search lists..." />
         </v-col>
-        <v-col class="text-md-right" cols="12" md="4">
+        <v-col cols="auto">
+          <v-btn
+            class="history-btn"
+            variant="elevated"
+            @click="goToHistory"
+          >
+            <v-icon class="mr-2" icon="mdi-history" />
+            History
+          </v-btn>
+        </v-col>
+        <v-col class="text-md-right" cols="12" md="auto">
           <StandardButton
             icon="mdi-plus"
             title="Add List"
@@ -533,6 +593,14 @@
             :title="`Delete (${selectedCount})`"
             variant="danger"
             @click="handleBulkDelete"
+          />
+        </v-col>
+        <v-col v-if="selectedCount > 0" cols="auto">
+          <StandardButton
+            icon="mdi-checkbox-marked-circle"
+            :title="`Mark as Completed (${selectedCount})`"
+            variant="secondary"
+            @click="handleBulkSendToHistory"
           />
         </v-col>
         <v-spacer />
@@ -587,6 +655,7 @@
             @click="() => handleListClick(item)"
             @delete="() => handleDeleteList(item.id)"
             @edit="() => handleEdit(item.id)"
+            @send-to-history="() => handleSendToHistory(item.id)"
             @share="() => handleShare(item.id)"
             @toggle-selection="(isSelected) => handleSelectionToggle(item.id, isSelected)"
             @toggle-star="(isStarred) => handleStarToggle(isStarred, item.id)"
@@ -699,6 +768,27 @@
 }
 
 .favorites-btn:hover {
+  color: white !important;
+  background-color: var(--primary-green-light) !important;
+  opacity: 0.7 !important;
+}
+
+.history-btn {
+  border-radius: 12px;
+  text-transform: none;
+  font-weight: 600;
+  min-width: 120px;
+  min-height: 40px;
+  color: var(--text-primary) !important;
+  background-color: rgb(var(--v-theme-surface)) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.v-theme--dark .history-btn {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.history-btn:hover {
   color: white !important;
   background-color: var(--primary-green-light) !important;
   opacity: 0.7 !important;

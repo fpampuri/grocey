@@ -27,6 +27,12 @@ const routes = [
     meta: { title: 'Lists' },
   },
   {
+    path: '/lists/history',
+    name: 'lists-history',
+    component: () => import('@/views/HistoryView.vue'),
+    meta: { title: 'History' },
+  },
+  {
     path: '/products',
     name: 'products',
     component: () => import('@/views/ProductsView.vue'),
@@ -59,6 +65,12 @@ const routes = [
   {
     path: '/lists/:id',
     name: 'list-details',
+    component: () => import('@/views/ListDetailsView.vue'),
+    meta: { title: 'List Details' },
+  },
+  {
+    path: '/lists/history/:id',
+    name: 'history-list-details',
     component: () => import('@/views/ListDetailsView.vue'),
     meta: { title: 'List Details' },
   },

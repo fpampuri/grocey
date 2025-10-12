@@ -9,7 +9,7 @@
     selected: { type: Boolean, default: false },
   })
 
-  const emits = defineEmits(['click', 'toggle-star', 'toggle-selection', 'edit', 'delete', 'share'])
+  const emits = defineEmits(['click', 'toggle-star', 'toggle-selection', 'edit', 'delete', 'share', 'send-to-history'])
 
   // local reactive starred state so UI updates immediately
   const localStarred = ref(props.starred)
@@ -92,6 +92,13 @@
                   <v-icon class="menu-icon">mdi-share-variant</v-icon>
                 </template>
                 <v-list-item-title class="menu-title">Share</v-list-item-title>
+              </v-list-item>
+
+              <v-list-item class="menu-item" @click="$emit('send-to-history')">
+                <template #prepend>
+                  <v-icon class="menu-icon">mdi-checkbox-marked-circle</v-icon>
+                </template>
+                <v-list-item-title class="menu-title">Mark as Completed</v-list-item-title>
               </v-list-item>
 
               <v-list-item class="menu-item delete-item" @click="$emit('delete')">

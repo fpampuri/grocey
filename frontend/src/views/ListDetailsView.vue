@@ -382,7 +382,12 @@
   }
 
   function goBack () {
-    router.push('/lists')
+    // Check if we came from history route and go back appropriately
+    if (route.path.startsWith('/lists/history/')) {
+      router.push('/lists/history')
+    } else {
+      router.push('/lists')
+    }
   }
 
   watch(
