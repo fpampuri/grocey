@@ -35,7 +35,6 @@
     users: ListUser[]
     createdBy: number | null
     createdAt: string
-    isFavorite: boolean
   }
 
   interface SharePayload {
@@ -78,7 +77,7 @@
     filtered = filtered.filter(list => list.metadata?.status !== 'completed')
 
     if (showFavoritesOnly.value) {
-      filtered = filtered.filter(list => list.isFavorite)
+      filtered = filtered.filter(list => list.recurring)
     }
 
     if (searchQuery.value.trim()) {
@@ -112,7 +111,6 @@
   function mapApiList (data: any): ShoppingList {
     const metadata = (data?.metadata ?? {}) as Record<string, any>
     const icon = metadata.icon ?? 'mdi-format-list-bulleted'
-    const isFavorite = Boolean(metadata.isFavorite)
     const items = Array.isArray(data?.items) ? data.items : []
 
     const users: ListUser[] = []
@@ -147,7 +145,6 @@
       users,
       createdBy: data?.owner?.id ?? null,
       createdAt: data.createdAt ?? new Date().toISOString(),
-      isFavorite,
     }
   }
 
@@ -222,18 +219,16 @@
     const list = lists.value.find(l => l.id === listId)
     if (!list) return
 
-    const previous = list.isFavorite
-    list.isFavorite = isStarred
-    list.metadata = { ...list.metadata, icon: list.icon, isFavorite: isStarred }
+    const previous = list.recurring
+    list.recurring = isStarred
 
     try {
       await ShoppingListApi.modify(listId, {
         name: list.name,
         description: list.description,
-        recurring: list.recurring,
+        recurring: isStarred,
         metadata: {
           icon: list.icon,
-          isFavorite: isStarred,
           itemsCount: list.itemsCount,
           ...list.metadata,
         },
@@ -241,8 +236,7 @@
       showSuccess(isStarred ? 'List marked as favorite.' : 'List removed from favorites.')
     } catch (error) {
       console.error('Error updating favorite state:', error)
-      list.isFavorite = previous
-      list.metadata = { ...list.metadata, isFavorite: previous }
+      list.recurring = previous
       showError(
         error instanceof Error
           ? error.message
@@ -269,7 +263,6 @@
         recurring: data.recurring,
         metadata: {
           icon: data.icon,
-          isFavorite: list.isFavorite,
           itemsCount: list.itemsCount,
           ...list.metadata,
         },
@@ -318,7 +311,6 @@
         recurring: list.recurring,
         metadata: {
           icon: list.icon,
-          isFavorite: list.isFavorite,
           itemsCount: list.itemsCount,
           ...list.metadata,
           status: 'completed'
@@ -374,7 +366,6 @@
             recurring: list.recurring,
             metadata: {
               icon: list.icon,
-              isFavorite: list.isFavorite,
               itemsCount: list.itemsCount,
               ...list.metadata,
               status: 'completed'
@@ -555,10 +546,9 @@
       const response = await ShoppingListApi.add({
         name: listData.name,
         description: listData.description,
-        recurring: listData.recurring,
+        recurring: false,
         metadata: {
           icon: listData.icon,
-          isFavorite: false,
           itemsCount: 0,
         },
       })
@@ -705,7 +695,7 @@
             :icon="item.icon"
             :items-count="item.itemsCount"
             :selected="selectedLists.has(item.id)"
-            :starred="item.isFavorite || false"
+            :starred="item.recurring || false"
             :title="item.title"
             @click="() => handleListClick(item)"
             @delete="() => handleDeleteList(item.id)"

@@ -88,7 +88,7 @@ const router = Router();
  *                     id: 1
  *                     name: "Weekly Groceries"
  *                     description: "Weekly shopping list"
- *                     recurring: true
+ *                     ing: true
  *                     metadata: {}
  *                     createdAt: "2025-01-15 10:30:00"
  *                     updatedAt: "2025-01-15 10:30:00"
