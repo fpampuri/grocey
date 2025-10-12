@@ -20,7 +20,6 @@
   // Form data
   const listName = ref('')
   const listDescription = ref('')
-  const isRecurring = ref(false)
   const selectedIcon = ref('mdi-cart')
 
   // Available icons for selection
@@ -82,7 +81,6 @@
       if (newData) {
         listName.value = newData.title
         listDescription.value = newData.description ?? ''
-        isRecurring.value = newData.recurring ?? false
         selectedIcon.value = newData.icon
       }
     },
@@ -94,7 +92,6 @@
     // Reset form
     listName.value = ''
     listDescription.value = ''
-    isRecurring.value = false
     selectedIcon.value = 'mdi-cart'
     iconOptionsOpen.value = false
   }
@@ -108,7 +105,7 @@
       id: props.listData.id,
       name: listName.value.trim(),
       description: listDescription.value.trim(),
-      recurring: isRecurring.value,
+      recurring: props.listData.recurring,
       icon: selectedIcon.value,
     })
 
@@ -153,16 +150,6 @@
             type="text"
             @keyup.enter="editList"
           >
-        </div>
-
-        <div class="form-field toggle-row">
-          <label class="field-label">Recurring List</label>
-          <v-switch
-            v-model="isRecurring"
-            color="var(--primary-green)"
-            hide-details
-            inset
-          />
         </div>
 
         <!-- Icon Selection -->

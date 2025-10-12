@@ -306,7 +306,6 @@
         recurring: listData.value.recurring,
         metadata: {
           icon: listData.value.icon,
-          isFavorite: listData.value.metadata?.isFavorite || false,
           itemsCount: listItems.value.length,
           ...listData.value.metadata,
           status: 'completed'
