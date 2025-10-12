@@ -605,6 +605,20 @@
           Try adjusting your search terms
         </p>
       </div>
+
+      <!-- No lists message -->
+      <div
+        v-if="!isLoading && filteredLists.length === 0 && !searchQuery"
+        class="text-center pa-8"
+      >
+        <v-icon color="grey-lighten-1" icon="mdi-format-list-bulleted" size="64" />
+        <p class="mt-2 text-h6 text-medium-emphasis">
+          No lists yet
+        </p>
+        <p class="text-body-2 text-medium-emphasis">
+          Create your first shopping list to get started
+        </p>
+      </div>
     </v-container>
 
     <!-- Create List Dialog -->

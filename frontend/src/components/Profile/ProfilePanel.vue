@@ -45,7 +45,7 @@
       && newPassword.value.trim() !== ''
       && confirmPassword.value.trim() !== ''
       && newPassword.value === confirmPassword.value
-      && newPassword.value.length >= 8
+      && newPassword.value.length >= 6
     )
   })
 
@@ -63,8 +63,8 @@
       return 'Enter a new password'
     }
 
-    if (newPassword.value.length > 0 && newPassword.value.length < 8) {
-      return 'New password must be at least 8 characters long'
+    if (newPassword.value.length > 0 && newPassword.value.length < 6) {
+      return 'New password must be at least 6 characters long'
     }
 
     if (confirmPassword.value.trim() === '') {

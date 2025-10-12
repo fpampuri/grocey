@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { ref } from 'vue'
+  import { ref, computed } from 'vue'
   import BaseDialog from '@/components/dialog/BaseDialog.vue'
   import StandardButton from '@/components/StandardButton.vue'
 
@@ -19,13 +19,13 @@
 
   // Available days for recurring lists
   const dayOptions = [
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-    'Sunday',
+    { value: 'Monday', label: 'Monday', icon: 'mdi-calendar-week' },
+    { value: 'Tuesday', label: 'Tuesday', icon: 'mdi-calendar-week' },
+    { value: 'Wednesday', label: 'Wednesday', icon: 'mdi-calendar-week' },
+    { value: 'Thursday', label: 'Thursday', icon: 'mdi-calendar-week' },
+    { value: 'Friday', label: 'Friday', icon: 'mdi-calendar-week' },
+    { value: 'Saturday', label: 'Saturday', icon: 'mdi-calendar-weekend' },
+    { value: 'Sunday', label: 'Sunday', icon: 'mdi-calendar-weekend' },
   ]
 
   // Available icons for selection
@@ -90,6 +90,7 @@
     selectedHour.value = 9
     selectedMinute.value = 0
     iconOptionsOpen.value = false
+    dayDropdownOpen.value = false
   }
 
   function handleModelValueUpdate (value: boolean) {
@@ -102,6 +103,7 @@
       selectedHour.value = 9
       selectedMinute.value = 0
       iconOptionsOpen.value = false
+      dayDropdownOpen.value = false
     }
     emit('update:modelValue', value)
   }
@@ -137,6 +139,19 @@
     iconOptionsOpen.value = false
   }
 
+  function toggleDayDropdown () {
+    dayDropdownOpen.value = !dayDropdownOpen.value
+  }
+
+  function selectDay (day: { value: string, label: string, icon: string }) {
+    selectedDay.value = day.value
+    dayDropdownOpen.value = false
+  }
+
+  const selectedDayObject = computed(() => {
+    return dayOptions.find(day => day.value === selectedDay.value) || dayOptions[0]
+  })
+
   function validateHour () {
     if (selectedHour.value < 0) selectedHour.value = 0
     if (selectedHour.value > 23) selectedHour.value = 23
@@ -149,6 +164,7 @@
 
   // Toggle icon options on click instead of hover
   const iconOptionsOpen = ref(false)
+  const dayDropdownOpen = ref(false)
 </script>
 
 <template>
@@ -197,11 +213,26 @@
         <!-- Day Selection -->
         <div class="form-field">
           <label class="field-label">Day of Week</label>
-          <select v-model="selectedDay" class="select-input">
-            <option v-for="day in dayOptions" :key="day" :value="day">
-              {{ day }}
-            </option>
-          </select>
+          <div class="custom-select-container">
+            <div class="custom-select" :class="{ 'is-open': dayDropdownOpen }" @click="toggleDayDropdown">
+              <div class="selected-option">
+                <v-icon class="option-icon" :icon="selectedDayObject.icon" />
+                <span class="option-label">{{ selectedDayObject.label }}</span>
+              </div>
+              <v-icon class="dropdown-arrow" icon="mdi-chevron-down" />
+            </div>
+            <div v-if="dayDropdownOpen" class="dropdown-options">
+              <div
+                v-for="day in dayOptions"
+                :key="day.value"
+                class="dropdown-option"
+                @click="selectDay(day)"
+              >
+                <v-icon class="option-icon" :icon="day.icon" />
+                <span class="option-label">{{ day.label }}</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Time Selection -->
@@ -490,5 +521,83 @@
 .time-input[type=number] {
   appearance: textfield;
   -moz-appearance: textfield;
+}
+
+/* Custom dropdown styles for day selection */
+.custom-select-container { position: relative; width: 100%; }
+.custom-select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: border-color 0.2s ease;
+}
+.custom-select:hover { border-color: var(--primary-green); }
+.custom-select.is-open {
+  border-color: var(--primary-green);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.selected-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+.option-icon {
+  font-size: 16px !important;
+  color: var(--primary-green);
+}
+.option-label {
+  color: #333;
+  font-weight: 500;
+}
+.dropdown-arrow {
+  font-size: 16px !important;
+  color: #666;
+  transition: transform 0.2s ease;
+}
+.custom-select.is-open .dropdown-arrow {
+  transform: rotate(180deg);
+}
+.dropdown-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 2px solid var(--primary-green);
+  border-top: none;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1001;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.dropdown-option {
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.dropdown-option:hover {
+  background-color: rgba(76, 175, 80, 0.1);
+  color: var(--primary-green);
+}
+.dropdown-option:hover .option-icon {
+  color: var(--primary-green);
+}
+.dropdown-option:last-child {
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
 }
 </style>

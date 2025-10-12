@@ -28,8 +28,8 @@
         </div>
       </v-col>
 
-      <v-col v-if="!disableActions" cols="auto">
-        <div class="actions" @click.stop>
+      <v-col cols="auto">
+        <div v-if="!disableActions" class="actions" @click.stop>
           <v-menu offset-y>
             <template #activator="{ props: activator }">
               <button v-bind="activator" aria-label="more actions" class="action-btn dots-btn" @click.stop>
@@ -54,6 +54,9 @@
 
             </v-list>
           </v-menu>
+        </div>
+        <div v-else class="actions-placeholder">
+          <!-- Empty placeholder to maintain consistent spacing -->
         </div>
       </v-col>
     </v-row>
@@ -150,6 +153,11 @@
   display: flex;
   gap: 8px;
   align-items: center;
+}
+
+.actions-placeholder {
+  width: 40px; /* Same width as action button (8px padding * 2 + 24px icon) */
+  height: 40px; /* Same height as action button */
 }
 
 .action-menu {
