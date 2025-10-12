@@ -2,6 +2,7 @@
   import { computed, onMounted, ref } from 'vue'
   import { useRoute, useRouter } from 'vue-router'
   import AddToListDialog from '@/components/dialog/AddToListDialog.vue'
+  import AddToPantryDialog from '@/components/dialog/AddToPantryDialog.vue'
   import ConfirmDeleteDialog from '@/components/dialog/ConfirmDeleteDialog.vue'
   import CreateProductDialog from '@/components/dialog/CreateProductDialog.vue'
   import EditCategoryDialog from '@/components/dialog/EditCategoryDialog.vue'
@@ -14,6 +15,8 @@
     type Category as CategoryApiType,
   } from '@/services/category'
   import ListItemApi from '@/services/listItem'
+  import { PantryApi } from '@/services/pantry'
+  import { PantryItemApi } from '@/services/pantryItem'
   import ProductApi, { type Product as ProductApiType } from '@/services/product'
   import ShoppingListApi, { type ShoppingList } from '@/services/shoppingList'
 
@@ -49,10 +52,12 @@
   // Data for dialogs
   const allCategories = ref<CategoryApiType[]>([])
   const allLists = ref<ShoppingList[]>([])
+  const allPantries = ref<any[]>([])
 
   // Dialog states
   const showMoveDialog = ref(false)
   const showAddToListDialog = ref(false)
+  const showAddToPantryDialog = ref(false)
   const showCreateProductDialog = ref(false)
   const showEditCategoryDialog = ref(false)
   const showDeleteCategoryDialog = ref(false)
@@ -75,6 +80,15 @@
       value: list.id!,
       label: list.name,
       icon: list.metadata?.icon || 'mdi-format-list-bulleted',
+    }))
+  })
+
+  // Pantries for AddToPantryDialog - populated from API
+  const availablePantries = computed(() => {
+    return allPantries.value.map(pantry => ({
+      value: pantry.id!,
+      label: pantry.name,
+      icon: pantry.metadata?.icon || 'mdi-fridge',
     }))
   })
 
@@ -140,6 +154,21 @@
     } catch (error) {
       console.error('Error fetching lists:', error)
       allLists.value = []
+    }
+  }
+
+  // Fetch pantries for AddToPantryDialog (with caching)
+  async function fetchPantries () {
+    if (allPantries.value.length > 0) return // Already loaded
+
+    try {
+      const apiPantriesResponse = await PantryApi.getAll()
+      allPantries.value = Array.isArray(apiPantriesResponse)
+        ? apiPantriesResponse
+        : (apiPantriesResponse as any)?.data || []
+    } catch (error) {
+      console.error('Error fetching pantries:', error)
+      allPantries.value = []
     }
   }
 
@@ -277,6 +306,12 @@
     showAddToListDialog.value = true
   }
 
+  async function handleAddToPantry (productId: number) {
+    selectedProductId.value = productId
+    await fetchPantries()
+    showAddToPantryDialog.value = true
+  }
+
   function handleAddProduct () {
     showCreateProductDialog.value = true
   }
@@ -367,7 +402,7 @@
     selectedProductId.value = null
   }
 
-  async function confirmAddToList (data: { listId: number }) {
+  async function confirmAddToList (data: { listId: number, quantity: number }) {
     if (!selectedProductId.value) return
 
     const productToAdd = products.value.find(
@@ -388,7 +423,7 @@
       // Add product to list via API
       await ListItemApi.add(data.listId, {
         product: { id: selectedProductId.value },
-        quantity: 1, // Default quantity
+        quantity: data.quantity,
         unit: 'unit', // Default unit
       })
 
@@ -401,6 +436,39 @@
     }
 
     showAddToListDialog.value = false
+    selectedProductId.value = null
+  }
+
+  async function onAddToPantry (data: {
+    pantryId: number
+    quantity: number
+  }) {
+    if (!selectedProductId.value) return
+
+    const productName
+      = products.value.find(p => p.id === selectedProductId.value)?.name
+      || 'Product'
+    const targetPantryName
+      = allPantries.value.find(p => p.id === data.pantryId)?.name
+      || 'Pantry'
+
+    try {
+      // Add product to pantry via API
+      await PantryItemApi.add(data.pantryId, {
+        product: { id: selectedProductId.value },
+        quantity: data.quantity,
+        unit: 'units', // Default unit
+      })
+
+      showSuccess(`"${productName}" added to ${targetPantryName}!`)
+    } catch (error) {
+      console.error('Error adding product to pantry:', error)
+      showError(
+        `Failed to add "${productName}" to ${targetPantryName}. Please try again.`,
+      )
+    }
+
+    showAddToPantryDialog.value = false
     selectedProductId.value = null
   }
 
@@ -547,6 +615,7 @@
                 :completed="item.completed || false"
                 :title="item.name"
                 @add-to-list="handleAddToList"
+                @add-to-pantry="handleAddToPantry"
                 @delete="(id) => handleDeleteItem(id)"
                 @move="handleMoveProduct"
                 @rename="handleRenameProduct"
@@ -601,6 +670,14 @@
       v-model="showAddToListDialog"
       :lists="availableLists"
       @add-to-list="confirmAddToList"
+    />
+
+    <!-- Add to Pantry Dialog -->
+    <AddToPantryDialog
+      v-model="showAddToPantryDialog"
+      :pantries="availablePantries"
+      :product-name="products.find(p => p.id === selectedProductId)?.name"
+      @add-to-pantry="onAddToPantry"
     />
 
     <!-- Create Product Dialog -->

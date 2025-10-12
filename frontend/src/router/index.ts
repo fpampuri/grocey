@@ -54,9 +54,9 @@ const routes = [
   },
   {
     path: '/pantry/:id',
-    name: 'pantry-category-details',
-    component: () => import('@/views/ProductCategoryView.vue'),
-    meta: { title: 'Pantry Category Details' },
+    name: 'pantry-details',
+    component: () => import('@/views/PantryDetailsView.vue'),
+    meta: { title: 'Pantry Details' },
   },
   {
     path: '/settings',

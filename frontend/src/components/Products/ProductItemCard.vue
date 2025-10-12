@@ -8,7 +8,7 @@
     id: { type: [String, Number], required: true },
   })
 
-  const emits = defineEmits(['toggle-complete', 'delete', 'move', 'add-to-list', 'rename'])
+  const emits = defineEmits(['toggle-complete', 'delete', 'move', 'add-to-list', 'add-to-pantry', 'rename'])
 
   const localCompleted = ref(props.completed)
   watch(() => props.completed, v => (localCompleted.value = v))
@@ -28,6 +28,10 @@
 
   function addToList () {
     emits('add-to-list', props.id)
+  }
+
+  function addToPantry () {
+    emits('add-to-pantry', props.id)
   }
 
   // Inline rename state
@@ -90,7 +94,7 @@
         </div>
       </v-col>
 
-      <!-- Actions: move button + add-to-list button + delete -->
+      <!-- Actions: move button + add-to-list button + add-to-pantry button + delete -->
       <v-col cols="auto">
         <div class="actions">
           <div class="compact-button">
@@ -106,6 +110,14 @@
               icon="mdi-plus"
               title="Add to List"
               @click="addToList"
+            />
+          </div>
+
+          <div class="compact-button">
+            <StandardButton
+              icon="mdi-fridge-variant"
+              title="Add to Pantry"
+              @click="addToPantry"
             />
           </div>
 

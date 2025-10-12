@@ -11,6 +11,7 @@
 
   const emit = defineEmits(['update:modelValue', 'add-to-list'])
   const selected = ref<number | null>(null)
+  const quantity = ref(1)
   const isDropdownOpen = ref(false)
 
   const selectedList = computed(() => {
@@ -26,13 +27,24 @@
   function closeDialog () {
     emit('update:modelValue', false)
     selected.value = null
+    quantity.value = 1
     isDropdownOpen.value = false
   }
 
   function confirmAdd () {
     if (selected.value == null) return
-    emit('add-to-list', { listId: selected.value })
+    emit('add-to-list', { listId: selected.value, quantity: quantity.value })
     closeDialog()
+  }
+
+  function incrementQuantity () {
+    quantity.value++
+  }
+
+  function decrementQuantity () {
+    if (quantity.value > 1) {
+      quantity.value--
+    }
   }
 </script>
 
@@ -80,6 +92,25 @@
                 <span class="option-label">{{ list.label }}</span>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- Quantity Input -->
+        <div class="form-field">
+          <label class="field-label">Quantity</label>
+          <div class="quantity-controls">
+            <button class="quantity-btn" type="button" @click="decrementQuantity">
+              <v-icon icon="mdi-minus" />
+            </button>
+            <input
+              v-model.number="quantity"
+              class="quantity-input"
+              min="1"
+              type="number"
+            >
+            <button class="quantity-btn" type="button" @click="incrementQuantity">
+              <v-icon icon="mdi-plus" />
+            </button>
           </div>
         </div>
       </div>
@@ -259,6 +290,62 @@
 .dropdown-option:last-child {
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
+}
+
+/* Quantity Controls */
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.quantity-btn {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.quantity-btn:hover {
+  background-color: #f5f5f5;
+  border-color: #4CAF50;
+}
+
+.quantity-btn:active {
+  transform: scale(0.95);
+}
+
+.quantity-input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  text-align: center;
+  max-width: 120px;
+}
+
+.quantity-input:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+}
+
+/* Remove number input arrows */
+.quantity-input::-webkit-inner-spin-button,
+.quantity-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.quantity-input[type=number] {
+  -moz-appearance: textfield;
 }
 
 .dialog-footer {

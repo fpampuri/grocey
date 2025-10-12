@@ -5,8 +5,8 @@
   import NavBarTitle from '@/components/NavBar/NavBarTitle.vue'
   import NavListItem from '@/components/NavBar/NavListItem.vue'
   import ProfilePanel from '@/components/Profile/ProfilePanel.vue'
-  import apiClient from '@/services/api'
   import CategoryApi from '@/services/category'
+  import { PantryApi } from '@/services/pantry'
   import ShoppingListApi from '@/services/shoppingList'
 
   const route = useRoute()
@@ -54,17 +54,20 @@
   }
 
   async function getPantryName (id: string): Promise<string> {
-    try {
-      // Try to fetch from real API (pantry items would be different from categories)
-      const { data } = await apiClient.get(`/pantry/${id}`)
-      const pantryItem = data?.pantryItem ?? data
-      if (pantryItem?.name) return pantryItem.name
-      if (pantryItem?.title) return pantryItem.title
-    } catch (error) {
-      console.error('Error fetching pantry item name:', error)
+    const numericId = Number(id)
+    if (!Number.isFinite(numericId)) {
+      return `Pantry ${id}`
     }
 
-    return `Pantry Item ${id}`
+    try {
+      const pantry = await PantryApi.get(numericId)
+      if (pantry?.name) return pantry.name
+    } catch (error) {
+      console.error('Error fetching pantry name:', error)
+      return `Pantry ${id}`
+    }
+
+    return `Pantry ${id}`
   }
 
   // Function to fetch dynamic title based on route
@@ -80,7 +83,7 @@
       return
     }
 
-    if (route.name === 'pantry-category-details' && route.params.id) {
+    if (route.name === 'pantry-details' && route.params.id) {
       dynamicTitle.value = await getPantryName(route.params.id as string)
       return
     }
@@ -115,12 +118,28 @@
     }
   }
 
+  // Listen for pantry updates to refresh the title
+  function handlePantryUpdate (event: CustomEvent) {
+    const { pantryId, newName } = event.detail
+    // If we're currently viewing this pantry, update the dynamic title
+    if (
+      route.name === 'pantry-details'
+      && route.params.id === String(pantryId)
+    ) {
+      dynamicTitle.value = newName
+    }
+  }
+
   // Set up event listeners for updates
   onMounted(() => {
     window.addEventListener('list-updated', handleListUpdate as EventListener)
     window.addEventListener(
       'category-updated',
       handleCategoryUpdate as EventListener,
+    )
+    window.addEventListener(
+      'pantry-updated',
+      handlePantryUpdate as EventListener,
     )
   })
 
@@ -129,6 +148,10 @@
     window.removeEventListener(
       'category-updated',
       handleCategoryUpdate as EventListener,
+    )
+    window.removeEventListener(
+      'pantry-updated',
+      handlePantryUpdate as EventListener,
     )
   })
 
@@ -150,7 +173,7 @@
           break
         }
         case 'pantry':
-        case 'pantry-category-details': {
+        case 'pantry-details': {
           selectedItem.value = 'pantry'
 
           break
@@ -202,7 +225,7 @@
         return route.name === 'product-category-details'
       }
       case 'pantry': {
-        return route.name === 'pantry-category-details'
+        return route.name === 'pantry-details'
       }
       default: {
         return false
