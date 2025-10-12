@@ -1,6 +1,5 @@
 <script setup lang="ts">
   import { ref } from 'vue'
-  import BaseDialog from '@/components/dialog/BaseDialog.vue'
   import StandardButton from '@/components/StandardButton.vue'
 
   const props = defineProps({
@@ -73,16 +72,6 @@
     iconOptionsOpen.value = false
   }
 
-  function handleModelValueUpdate (value: boolean) {
-    if (!value) {
-      // Reset form when dialog closes
-      listName.value = ''
-      selectedIcon.value = 'mdi-cart'
-      iconOptionsOpen.value = false
-    }
-    emit('update:modelValue', value)
-  }
-
   function createList () {
     if (!listName.value.trim()) {
       return // Don't create if required fields missing
@@ -109,107 +98,161 @@
 </script>
 
 <template>
-  <BaseDialog
-    :model-value="modelValue"
-    @update:model-value="handleModelValueUpdate"
-  >
-    <!-- Dialog Header -->
-    <div class="dialog-header">
-      <h2 class="dialog-title">Create New List</h2>
-      <button class="close-button" @click="closeDialog">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
-          />
-        </svg>
-      </button>
-    </div>
-
-    <!-- Dialog Body -->
-    <div class="dialog-body">
-      <!-- List Name Field -->
-      <div class="form-field">
-        <label class="field-label">List Name</label>
-        <input
-          v-model="listName"
-          class="text-input"
-          placeholder="Enter list name"
-          type="text"
-          @keyup.enter="createList"
-        >
+  <!-- Dialog Backdrop -->
+  <div v-if="modelValue" class="dialog-backdrop" @click="closeDialog">
+    <!-- Dialog Content -->
+    <div class="dialog-container" @click.stop>
+      <!-- Dialog Header -->
+      <div class="dialog-header">
+        <h2 class="dialog-title">Create New List</h2>
+        <button class="close-button" @click="closeDialog">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" />
+          </svg>
+        </button>
       </div>
 
-      <!-- Icon Selection -->
-      <div class="form-field">
-        <label class="field-label">Icon</label>
-        <div class="icon-selector">
-          <div
-            class="selected-icon"
-            @click="iconOptionsOpen = !iconOptionsOpen"
+      <!-- Dialog Body -->
+      <div class="dialog-body">
+        <!-- List Name Field -->
+        <div class="form-field">
+          <label class="field-label">List Name</label>
+          <input
+            v-model="listName"
+            class="text-input"
+            placeholder="Enter list name"
+            type="text"
+            @keyup.enter="createList"
           >
-            <v-icon :icon="selectedIcon" size="24" />
-            <svg
-              class="dropdown-arrow"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M7,10L12,15L17,10H7Z" />
-            </svg>
-          </div>
+        </div>
 
-          <div v-if="iconOptionsOpen" class="icon-options">
-            <button
-              v-for="iconValue in iconOptions"
-              :key="iconValue"
-              class="icon-option"
-              :class="{ active: selectedIcon === iconValue }"
-              @click="selectIcon(iconValue)"
-            >
-              <v-icon :icon="iconValue" size="24" />
-            </button>
+        <!-- Icon Selection -->
+        <div class="form-field">
+          <label class="field-label">Icon</label>
+          <div class="icon-selector">
+            <div class="selected-icon" @click="iconOptionsOpen = !iconOptionsOpen">
+              <v-icon :icon="selectedIcon" size="24" />
+              <svg class="dropdown-arrow" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M7,10L12,15L17,10H7Z" />
+              </svg>
+            </div>
+
+            <div v-if="iconOptionsOpen" class="icon-options">
+              <button
+                v-for="iconValue in iconOptions"
+                :key="iconValue"
+                class="icon-option"
+                :class="{ active: selectedIcon === iconValue }"
+                @click="selectIcon(iconValue)"
+              >
+                <v-icon :icon="iconValue" size="24" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Dialog Footer -->
-    <div class="dialog-footer">
-      <button class="cancel-button" @click="closeDialog">Cancel</button>
-      <StandardButton icon="mdi-plus" title="Create List" @click="createList" />
+      <!-- Dialog Footer -->
+      <div class="dialog-footer">
+        <button class="cancel-button" @click="closeDialog">Cancel</button>
+        <StandardButton icon="mdi-plus" title="Create List" @click="createList" />
+      </div>
     </div>
-  </BaseDialog>
+  </div>
 </template>
 
 <style scoped>
-/* Custom styles specific to this dialog - icon selector */
+.dialog-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2200;
+}
 
-.form-field {
+.dialog-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow: visible;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.dialog-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+  color: #333;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.close-button:hover {
+  background-color: #f5f5f5;
+}
+
+.close-button svg {
+  width: 20px;
+  height: 20px;
+  fill: #666;
+}
+
+.dialog-body {
+  padding: 24px;
+  overflow: visible;
+}
+
+.form-field {
   margin-bottom: 20px;
 }
 
-.text-area {
+.field-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.text-input {
   width: 100%;
+  padding: 12px 16px;
   border: 2px solid #e0e0e0;
   border-radius: 8px;
-  padding: 12px 16px;
-  font-size: 14px;
-  resize: vertical;
-  min-height: 96px;
+  font-size: 16px;
   outline: none;
   transition: border-color 0.2s ease;
 }
 
-.text-area:focus {
-  border-color: var(--primary-green);
-}
-
-.toggle-row {
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
+.text-input:focus {
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
 }
 
 .icon-selector {
@@ -229,7 +272,7 @@
 }
 
 .selected-icon:hover {
-  border-color: var(--primary-green);
+  border-color: #4CAF50;
 }
 
 .dropdown-arrow {
@@ -244,11 +287,12 @@
   top: 100%;
   left: 0;
   right: 0;
+  margin-top: 4px;
   background: white;
-  border: 1px solid #e0e0e0;
+  border: 2px solid #4CAF50;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  z-index: 1001;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 2300;
   max-height: 300px;
   overflow-y: auto;
   padding: 12px;
@@ -273,13 +317,13 @@
 
 .icon-option:hover {
   background-color: #f5f5f5;
-  border-color: var(--primary-green);
+  border-color: #4CAF50;
 }
 
 .icon-option.active {
   background-color: #e8f5e8;
-  border-color: var(--primary-green);
-  color: var(--primary-green);
+  border-color: #4CAF50;
+  color: #4CAF50;
 }
 
 .dialog-footer {
@@ -289,7 +333,7 @@
   gap: 12px;
   padding: 20px 24px;
   border-top: 1px solid #e0e0e0;
-  background-color: white;
+  background-color: #fafafa;
 }
 
 .cancel-button {
@@ -304,7 +348,7 @@
 }
 
 .cancel-button:hover {
-  background-color: white;
+  background-color: #f5f5f5;
   border-color: #999;
 }
 </style>

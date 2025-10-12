@@ -298,8 +298,9 @@
   top: 100%;
   left: 0;
   right: 0;
+  margin-top: 4px;
   background: white;
-  border: 1px solid #e0e0e0;
+  border: 2px solid #4CAF50;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 2201;
