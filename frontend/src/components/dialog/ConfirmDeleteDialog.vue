@@ -11,6 +11,8 @@
     description?: string // Custom description text
     confirmText?: string // Custom confirm button text
     loading?: boolean // Loading state during deletion
+    icon?: string // Custom icon for the confirm button
+    buttonColor?: string // Custom color for the confirm button
   }
 
   const props = withDefaults(defineProps<Props>(), {
@@ -20,6 +22,8 @@
     description: 'This action cannot be undone.',
     confirmText: 'Delete',
     loading: false,
+    icon: 'mdi-delete',
+    buttonColor: 'red',
   })
 
   const emit = defineEmits<{
@@ -90,9 +94,9 @@
         Cancel
       </button>
       <StandardButton
-        class="red-button"
+        :class="`${buttonColor}-button`"
         :disabled="loading"
-        icon="mdi-delete"
+        :icon="icon"
         :loading="loading"
         :title="confirmButtonText"
         @click="confirmDelete"
@@ -105,6 +109,10 @@
 
 :deep(.red-button) {
   background-color: red !important;
+}
+
+:deep(.green-button) {
+  background-color: #4caf50 !important;
 }
 
 .text-medium-emphasis {

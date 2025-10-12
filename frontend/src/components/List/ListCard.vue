@@ -10,10 +10,10 @@
     showEdit: { type: Boolean, default: true },
     showShare: { type: Boolean, default: true },
     showSendToHistory: { type: Boolean, default: true },
-    showMarkUncompleted: { type: Boolean, default: false },
+    showRestore: { type: Boolean, default: false },
   })
 
-  const emits = defineEmits(['click', 'toggle-star', 'toggle-selection', 'edit', 'delete', 'share', 'send-to-history', 'mark-uncompleted'])
+  const emits = defineEmits(['click', 'toggle-star', 'toggle-selection', 'edit', 'delete', 'share', 'send-to-history', 'restore'])
 
   // local reactive starred state so UI updates immediately
   const localStarred = ref(props.starred)
@@ -105,11 +105,11 @@
                 <v-list-item-title class="menu-title">Mark as Completed</v-list-item-title>
               </v-list-item>
 
-              <v-list-item v-if="showMarkUncompleted" class="menu-item" @click="$emit('mark-uncompleted')">
+              <v-list-item v-if="showRestore" class="menu-item" @click="$emit('restore')">
                 <template #prepend>
                   <v-icon class="menu-icon">mdi-backup-restore</v-icon>
                 </template>
-                <v-list-item-title class="menu-title">Mark as Uncompleted</v-list-item-title>
+                <v-list-item-title class="menu-title">Restore</v-list-item-title>
               </v-list-item>
 
               <v-list-item class="menu-item delete-item" @click="$emit('delete')">

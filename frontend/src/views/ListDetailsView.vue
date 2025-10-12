@@ -55,6 +55,20 @@
   const itemsError = ref<string | null>(null)
   const showAddItemDialog = ref(false)
 
+  // Computed property to sort items: unpurchased alphabetically first, then purchased alphabetically
+  const sortedListItems = computed(() => {
+    return [...listItems.value].sort((a, b) => {
+      // First, sort by completed status (false comes before true)
+      if (a.completed !== b.completed) {
+        return a.completed ? 1 : -1
+      }
+      // Then, sort alphabetically by product name
+      const nameA = (a.productName || '').toLowerCase()
+      const nameB = (b.productName || '').toLowerCase()
+      return nameA.localeCompare(nameB)
+    })
+  })
+
   const DEFAULT_CATEGORY_NAME = 'Miscellaneous'
   const DEFAULT_CATEGORY_ICON = 'mdi-shape'
   let cachedDefaultCategoryId: number | null | undefined
@@ -503,9 +517,9 @@
             >
               {{ itemsError }}
             </v-alert>
-            <div v-else-if="listItems.length > 0">
+            <div v-else-if="sortedListItems.length > 0">
               <ListItemCard
-                v-for="item in listItems"
+                v-for="item in sortedListItems"
                 :id="item.id"
                 :key="item.id"
                 :completed="item.completed"

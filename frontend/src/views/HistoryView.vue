@@ -250,7 +250,7 @@
     }
   }
 
-  function handleMarkUncompleted (listId: number) {
+  function handleRestore (listId: number) {
     const list = lists.value.find(l => l.id === listId)
     if (list) {
       toRestoreList.value = list
@@ -262,7 +262,7 @@
     showBulkDeleteDialog.value = true
   }
 
-  async function handleBulkMarkUncompleted () {
+  async function handleBulkRestore () {
     try {
       const listIds = Array.from(selectedLists.value)
       let restoredCount = 0
@@ -312,19 +312,19 @@
       if (restoredCount === listIds.length) {
         showSuccess(
           restoredCount === 1 
-            ? 'List marked as uncompleted successfully' 
-            : `${restoredCount} lists marked as uncompleted successfully`
+            ? 'List restored successfully' 
+            : `${restoredCount} lists restored successfully`
         )
       } else if (restoredCount > 0) {
         showSuccess(
-          `${restoredCount} of ${listIds.length} lists marked as uncompleted successfully`
+          `${restoredCount} of ${listIds.length} lists restored successfully`
         )
       } else {
-        showError('Failed to mark lists as uncompleted')
+        showError('Failed to restore lists')
       }
     } catch (error) {
-      console.error('Error in bulk mark uncompleted:', error)
-      showError('Failed to mark lists as uncompleted')
+      console.error('Error in bulk restore:', error)
+      showError('Failed to restore lists')
     }
   }
 
@@ -501,9 +501,9 @@
         <v-col v-if="selectedCount > 0" cols="auto">
           <StandardButton
             icon="mdi-backup-restore"
-            :title="`Mark as Uncompleted (${selectedCount})`"
+            :title="`Restore (${selectedCount})`"
             variant="secondary"
-            @click="handleBulkMarkUncompleted"
+            @click="handleBulkRestore"
           />
         </v-col>
         <v-spacer />
@@ -558,10 +558,10 @@
             :show-edit="false"
             :show-share="false"
             :show-send-to-history="false"
-            :show-mark-uncompleted="true"
+            :show-restore="true"
             @click="() => handleListClick(item)"
             @delete="() => handleDeleteList(item.id)"
-            @mark-uncompleted="() => handleMarkUncompleted(item.id)"
+            @restore="() => handleRestore(item.id)"
             @toggle-selection="(isSelected) => handleSelectionToggle(item.id, isSelected)"
           />
         </v-col>
@@ -611,6 +611,8 @@
       item-type="list"
       title="Restore List"
       confirm-text="Restore"
+      icon="mdi-backup-restore"
+      button-color="green"
       @confirm="confirmRestore"
       @cancel="cancelRestore"
     />
