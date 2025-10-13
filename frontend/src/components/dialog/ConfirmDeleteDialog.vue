@@ -212,4 +212,56 @@
   background-color: white;
   border-color: #999;
 }
+
+/* Dark Mode Styles */
+.v-theme--dark .text-medium-emphasis {
+  color: var(--text-secondary);
+}
+
+.v-theme--dark .selected-icon {
+  background: var(--primary-lightgrey);
+  border-color: var(--primary-lightgrey);
+  color: var(--text-primary);
+}
+
+.v-theme--dark .selected-icon:hover {
+  border-color: var(--primary-green);
+}
+
+.v-theme--dark .selected-label {
+  color: var(--text-primary);
+}
+
+.v-theme--dark .dropdown-arrow {
+  fill: var(--text-secondary);
+}
+
+.v-theme--dark .icon-options {
+  background: var(--primary-lightgrey);
+  border-color: var(--primary-lightgrey);
+}
+
+.v-theme--dark .icon-option:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.v-theme--dark .icon-option.active {
+  background-color: rgba(102, 187, 106, 0.2);
+  color: var(--primary-green);
+}
+
+.v-theme--dark .dialog-footer {
+  background-color: rgb(var(--v-theme-background));
+}
+
+.v-theme--dark .cancel-button {
+  background: var(--primary-lightgrey);
+  color: var(--text-primary);
+  border-color: var(--primary-lightgrey);
+}
+
+.v-theme--dark .cancel-button:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--text-secondary);
+}
 </style>

@@ -351,4 +351,86 @@
   background-color: #f5f5f5;
   border-color: #999;
 }
+
+/* Dark Mode Styles */
+.v-theme--dark .dialog-container {
+  background: rgb(var(--v-theme-surface));
+  color: var(--text-primary);
+}
+
+.v-theme--dark .dialog-header {
+  border-bottom: 1px solid var(--primary-lightgrey);
+}
+
+.v-theme--dark .dialog-title {
+  color: var(--text-primary);
+}
+
+.v-theme--dark .close-button:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.v-theme--dark .close-button svg {
+  fill: var(--text-secondary);
+}
+
+.v-theme--dark .field-label {
+  color: var(--text-primary);
+}
+
+.v-theme--dark .text-input {
+  background: var(--primary-lightgrey);
+  color: var(--text-primary);
+  border-color: var(--primary-lightgrey);
+}
+
+.v-theme--dark .text-input:focus {
+  border-color: var(--primary-green);
+}
+
+.v-theme--dark .selected-icon {
+  background: var(--primary-lightgrey);
+  border-color: var(--primary-lightgrey);
+  color: var(--text-primary);
+}
+
+.v-theme--dark .selected-icon:hover {
+  border-color: var(--primary-green);
+}
+
+.v-theme--dark .dropdown-arrow {
+  fill: var(--text-secondary);
+}
+
+.v-theme--dark .icon-options {
+  background: var(--primary-lightgrey);
+  border-color: var(--primary-green);
+}
+
+.v-theme--dark .icon-option:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--primary-green);
+}
+
+.v-theme--dark .icon-option.active {
+  background-color: rgba(102, 187, 106, 0.2);
+  border-color: var(--primary-green);
+  color: var(--primary-green);
+}
+
+.v-theme--dark .dialog-footer {
+  border-top: 1px solid var(--primary-lightgrey);
+  background-color: rgb(var(--v-theme-background));
+}
+
+.v-theme--dark .cancel-button {
+  background: var(--primary-lightgrey);
+  color: var(--text-primary);
+  border-color: var(--primary-lightgrey);
+}
+
+.v-theme--dark .cancel-button:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--text-secondary);
+}
 </style>

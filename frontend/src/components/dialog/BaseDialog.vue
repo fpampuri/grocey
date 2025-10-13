@@ -181,4 +181,62 @@
   background-color: #f5f5f5;
   border-color: #999;
 }
+
+/* Dark Mode Styles */
+.v-theme--dark .dialog-container {
+  background: rgb(var(--v-theme-surface));
+  color: var(--text-primary);
+}
+
+.v-theme--dark .dialog-container :deep(.dialog-header) {
+  border-bottom: 1px solid var(--primary-lightgrey);
+}
+
+.v-theme--dark .dialog-container :deep(.dialog-title) {
+  color: var(--text-primary);
+}
+
+.v-theme--dark .dialog-container :deep(.close-button:hover) {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.v-theme--dark .dialog-container :deep(.close-button svg) {
+  fill: var(--text-secondary);
+}
+
+.v-theme--dark .dialog-container :deep(.dialog-footer) {
+  border-top: 1px solid var(--primary-lightgrey);
+  background-color: rgb(var(--v-theme-background));
+}
+
+.v-theme--dark .dialog-container :deep(.field-label) {
+  color: var(--text-primary);
+}
+
+.v-theme--dark .dialog-container :deep(.text-input) {
+  background: var(--primary-lightgrey);
+  color: var(--text-primary);
+  border-color: var(--primary-lightgrey);
+}
+
+.v-theme--dark .dialog-container :deep(.text-input:focus) {
+  border-color: var(--primary-green);
+}
+
+.v-theme--dark .dialog-container :deep(.select-input) {
+  background: var(--primary-lightgrey);
+  color: var(--text-primary);
+  border-color: var(--primary-lightgrey);
+}
+
+.v-theme--dark .dialog-container :deep(.cancel-button) {
+  background: var(--primary-lightgrey);
+  color: var(--text-primary);
+  border-color: var(--primary-lightgrey);
+}
+
+.v-theme--dark .dialog-container :deep(.cancel-button:hover) {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: var(--text-secondary);
+}
 </style>

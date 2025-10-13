@@ -343,4 +343,39 @@
     justify-content: center;
   }
 }
+
+/* Dark Mode Styles */
+.v-theme--dark .share-description {
+  color: var(--text-secondary);
+}
+
+.v-theme--dark .error-text {
+  color: var(--delete-red);
+}
+
+.v-theme--dark .add-email-button:disabled {
+  background: var(--primary-lightgrey);
+}
+
+.v-theme--dark .email-list {
+  background: var(--primary-lightgrey);
+  border-color: var(--primary-lightgrey);
+}
+
+.v-theme--dark .email-item {
+  background: rgb(var(--v-theme-background));
+  border-color: var(--primary-lightgrey);
+}
+
+.v-theme--dark .email-text {
+  color: var(--text-primary);
+}
+
+.v-theme--dark .remove-email-button:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.v-theme--dark .remove-icon {
+  fill: var(--text-secondary);
+}
 </style>

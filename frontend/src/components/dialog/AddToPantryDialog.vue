@@ -409,4 +409,86 @@
 .quantity-input[type=number] {
   -moz-appearance: textfield;
 }
+
+/* Dark Mode Styles */
+.v-theme--dark .dialog-container {
+  background: rgb(var(--v-theme-surface));
+  color: var(--text-primary);
+}
+
+.v-theme--dark .dialog-header {
+  border-bottom: 1px solid var(--primary-lightgrey);
+}
+
+.v-theme--dark .dialog-title {
+  color: var(--text-primary);
+}
+
+.v-theme--dark .close-button:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.v-theme--dark .close-button svg {
+  fill: var(--text-secondary);
+}
+
+.v-theme--dark .form-label {
+  color: var(--text-primary);
+}
+
+.v-theme--dark .dropdown-toggle {
+  background: var(--primary-lightgrey);
+  border-color: var(--primary-lightgrey);
+  color: var(--text-primary);
+}
+
+.v-theme--dark .dropdown-toggle:hover {
+  border-color: var(--primary-green);
+}
+
+.v-theme--dark .dropdown-toggle:focus {
+  border-color: var(--primary-green);
+}
+
+.v-theme--dark .dropdown-menu {
+  background: var(--primary-lightgrey);
+  border-color: var(--primary-lightgrey);
+}
+
+.v-theme--dark .dropdown-item {
+  color: var(--text-primary);
+}
+
+.v-theme--dark .dropdown-item:hover {
+  background-color: rgba(102, 187, 106, 0.2);
+}
+
+.v-theme--dark .quantity-controls {
+  background: var(--primary-lightgrey);
+  border-color: var(--primary-lightgrey);
+}
+
+.v-theme--dark .quantity-btn {
+  color: var(--text-secondary);
+  border-color: var(--primary-lightgrey);
+}
+
+.v-theme--dark .quantity-btn:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--primary-green);
+}
+
+.v-theme--dark .quantity-input {
+  background: var(--primary-lightgrey);
+  color: var(--text-primary);
+  border-color: var(--primary-lightgrey);
+}
+
+.v-theme--dark .quantity-input:focus {
+  border-color: var(--primary-green);
+}
+
+.v-theme--dark .dialog-footer {
+  border-top: 1px solid var(--primary-lightgrey);
+}
 </style>
