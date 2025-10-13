@@ -657,7 +657,7 @@
               density="compact"
               hide-details
               :items="['Date', 'Name', 'Items']"
-              style="min-width: 100px"
+              class="u-min-width-100"
               variant="outlined"
             />
           </div>

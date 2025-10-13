@@ -8,7 +8,7 @@
   import ToastNotification from '@/components/ToastNotification.vue'
   import { useToast } from '@/composables/useToast'
   import ListItemApi from '@/services/listItem'
-  import ShoppingListApi from '@/services/shoppingList'
+  import ShoppingListApi, { type ShoppingListMetadata } from '@/services/shoppingList'
 
   const router = useRouter()
   const { showToast, toastMessage, toastType, showSuccess, showError } = useToast()
@@ -20,6 +20,8 @@
     role: 'owner' | 'collaborator'
   }
 
+  const DEFAULT_ICON = 'mdi-format-list-bulleted'
+
   interface ShoppingList {
     id: number
     name: string
@@ -27,7 +29,7 @@
     description: string
     recurring: boolean
     icon: string
-    metadata: Record<string, any>
+    metadata: ShoppingListMetadata
     itemsCount: number
     users: ListUser[]
     createdBy: number | null
@@ -89,8 +91,18 @@
   }
 
   function mapApiList (apiList: any): ShoppingList {
-    const metadata = (apiList?.metadata ?? {}) as Record<string, any>
-    const icon = metadata.icon ?? 'mdi-format-list-bulleted'
+    const metadataSource = (apiList?.metadata ?? {}) as Partial<ShoppingListMetadata>
+    const icon = typeof metadataSource.icon === 'string' ? metadataSource.icon : DEFAULT_ICON
+    const itemsCountFromSource = typeof metadataSource.itemsCount === 'number'
+      ? metadataSource.itemsCount
+      : Number.isFinite(apiList?.itemsCount)
+        ? Number(apiList.itemsCount)
+        : 0
+    const metadata: ShoppingListMetadata = {
+      ...metadataSource,
+      icon,
+      itemsCount: itemsCountFromSource,
+    }
     const isFavorite = Boolean(metadata.isFavorite)
 
     const users: ListUser[] = []
@@ -121,7 +133,7 @@
       recurring: Boolean(apiList.recurring),
       icon,
       metadata,
-      itemsCount: 0, // Will be populated later
+  itemsCount: metadata.itemsCount ?? 0, // Will be populated later if needed
       users,
       createdBy: apiList?.owner?.id ?? null,
       createdAt: apiList.createdAt ?? new Date().toISOString(),
@@ -201,7 +213,7 @@
             ? (response as any).data
             : []
 
-      const mapped = rawLists.map(mapApiList)
+  const mapped: ShoppingList[] = rawLists.map(mapApiList)
 
       // Filter only completed lists (status === 'completed' in metadata)
       const completedLists = mapped.filter(list =>
@@ -214,6 +226,7 @@
           listItemCountCache.set(list.id, list.itemsCount)
         } else {
           list.itemsCount = await fetchListItemsCount(list.id)
+          list.metadata.itemsCount = list.itemsCount
         }
 
         // Ensure all items in this completed list are marked as completed
@@ -262,6 +275,22 @@
     showBulkDeleteDialog.value = true
   }
 
+  function buildMetadataForUpdate (
+    list: ShoppingList,
+    overrides: Partial<ShoppingListMetadata> = {},
+  ): ShoppingListMetadata {
+    const base = list.metadata ?? { icon: DEFAULT_ICON, itemsCount: list.itemsCount ?? 0 }
+    const icon = overrides.icon ?? base.icon ?? DEFAULT_ICON
+    const itemsCount = overrides.itemsCount ?? list.itemsCount ?? base.itemsCount ?? 0
+
+    return {
+      ...base,
+      ...overrides,
+      icon,
+      itemsCount,
+    }
+  }
+
   async function handleBulkRestore () {
     try {
       const listIds = Array.from(selectedLists.value)
@@ -278,10 +307,7 @@
             name: list.name,
             description: list.description,
             recurring: list.recurring,
-            metadata: {
-              ...list.metadata,
-              status: 'active',
-            },
+            metadata: buildMetadataForUpdate(list, { status: 'active' }),
           })
 
           // Mark all items as not purchased (reset)
@@ -356,10 +382,7 @@
 
     try {
       // Update list metadata to mark as active
-      const updatedMetadata = {
-        ...toRestoreList.value.metadata,
-        status: 'active',
-      }
+      const updatedMetadata = buildMetadataForUpdate(toRestoreList.value, { status: 'active' })
 
       await ShoppingListApi.modify(targetId, {
         name: toRestoreList.value.name,
@@ -515,7 +538,7 @@
               density="compact"
               hide-details
               :items="['Date', 'Name', 'Items']"
-              style="min-width: 100px"
+              class="u-min-width-100"
               variant="outlined"
             />
           </div>

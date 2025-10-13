@@ -67,3 +67,12 @@ body,
 .v-theme--dark .setting-row:hover {
   background-color: rgba(255, 255, 255, 0.08) !important;
 }
+
+/* Utility helpers */
+.u-min-width-100 {
+  min-width: 100px !important;
+}
+
+.u-gap-8 {
+  gap: 8px;
+}

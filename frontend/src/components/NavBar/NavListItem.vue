@@ -16,10 +16,13 @@
   <v-hover v-slot="{ isHovering, props }">
     <v-list-item
       v-bind="props"
-      :class="['py-2 mx-2 my-3 nav-item', (selected || isHovering) ? 'selected' : '']"
+      :class="[
+        'py-2 mx-2 my-3 nav-item',
+        (selected || isHovering) ? 'selected' : '',
+        (isHovering && !selected) ? 'nav-item--hover' : ''
+      ]"
       link
       rounded="lg"
-      :style="{ opacity: (isHovering && !selected) ? 0.6 : 1 }"
       :to="to"
       @click="onClick"
     >
@@ -38,6 +41,7 @@
 <style scoped>
 .nav-item {
   transition: background-color 150ms ease, color 150ms ease, opacity 150ms ease;
+  opacity: 1;
 }
 .nav-item .v-icon,
 .nav-item .v-list-item-title {
@@ -47,6 +51,10 @@
 /* Selected state styling */
 .nav-item.selected {
   background-color: var(--primary-green) !important;
+}
+
+.nav-item--hover {
+  opacity: 0.6;
 }
 
 /* Icon styling */

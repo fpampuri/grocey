@@ -422,7 +422,7 @@
           />
         </v-col>
         <v-spacer />
-        <v-col class="d-flex justify-end align-center" style="gap: 8px">
+        <v-col class="d-flex justify-end align-center u-gap-8">
           <StandardButton
             icon="mdi-plus"
             title="Add Item"

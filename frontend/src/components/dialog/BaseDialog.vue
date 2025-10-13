@@ -32,7 +32,7 @@
   <!-- Dialog Backdrop -->
   <div v-if="modelValue" class="dialog-backdrop" @click="handleBackdropClick">
     <!-- Dialog Container with consistent styling -->
-    <div class="dialog-container" :style="{ maxWidth }" @click.stop>
+    <div class="dialog-container" @click.stop>
       <!-- Completely customizable content via slot -->
       <slot />
     </div>
@@ -58,6 +58,7 @@
   border-radius: 12px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   width: 90%;
+  max-width: v-bind(maxWidth);
   max-height: 90vh;
   overflow: hidden;
   display: flex;

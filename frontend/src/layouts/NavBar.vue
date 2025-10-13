@@ -236,9 +236,8 @@
 
 <template>
   <v-navigation-drawer
-    class="d-flex flex-column"
+    class="d-flex flex-column nav-drawer"
     permanent
-    style="height: 100vh"
   >
     <div class="d-flex flex-column h-100">
       <!-- Header -->
@@ -248,7 +247,6 @@
       <v-list
         class="d-flex flex-column flex-grow-1 overflow-hidden nav-list"
         nav
-        style="min-height: 0"
       >
         <!-- Lists Button -->
         <NavListItem
@@ -308,6 +306,14 @@
 </template>
 
 <style scoped>
+.nav-drawer {
+  height: 100vh;
+}
+
+.nav-list {
+  min-height: 0;
+}
+
 /* Target the specific issue - v-list-item height constraints */
 .nav-list :deep(.v-list-item) {
   min-height: auto !important;
