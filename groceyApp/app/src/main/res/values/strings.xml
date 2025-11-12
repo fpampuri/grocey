@@ -1,3 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">groceyApp</string>
+    <string name="prompt_name">What\'s your name?</string>
+    <string name="name_label">Name</string>
+    <string name="confirm_button">OK</string>
+    <string name="greeting_unknown">friend</string>
+    <string name="greeting_message">Hello %1$s!</string>
 </resources>
