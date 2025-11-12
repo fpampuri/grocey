@@ -6,4 +6,16 @@
     <string name="confirm_button">OK</string>
     <string name="greeting_unknown">friend</string>
     <string name="greeting_message">Hello %1$s!</string>
+    <string name="search_lists_placeholder">Search lists</string>
+    <string name="search_pantry_placeholder">Search pantry</string>
+    <string name="search_products_placeholder">Search products</string>
+    <string name="filter_content_description">Filter results</string>
+    <string name="lists_tab">Lists</string>
+    <string name="pantry_tab">Pantry</string>
+    <string name="products_tab">Products</string>
+    <string name="add_list">Add List</string>
+    <string name="add_pantry_item">Add Pantry Item</string>
+    <string name="add_product">Add Product</string>
+    <string name="shared_label">Shared</string>
+    <string name="items_count">%1$d items</string>
 </resources>

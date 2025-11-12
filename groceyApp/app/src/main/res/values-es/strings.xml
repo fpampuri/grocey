@@ -6,4 +6,16 @@
     <string name="confirm_button">OK</string>
     <string name="greeting_unknown">desconocido</string>
     <string name="greeting_message">¡Hola %1$s!</string>
+    <string name="search_lists_placeholder">Buscar listas</string>
+    <string name="search_pantry_placeholder">Buscar despensa</string>
+    <string name="search_products_placeholder">Buscar productos</string>
+    <string name="filter_content_description">Filtrar resultados</string>
+    <string name="lists_tab">Listas</string>
+    <string name="pantry_tab">Despensa</string>
+    <string name="products_tab">Productos</string>
+    <string name="add_list">Nueva lista</string>
+    <string name="add_pantry_item">Agregar ítem de despensa</string>
+    <string name="add_product">Agregar producto</string>
+    <string name="shared_label">Compartida</string>
+    <string name="items_count">%1$d ítems</string>
 </resources>
