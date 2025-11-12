@@ -1,132 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shopping List Shared - Grocey</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: linear-gradient(135deg, rgba(7, 138, 7, 0.05), rgba(76, 175, 80, 0.03)); padding: 40px 20px; }
-        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; box-shadow: 0 8px 32px rgba(7, 138, 7, 0.15); overflow: hidden; }
-        .header { background: linear-gradient(135deg, rgb(7, 138, 7), rgb(76, 175, 80)); color: white; padding: 40px 30px; text-align: center; }
-        .logo-section { display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
-        .logo { width: 48px; height: 48px; margin-right: 16px; }
-        .brand-name { font-size: 32px; font-weight: 700; margin: 0; }
-        .title-msg { font-size: 24px; margin: 10px 0 0 0; font-weight: 400; opacity: 0.95; display: flex; align-items: center; justify-content: center; gap: 12px; }
-        .share-icon { width: 28px; height: 28px; }
-        .content { padding: 40px 30px; text-align: center; }
-        .greeting { font-size: 24px; font-weight: 600; color: rgb(7, 138, 7); margin-bottom: 20px; }
-        .share-info { background: rgba(7, 138, 7, 0.05); border-left: 4px solid rgb(7, 138, 7); padding: 25px; margin: 25px 0; border-radius: 0 8px 8px 0; text-align: left; }
-        .share-detail { margin: 10px 0; display: flex; align-items: center; gap: 12px; }
-        .detail-icon { width: 20px; height: 20px; color: rgb(7, 138, 7); flex-shrink: 0; }
-        .detail-text { font-size: 16px; }
-        .list-name { background: white; border: 2px solid rgb(7, 138, 7); border-radius: 8px; padding: 15px 20px; margin: 20px 0; font-weight: 700; font-size: 18px; color: rgb(7, 138, 7); }
-        .capabilities { background: rgb(248, 250, 252); border-radius: 12px; padding: 25px; margin: 25px 0; }
-        .capabilities-title { color: rgb(7, 138, 7); font-weight: 600; margin-bottom: 15px; font-size: 18px; display: flex; align-items: center; gap: 10px; }
-        .capabilities-list { color: #666; font-size: 15px; text-align: left; }
-        .capabilities-list li { margin: 8px 0; display: flex; align-items: center; gap: 10px; }
-        .check-icon { width: 16px; height: 16px; color: rgb(7, 138, 7); }
-        .cta-section { margin: 30px 0; }
-        .cta-text { color: #666; margin-bottom: 20px; font-size: 16px; }
-        .cta-button { background: linear-gradient(135deg, rgb(7, 138, 7), rgb(76, 175, 80)); color: white; padding: 15px 30px; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; text-decoration: none; display: inline-block; transition: transform 0.2s ease; }
-        .cta-button:hover { transform: translateY(-2px); text-decoration: none; color: white; }
-        .footer { background: rgb(248, 250, 252); padding: 25px 30px; text-align: center; border-top: 1px solid #eee; }
-        .footer-text { color: #888; font-size: 14px; }
-        .highlight { color: rgb(7, 138, 7); font-weight: 600; }
-        @media (max-width: 600px) { .container { margin: 0 10px; } .header { padding: 30px 20px; } .content { padding: 30px 20px; } .brand-name { font-size: 28px; } .title-msg { font-size: 20px; } .greeting { font-size: 20px; } }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <div class="logo-section">
-                <svg class="logo" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M17,18C17.56,18 18,18.44 18,19C18,19.56 17.56,20 17,20C16.44,20 16,19.56 16,19C16,18.44 16.44,18 17,18M1,2V4H3L6.6,11.59L5.24,14.04C5.09,14.32 5,14.65 5,15A2,2 0 0,0 7,17H19V15H7.42A0.25,0.25 0 0,1 7.17,14.75C7.17,14.7 7.18,14.66 7.2,14.63L8.1,13H15.55C16.3,13 16.96,12.58 17.3,11.97L20.88,5H5.21L4.27,3H1M7,18C7.56,18 8,18.44 8,19C8,19.56 7.56,20 7,20C6.44,20 6,19.56 6,19C6,18.44 6.44,18 7,18Z" />
-                </svg>
-                <h1 class="brand-name">Grocey</h1>
-            </div>
-            <h2 class="title-msg">
-                <svg class="share-icon" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M18,16.08C17.24,16.08 16.56,16.38 16.04,16.85L8.91,12.7C8.96,12.47 9,12.24 9,12C9,11.76 8.96,11.53 8.91,11.3L15.96,7.19C16.5,7.69 17.21,8 18,8A3,3 0 0,0 21,5A3,3 0 0,0 18,2A3,3 0 0,0 15,5C15,5.24 15.04,5.47 15.09,5.7L8.04,9.81C7.5,9.31 6.79,9 6,9A3,3 0 0,0 3,12A3,3 0 0,0 6,15C6.79,15 7.5,14.69 8.04,14.19L15.16,18.34C15.11,18.55 15.08,18.77 15.08,19C15.08,20.61 16.39,21.91 18,21.91C19.61,21.91 20.92,20.61 20.92,19A2.92,2.92 0 0,0 18,16.08Z" />
-                </svg>
-                Shopping List Shared!
-            </h2>
-        </div>
-        
-        <div class="content">
-            <div class="greeting">Hello <%RECIPIENT_NAME%>! 👋</div>
-            
-            <div class="share-info">
-                <div class="share-detail">
-                    <svg class="detail-icon" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" />
-                    </svg>
-                    <span class="detail-text"><strong><%OWNER_NAME%></strong> has shared a shopping list with you</span>
-                </div>
-                
-                <div class="share-detail">
-                    <svg class="detail-icon" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M17,17H7V15H17V17M17,13H7V11H17V13M17,9H7V7H17V9Z" />
-                    </svg>
-                    <span class="detail-text">List name:</span>
-                </div>
-            </div>
-            
-            <div class="list-name">"<%LIST_NAME%>"</div>
-            
-            <div class="capabilities">
-                <div class="capabilities-title">
-                    <svg class="check-icon" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
-                    </svg>
-                    What you can do now:
-                </div>
-                <ul class="capabilities-list">
-                    <li>
-                        <svg class="check-icon" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
-                        </svg>
-                        View all items in the shopping list
-                    </li>
-                    <li>
-                        <svg class="check-icon" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
-                        </svg>
-                        Add new items to the list
-                    </li>
-                    <li>
-                        <svg class="check-icon" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
-                        </svg>
-                        Mark items as purchased
-                    </li>
-                    <li>
-                        <svg class="check-icon" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
-                        </svg>
-                        Edit or remove existing items
-                    </li>
-                    <li>
-                        <svg class="check-icon" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z" />
-                        </svg>
-                        Collaborate in real-time with <%OWNER_NAME%>
-                    </li>
-                </ul>
-            </div>
-            
-            <div class="cta-section">
-                <p class="cta-text">Ready to start shopping together? Open the Grocey app to access your shared list!</p>
-                <a href="#" class="cta-button">Open Grocey App</a>
-            </div>
-        </div>
-        
-        <div class="footer">
-            <p class="footer-text">
-                This list will appear in your <span class="highlight">Shared Lists</span> section.<br>
-                Need help? Contact us at <span class="highlight">support@grocey.com</span>
-            </p>
-        </div>
-    </div>
-</body>
-</html>
+<div style="text-align: center;">
+    <h1>
+        <strong>Shopping List Shared with You</strong>
+    </h1>
+    <p>
+        <strong>Hello <%RECIPIENT_NAME%>!</strong>
+    </p>
+    <p>
+        <strong><%OWNER_NAME%></strong> has shared the shopping list <strong>"<%LIST_NAME%>"</strong> with you.
+    </p>
+    <p>
+        You can now view and manage items in this shopping list.
+    </p>
+</div>

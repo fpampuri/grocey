@@ -1,7 +1,0 @@
-/node_modules
-/db/exercise.sqlite3
-package-lock.json
-build
-.idea
-.env
-src/db/*.sqlite

@@ -120,19 +120,7 @@ export async function getListItemsService(filterOptions: ListItemFilterOptions):
             order: orderOptions,
         });
 
-        // Sort items: unpurchased items alphabetically first, then purchased items alphabetically
-        const sortedItems = items.sort((a, b) => {
-            // First, sort by purchased status (false comes before true)
-            if (a.purchased !== b.purchased) {
-                return a.purchased ? 1 : -1;
-            }
-            // Then, sort alphabetically by product name (using Spanish locale)
-            const nameA = (a.product?.name || '').toLowerCase();
-            const nameB = (b.product?.name || '').toLowerCase();
-            return nameA.localeCompare(nameB, 'es');
-        });
-
-        const formattedItems = sortedItems.map(i => i.getFormattedListItem());
+        const formattedItems = items.map(i => i.getFormattedListItem());
         
         return {
             data: formattedItems,
@@ -203,11 +191,6 @@ export async function updateListItemService(
 
         await queryRunner.manager.save(item);
         await queryRunner.commitTransaction();
-
-        const refreshed = await queryRunner.manager.findOne(ListItem, {
-            where: { id: item.id },
-            relations: ["list", "list.owner"],
-        });
 
         return item.getFormattedListItem();
     } catch (err) {
