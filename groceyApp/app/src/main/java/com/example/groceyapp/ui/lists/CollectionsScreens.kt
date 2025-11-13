@@ -53,6 +53,7 @@ import com.example.groceyapp.ui.components.CategoryCardData
 import com.example.groceyapp.ui.components.ListCard
 import com.example.groceyapp.ui.components.ListCardData
 import com.example.groceyapp.ui.components.ProductItemData
+import com.example.groceyapp.ui.components.TopSearchBar
 import com.example.groceyapp.ui.theme.BrandGreenLight
 import com.example.groceyapp.ui.theme.BrandGreenLightDarkTheme
 
@@ -95,7 +96,7 @@ fun ListsScreen(
         Column(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            SearchRow(
+            TopSearchBar(
                 placeholder = stringResource(R.string.search_lists_placeholder),
                 filterDescription = stringResource(R.string.filter_content_description),
                 onFilterClick = onFilterClick,
@@ -218,7 +219,7 @@ private fun CollectionContent(
         Column(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            SearchRow(
+            TopSearchBar(
                 placeholder = searchPlaceholder,
                 filterDescription = filterDescription,
                 onFilterClick = onFilterClick,
@@ -236,83 +237,6 @@ private fun CollectionContent(
                     CategoryCard(item)
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun SearchRow(
-    placeholder: String,
-    filterDescription: String,
-    onFilterClick: () -> Unit,
-    searchQuery: String,
-    onSearchQueryChange: (String) -> Unit,
-    onMenuClick: () -> Unit
-) {
-    val lightGreenBg = if (isSystemInDarkTheme()) {
-        BrandGreenLightDarkTheme.copy(alpha = 0.2f)
-    } else {
-        BrandGreenLight.copy(alpha = 0.2f)
-    }
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        IconButton(
-            onClick = onMenuClick,
-            modifier = Modifier
-                .clip(RoundedCornerShape(16.dp))
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-        ) {
-            Icon(
-                imageVector = Icons.Default.MoreVert,
-                contentDescription = stringResource(R.string.menu_button),
-                tint = MaterialTheme.colorScheme.primary
-            )
-        }
-        TextField(
-            value = searchQuery,
-            onValueChange = onSearchQueryChange,
-            modifier = Modifier
-                .weight(1f)
-                .clip(RoundedCornerShape(16.dp)),
-            singleLine = true,
-            placeholder = { 
-                Text(
-                    text = placeholder,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                ) 
-            },
-            leadingIcon = { 
-                Icon(
-                    imageVector = Icons.Default.Search, 
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                ) 
-            },
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = lightGreenBg,
-                unfocusedContainerColor = lightGreenBg,
-                disabledContainerColor = lightGreenBg,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent,
-            ),
-            shape = RoundedCornerShape(16.dp)
-        )
-        IconButton(
-            onClick = onFilterClick,
-            modifier = Modifier
-                .clip(RoundedCornerShape(16.dp))
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-        ) {
-            Icon(
-                imageVector = Icons.Default.FilterList,
-                contentDescription = filterDescription,
-                tint = MaterialTheme.colorScheme.primary
-            )
         }
     }
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">groceyApp</string>
+    <string name="app_name">GroceyApp</string>
     <string name="prompt_name">¿Cómo te llamas?</string>
     <string name="name_label">Nombre</string>
     <string name="confirm_button">OK</string>
