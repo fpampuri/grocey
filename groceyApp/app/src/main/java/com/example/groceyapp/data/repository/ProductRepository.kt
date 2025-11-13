@@ -19,8 +19,10 @@ class ProductRepository {
     }
     
     suspend fun getAllProducts(): ApiResult<List<Product>> {
-        return ApiHelper.safeApiCall {
-            productApi.getAllProducts()
+        return when (val result = ApiHelper.safeApiCall { productApi.getAllProducts() }) {
+            is ApiResult.Success -> ApiResult.Success(result.data.data)
+            is ApiResult.Error -> result
+            is ApiResult.Loading -> result
         }
     }
     

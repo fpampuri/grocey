@@ -1,5 +1,6 @@
 package com.example.groceyapp.data.api
 
+import com.example.groceyapp.data.model.PaginatedResponse
 import com.example.groceyapp.data.model.Product
 import com.example.groceyapp.data.model.ProductCreate
 import com.example.groceyapp.data.model.ProductUpdate
@@ -17,7 +18,7 @@ interface ProductApiService {
     ): Response<Product>
     
     @GET("products")
-    suspend fun getAllProducts(): Response<List<Product>>
+    suspend fun getAllProducts(): Response<PaginatedResponse<Product>>
     
     @GET("products/{id}")
     suspend fun getProduct(

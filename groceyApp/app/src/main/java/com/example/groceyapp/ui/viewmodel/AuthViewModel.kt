@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.groceyapp.data.api.ApiClient
 import com.example.groceyapp.data.model.*
 import com.example.groceyapp.data.repository.UserRepository
+import com.example.groceyapp.data.storage.TokenStorage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -50,6 +51,7 @@ class AuthViewModel : ViewModel() {
                     val token = result.data.token
                     _authToken.value = token
                     ApiClient.setAuthToken(token)
+                    TokenStorage.saveToken(token)
                     _isAuthenticated.value = true
                     
                     // Load user profile
@@ -122,6 +124,7 @@ class AuthViewModel : ViewModel() {
                     val token = result.data.token
                     _authToken.value = token
                     ApiClient.setAuthToken(token)
+                    TokenStorage.saveToken(token)
                     _isAuthenticated.value = true
                     
                     loadUserProfile()
@@ -168,6 +171,7 @@ class AuthViewModel : ViewModel() {
             _currentUser.value = null
             _authToken.value = null
             ApiClient.setAuthToken(null)
+            TokenStorage.clear()
             
             onSuccess()
         }
@@ -243,7 +247,18 @@ class AuthViewModel : ViewModel() {
     fun setToken(token: String) {
         _authToken.value = token
         ApiClient.setAuthToken(token)
+        TokenStorage.saveToken(token)
         _isAuthenticated.value = true
         loadUserProfile()
+    }
+    
+    /**
+     * Try to restore session from saved token
+     */
+    fun restoreSession() {
+        val savedToken = TokenStorage.getToken()
+        if (!savedToken.isNullOrEmpty()) {
+            setToken(savedToken)
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.example.groceyapp.data.api
 
+import com.example.groceyapp.data.model.PaginatedResponse
 import com.example.groceyapp.data.model.ShareListRequest
 import com.example.groceyapp.data.model.ShoppingList
 import com.example.groceyapp.data.model.ShoppingListCreate
@@ -18,7 +19,7 @@ interface ShoppingListApiService {
     ): Response<ShoppingList>
     
     @GET("shopping-lists")
-    suspend fun getAllShoppingLists(): Response<List<ShoppingList>>
+    suspend fun getAllShoppingLists(): Response<PaginatedResponse<ShoppingList>>
     
     @GET("shopping-lists/{id}")
     suspend fun getShoppingList(

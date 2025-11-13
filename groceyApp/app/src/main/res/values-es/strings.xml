@@ -58,4 +58,35 @@
     <string name="auth_show_password">Mostrar contraseña</string>
     <string name="auth_hide_password">Ocultar contraseña</string>
     <string name="auth_login_button">Iniciar sesión</string>
+    <string name="auth_no_account">¿No tienes cuenta?</string>
+    <string name="auth_create_account">Crear una</string>
+    <string name="auth_have_account">¿Ya tienes cuenta?</string>
+    <string name="auth_sign_in">Iniciar sesión</string>
+    
+    <!-- Registration strings -->
+    <string name="register_welcome_message">Crea tu cuenta para empezar</string>
+    <string name="register_first_name_label">Nombre</string>
+    <string name="register_first_name_placeholder">Juan</string>
+    <string name="register_last_name_label">Apellido</string>
+    <string name="register_last_name_placeholder">Pérez</string>
+    <string name="register_button">Crear cuenta</string>
+    <string name="register_success">¡Cuenta creada! Revisa tu correo para el código de verificación.</string>
+    
+    <!-- Verification strings -->
+    <string name="verify_welcome_message">Ingresa el código de verificación enviado a tu correo</string>
+    <string name="verify_code_label">Código de verificación</string>
+    <string name="verify_code_placeholder">Ingresa el código de 6 dígitos</string>
+    <string name="verify_button">Verificar cuenta</string>
+    <string name="verify_resend">Reenviar código</string>
+    
+    <!-- Product and Category strings -->
+    <string name="add_category">Agregar Categoría</string>
+    <string name="category_name_hint">Nombre de Categoría</string>
+    <string name="product_name_hint">Nombre de Producto</string>
+    <string name="select_category">Seleccionar Categoría</string>
+    <string name="no_category">Sin Categoría</string>
+    <string name="create">Crear</string>
+    <string name="list_name_hint">Nombre de Lista</string>
+    <string name="select_icon">Seleccionar ícono</string>
+    <string name="choose_action">Elige Acción</string>
 </resources>

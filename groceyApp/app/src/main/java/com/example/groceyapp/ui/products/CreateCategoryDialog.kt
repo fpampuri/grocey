@@ -1,7 +1,7 @@
-package com.example.groceyapp.ui.lists
+package com.example.groceyapp.ui.products
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ShoppingCart
+import androidx.compose.material.icons.filled.Store
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
@@ -9,22 +9,21 @@ import com.example.groceyapp.R
 import com.example.groceyapp.ui.components.GenericInputDialog
 
 /**
- * Dialog for creating a new shopping list
- * Uses the generic GenericInputDialog component
+ * Dialog for creating a new category
  */
 @Composable
-fun CreateListDialog(
+fun CreateCategoryDialog(
     onDismiss: () -> Unit,
-    onCreate: (title: String, leadingIcon: ImageVector) -> Unit
+    onCreate: (name: String, icon: ImageVector?) -> Unit
 ) {
     GenericInputDialog(
-        title = stringResource(id = R.string.add_list),
-        inputLabel = stringResource(id = R.string.list_name_hint),
+        title = stringResource(id = R.string.add_category),
+        inputLabel = stringResource(id = R.string.category_name_hint),
         confirmButtonText = stringResource(id = R.string.create),
         showIconPicker = true,
         onDismiss = onDismiss,
-        onConfirm = { title, icon ->
-            onCreate(title, icon ?: Icons.Rounded.ShoppingCart)
+        onConfirm = { name, icon ->
+            onCreate(name, icon ?: Icons.Filled.Store)
         }
     )
 }

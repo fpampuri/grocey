@@ -75,10 +75,7 @@ fun ListsScreen(
     onShare: (String) -> Unit = {},
     onMenuClick: () -> Unit = {}
 ) {
-    val resolvedItems = items ?: defaultListItems()
-    // API CHANGE: Replace `defaultListItems()` with data provided by a ViewModel/Repository
-    // (e.g. `val lists by collectionsViewModel.listsState.collectAsState()`),
-    // and remove the hard-coded mock data usage here.
+    val resolvedItems = items ?: emptyList()
 
     GenericCollectionScreen(
         items = resolvedItems,
@@ -109,10 +106,7 @@ fun PantryScreen(
     onFilterClick: () -> Unit = {},
     onMenuClick: () -> Unit = {}
 ) {
-    val resolvedItems = items ?: defaultPantryItems()
-    // API CHANGE: Replace `defaultPantryItems()` with data from a ViewModel/Repository
-    // (e.g. `val pantry by collectionsViewModel.pantryState.collectAsState()`),
-    // and perform filtering through the ViewModel or repository APIs.
+    val resolvedItems = items ?: emptyList()
 
     GenericCollectionScreen(
         items = resolvedItems,
@@ -137,10 +131,7 @@ fun ProductsScreen(
     onFilterClick: () -> Unit = {},
     onMenuClick: () -> Unit = {}
 ) {
-    val resolvedItems = items ?: defaultProductItems()
-    // API CHANGE: Replace `defaultProductItems()` with data from a ViewModel/Repository
-    // (e.g. `val products by collectionsViewModel.productsState.collectAsState()`),
-    // and perform filtering through the ViewModel or repository APIs.
+    val resolvedItems = items ?: emptyList()
 
     GenericCollectionScreen(
         items = resolvedItems,
@@ -192,172 +183,17 @@ fun HomeBottomBar(
     }
 }
 
-// Public version for external access (e.g., MainActivity)
 @Composable
-fun defaultListItemsPublic(): List<ListCardData> {
-    return defaultListItems()
-}
-
-@Composable
-// API CHANGE: `defaultListItems`, `defaultPantryItems`, and `defaultProductItems` are
-// mock/sample data used for previews and local testing. When integrating an API/DB,
-// move these samples to a preview/test-only file (e.g. `ui/preview/SampleData.kt`) and
-// fetch real data via a Repository/ViewModel instead of calling these functions.
 private fun defaultListItems(): List<ListCardData> {
-    return listOf(
-        ListCardData(
-            id = "list_1",
-            title = "Weekly Shopping",
-            itemCount = 5,
-            leadingIcon = Icons.Rounded.ShoppingCart,
-            isFavorite = false,
-            isShared = false,
-            products = listOf(
-                ProductItemData(
-                    id = "p1",
-                    name = "Milk",
-                    category = "Dairy",
-                    quantity = 2,
-                    isBought = false
-                ),
-                ProductItemData(
-                    id = "p2",
-                    name = "Bread",
-                    category = "Bakery",
-                    quantity = 1,
-                    isBought = true
-                ),
-                ProductItemData(
-                    id = "p3",
-                    name = "Apples",
-                    category = "Fruits",
-                    quantity = 6,
-                    isBought = false
-                ),
-                ProductItemData(
-                    id = "p4",
-                    name = "Chicken Breast",
-                    category = "Meat",
-                    quantity = 1,
-                    isBought = false
-                ),
-                ProductItemData(
-                    id = "p5",
-                    name = "Rice",
-                    category = "Grains",
-                    quantity = 2,
-                    isBought = false
-                )
-            )
-        ),
-        ListCardData(
-            id = "list_2",
-            title = "Market List",
-            itemCount = 3,
-            leadingIcon = Icons.Rounded.LocalGroceryStore,
-            isFavorite = true,
-            isShared = true,
-            products = listOf(
-                ProductItemData(
-                    id = "p6",
-                    name = "Tomatoes",
-                    category = "Vegetables",
-                    quantity = 4,
-                    isBought = false
-                ),
-                ProductItemData(
-                    id = "p7",
-                    name = "Cheese",
-                    category = "Dairy",
-                    quantity = 1,
-                    isBought = false
-                ),
-                ProductItemData(
-                    id = "p8",
-                    name = "Olive Oil",
-                    category = "Condiments",
-                    quantity = 1,
-                    isBought = true
-                )
-            )
-        ),
-        ListCardData(
-            id = "list_3",
-            title = "Cleaning Products",
-            itemCount = 0,
-            leadingIcon = Icons.Filled.Home,
-            isFavorite = false,
-            isShared = false,
-            products = emptyList()
-        )
-    )
+    return emptyList()
 }
 
 @Composable
 private fun defaultPantryItems(): List<CategoryCardData> {
-    val countFour = stringResource(id = R.string.items_count, 4)
-    val countTwo = stringResource(id = R.string.items_count, 2)
-    val countOne = stringResource(id = R.string.items_count, 1)
-    return listOf(
-        CategoryCardData(
-            title = "Rice",
-            subtitle = countFour,
-            leadingIcon = Icons.Filled.Inventory2,
-            badgeText = null,
-            products = listOf("Basmati Rice", "Brown Rice", "Jasmine Rice", "Wild Rice")
-        ),
-        CategoryCardData(
-            title = "Olive Oil",
-            subtitle = countTwo,
-            leadingIcon = Icons.Filled.Inventory2,
-            products = listOf("Extra Virgin", "Light Olive Oil")
-        ),
-        CategoryCardData(
-            title = "Paprika",
-            subtitle = countOne,
-            leadingIcon = Icons.Filled.Inventory2,
-            products = listOf("Smoked Paprika")
-        )
-    )
+    return emptyList()
 }
 
 @Composable
 private fun defaultProductItems(): List<CategoryCardData> {
-    val countTwelve = stringResource(id = R.string.items_count, 12)
-    val countSix = stringResource(id = R.string.items_count, 6)
-    val countThree = stringResource(id = R.string.items_count, 3)
-    val countTwo = stringResource(id = R.string.items_count, 2)
-    return listOf(
-        CategoryCardData(
-            title = "General",
-            subtitle = countTwelve,
-            leadingIcon = Icons.Filled.Store,
-            products = listOf("Bread", "Eggs", "Butter", "Salt", "Sugar", "Flour")
-        ),
-        CategoryCardData(
-            title = "Dairy",
-            subtitle = countTwo,
-            leadingIcon = Icons.Rounded.LocalGroceryStore,
-            products = listOf("Milk", "Cheese")
-        ),
-        CategoryCardData(
-            title = "Bakery",
-            subtitle = countThree,
-            leadingIcon = Icons.Filled.Store,
-            products = listOf("Croissants", "Baguette", "Muffins")
-        ),
-        CategoryCardData(
-            title = "Fruits",
-            subtitle = countSix,
-            leadingIcon = Icons.Rounded.LocalGroceryStore,
-            badgeText = stringResource(id = R.string.shared_label),
-            products = listOf("Apples", "Bananas", "Oranges", "Grapes", "Strawberries", "Pears")
-        ),
-        CategoryCardData(
-            title = "Vegetables",
-            subtitle = countSix,
-            leadingIcon = Icons.Filled.Store,
-            products = listOf("Carrots", "Tomatoes", "Lettuce", "Onions", "Peppers", "Cucumbers")
-        )
-    )
+    return emptyList()
 }

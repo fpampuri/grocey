@@ -19,8 +19,10 @@ class CategoryRepository {
     }
     
     suspend fun getAllCategories(): ApiResult<List<Category>> {
-        return ApiHelper.safeApiCall {
-            categoryApi.getAllCategories()
+        return when (val result = ApiHelper.safeApiCall { categoryApi.getAllCategories() }) {
+            is ApiResult.Success -> ApiResult.Success(result.data.data)
+            is ApiResult.Error -> result
+            is ApiResult.Loading -> result
         }
     }
     

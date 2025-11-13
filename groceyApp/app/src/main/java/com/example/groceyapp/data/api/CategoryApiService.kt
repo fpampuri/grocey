@@ -3,6 +3,7 @@ package com.example.groceyapp.data.api
 import com.example.groceyapp.data.model.Category
 import com.example.groceyapp.data.model.CategoryCreate
 import com.example.groceyapp.data.model.CategoryUpdate
+import com.example.groceyapp.data.model.PaginatedResponse
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -17,7 +18,7 @@ interface CategoryApiService {
     ): Response<Category>
     
     @GET("categories")
-    suspend fun getAllCategories(): Response<List<Category>>
+    suspend fun getAllCategories(): Response<PaginatedResponse<Category>>
     
     @GET("categories/{id}")
     suspend fun getCategory(

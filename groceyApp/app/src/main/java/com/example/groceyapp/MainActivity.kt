@@ -7,7 +7,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -16,14 +19,19 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.Inventory2
+import androidx.compose.material.icons.filled.Store
+import androidx.compose.material.icons.rounded.ShoppingCart
 import com.example.groceyapp.R
 import com.example.groceyapp.ui.auth.AuthenticationScreen
 import com.example.groceyapp.ui.components.ListCardData
 import com.example.groceyapp.ui.components.MenuDrawer
 import com.example.groceyapp.ui.components.PrimaryFab
-import com.example.groceyapp.ui.lists.defaultListItemsPublic
 import com.example.groceyapp.ui.lists.CreateListDialog
 import com.example.groceyapp.ui.lists.HomeBottomBar
 import com.example.groceyapp.ui.lists.HomeDestination
@@ -31,8 +39,13 @@ import com.example.groceyapp.ui.lists.ListDetailScreen
 import com.example.groceyapp.ui.lists.ListsScreen
 import com.example.groceyapp.ui.lists.PantryScreen
 import com.example.groceyapp.ui.lists.ProductsScreen
+import com.example.groceyapp.ui.products.CreateCategoryDialog
+import com.example.groceyapp.ui.products.CreateProductDialog
 import com.example.groceyapp.ui.theme.GroceyAppTheme
 import com.example.groceyapp.ui.viewmodel.AuthViewModel
+import com.example.groceyapp.ui.viewmodel.ProductViewModel
+import com.example.groceyapp.ui.viewmodel.ShoppingListViewModel
+import androidx.compose.runtime.LaunchedEffect
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,12 +61,19 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ListsApp() {
-    // Get AuthViewModel instance
+    // Get ViewModels
     val authViewModel: AuthViewModel = viewModel()
+    val shoppingListViewModel: ShoppingListViewModel = viewModel()
+    val productViewModel: ProductViewModel = viewModel()
     
     // Collect authentication state
     val isAuthenticated by authViewModel.isAuthenticated.collectAsState()
     val currentUser by authViewModel.currentUser.collectAsState()
+    
+    // Restore session when app starts (only runs once)
+    LaunchedEffect(Unit) {
+        authViewModel.restoreSession()
+    }
     
     var currentDestination by remember { mutableStateOf(HomeDestination.Lists) }
     var selectedListId by remember { mutableStateOf<String?>(null) }
@@ -63,15 +83,71 @@ fun ListsApp() {
     var isDarkMode by remember { mutableStateOf(false) }
     var currentLanguage by remember { mutableStateOf("en") }
     
-    // Mock data - would come from a ViewModel/Repository in a real app
-    // API CHANGE: Replace the in-memory `lists` below with a ViewModel-provided state
-    // (e.g. `val lists by collectionsViewModel.listsState.collectAsState()`), and perform
-    // creation via a Repository/DB or remote API rather than mutating local state.
-    // Call the composable that returns sample data directly in composition,
-    // then use that result to initialize the remember-backed mutable list.
-    val initialLists = defaultListItemsPublic()
-    val lists = remember { mutableStateListOf<ListCardData>().apply { addAll(initialLists) } }
+    // Shopping lists from API
+    val apiLists by shoppingListViewModel.lists.collectAsState()
     var showCreateListDialog by remember { mutableStateOf(false) }
+    
+    // Products and categories dialog states
+    var showCreateProductDialog by remember { mutableStateOf(false) }
+    var showCreateCategoryDialog by remember { mutableStateOf(false) }
+    var showProductFabMenu by remember { mutableStateOf(false) }
+    
+    // Products and categories from API
+    val products by productViewModel.products.collectAsState()
+    val categories by productViewModel.categories.collectAsState()
+    
+    // Load shopping lists when authenticated
+    LaunchedEffect(isAuthenticated) {
+        if (isAuthenticated) {
+            shoppingListViewModel.loadShoppingLists()
+            productViewModel.loadProducts()
+            productViewModel.loadCategories()
+        }
+    }
+    
+    // Convert API lists to UI format
+    val lists = apiLists.map { apiList ->
+        // Extract icon from metadata, default to shopping cart
+        val iconName = apiList.metadata?.get("icon") as? String
+        val icon = when (iconName) {
+            "store" -> Icons.Filled.Store
+            "inventory" -> Icons.Filled.Inventory2
+            else -> Icons.Rounded.ShoppingCart
+        }
+        
+        ListCardData(
+            id = apiList.id?.toString() ?: "",
+            title = apiList.name,
+            itemCount = 0, // Will be populated when we load items
+            leadingIcon = icon,
+            isFavorite = false,
+            isShared = apiList.sharedWith?.isNotEmpty() == true,
+            products = emptyList()
+        )
+    }
+
+    // Convert API categories and products to UI format
+    val categoryCards = categories.map { category ->
+        // Extract icon from metadata
+        val iconName = category.metadata?.get("icon") as? String
+        val icon = when (iconName) {
+            "store" -> Icons.Filled.Store
+            "inventory" -> Icons.Filled.Inventory2
+            else -> Icons.Filled.Category
+        }
+        
+        // Get products for this category
+        val categoryProducts = products
+            .filter { it.category?.id == category.id }
+            .map { it.name }
+        
+        com.example.groceyapp.ui.components.CategoryCardData(
+            title = category.name,
+            subtitle = "${categoryProducts.size} products",
+            leadingIcon = icon,
+            products = categoryProducts
+        )
+    }
 
     // Show authentication screen if not authenticated
     if (!isAuthenticated) {
@@ -117,12 +193,47 @@ fun ListsApp() {
             Scaffold(
                 modifier = Modifier.fillMaxSize(),
                 floatingActionButton = {
-                    val (labelRes, action) = when (currentDestination) {
-                        HomeDestination.Pantry -> R.string.add_pantry_item to { /* TODO: pantry add action */ }
-                        HomeDestination.Products -> R.string.add_product to { /* TODO: product add action */ }
-                        HomeDestination.Lists -> R.string.add_list to { showCreateListDialog = true }
+                    when (currentDestination) {
+                        HomeDestination.Pantry -> {
+                            PrimaryFab(
+                                contentDescriptionRes = R.string.add_pantry_item,
+                                onClick = { /* TODO: pantry add action */ }
+                            )
+                        }
+                        HomeDestination.Products -> {
+                            Box {
+                                PrimaryFab(
+                                    contentDescriptionRes = R.string.add_product,
+                                    onClick = { showProductFabMenu = true }
+                                )
+                                DropdownMenu(
+                                    expanded = showProductFabMenu,
+                                    onDismissRequest = { showProductFabMenu = false }
+                                ) {
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(id = R.string.add_product)) },
+                                        onClick = {
+                                            showProductFabMenu = false
+                                            showCreateProductDialog = true
+                                        }
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(id = R.string.add_category)) },
+                                        onClick = {
+                                            showProductFabMenu = false
+                                            showCreateCategoryDialog = true
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                        HomeDestination.Lists -> {
+                            PrimaryFab(
+                                contentDescriptionRes = R.string.add_list,
+                                onClick = { showCreateListDialog = true }
+                            )
+                        }
                     }
-                    PrimaryFab(contentDescriptionRes = labelRes, onClick = action)
                 },
                 bottomBar = {
                     HomeBottomBar(
@@ -139,6 +250,7 @@ fun ListsApp() {
                     )
                     HomeDestination.Products -> ProductsScreen(
                         modifier = contentModifier,
+                        items = categoryCards,
                         onMenuClick = { isMenuOpen = true }
                     )
                     HomeDestination.Lists -> ListsScreen(
@@ -180,24 +292,68 @@ fun ListsApp() {
             }
         )
 
-        // Create List dialog (ephemeral UI) - persistence should be handled by ViewModel/Repository
+        // Create List dialog - creates via API
         if (showCreateListDialog && currentDestination == HomeDestination.Lists) {
             CreateListDialog(
                 onDismiss = { showCreateListDialog = false },
                 onCreate = { title, leadingIcon ->
-                    // Create a new ListCardData and prepend to local list. In the future delegate
-                    // this to a Repository/ViewModel that handles persistence (API/DB).
-                    val newList = ListCardData(
-                        id = "list_${System.currentTimeMillis()}",
-                        title = title.ifBlank { "New List" },
-                        itemCount = 0,
-                        leadingIcon = leadingIcon,
-                        isFavorite = false,
-                        isShared = false,
-                        products = emptyList()
+                    // Create list via API with icon in metadata
+                    val iconName = when (leadingIcon) {
+                        Icons.Rounded.ShoppingCart -> "shopping_cart"
+                        Icons.Filled.Store -> "store"
+                        Icons.Filled.Inventory2 -> "inventory"
+                        else -> "list"
+                    }
+                    
+                    shoppingListViewModel.createShoppingList(
+                        name = title.ifBlank { "New List" },
+                        description = "",  // Required by backend
+                        recurring = false,  // Required by backend
+                        metadata = mapOf("icon" to iconName),
+                        onSuccess = {
+                            showCreateListDialog = false
+                        }
                     )
-                    lists.add(0, newList)
-                    showCreateListDialog = false
+                }
+            )
+        }
+
+        // Create Product dialog
+        if (showCreateProductDialog) {
+            CreateProductDialog(
+                categories = categories,
+                onDismiss = { showCreateProductDialog = false },
+                onCreate = { name, categoryId ->
+                    productViewModel.createProduct(
+                        name = name,
+                        categoryId = categoryId,
+                        metadata = emptyMap(),
+                        onSuccess = {
+                            showCreateProductDialog = false
+                        }
+                    )
+                }
+            )
+        }
+
+        // Create Category dialog
+        if (showCreateCategoryDialog) {
+            CreateCategoryDialog(
+                onDismiss = { showCreateCategoryDialog = false },
+                onCreate = { name, icon ->
+                    val iconName = when (icon) {
+                        Icons.Filled.Store -> "store"
+                        Icons.Filled.Inventory2 -> "inventory"
+                        else -> "category"
+                    }
+                    
+                    productViewModel.createCategory(
+                        name = name,
+                        metadata = mapOf("icon" to iconName),
+                        onSuccess = {
+                            showCreateCategoryDialog = false
+                        }
+                    )
                 }
             )
         }
