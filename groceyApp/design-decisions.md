@@ -110,5 +110,23 @@ Aim to link each justification to the specific theories covered in class (e.g., 
 
 ---
 
+### Componentize top search row — 2025-11-13
+- **Change**: Extracted the in-file `SearchRow` into a shared component `TopSearchBar` located at `ui/components/TopSearchBar.kt`, and replaced the previous private implementation in `CollectionsScreens.kt` to use the component across Lists, Pantry and Products screens.
+- **User Problem / Goal**: Reduce duplicated UI code and centralize styling/behavior so any change to the top search bar (visual, accessibility, or interaction) updates all collection screens consistently.
+- **Justification**: Component reuse supports maintainability and consistency (Nielsen's "Consistency and standards") and reduces the chance of divergence between related screens. Centralization also simplifies future accessibility improvements and theming changes.
+- **Impact**: All three collection screens now share the exact same search bar implementation, reducing maintenance burden and ensuring consistent behavior (search icon, placeholder handling, container color). This is a low-risk refactor confined to UI components and screen wiring.
+
+### Integrate filter control into search field — 2025-11-13
+- **Change**: Added an option to render the filter control inside the search `TextField` as a trailing icon (`showFilterInside` flag). Collections screens enable this so the filter appears within the input instead of as a separate right-hand button.
+- **User Problem / Goal**: Reduce horizontal clutter and visually associate the filter action with the search input, making its purpose clearer and saving horizontal space on small screens.
+- **Justification**: Gestalt principles of proximity and common region recommend placing related controls visually close; putting the filter inside the input strengthens the perceived association between search and filtering. Material guidelines accept inline affordances (trailing icons) for related quick actions.
+- **Impact**: The UI becomes slightly tighter and more integrated; users will perceive the filter as part of search controls. Accessibility is preserved by keeping content descriptions and using a tappable IconButton anchor. The change is reversible via the `showFilterInside` flag for screens that need a separate control.
+
+### Menu icon standardization — 2025-11-13
+- **Change**: Replaced the three-dot `MoreVert` icon used in the left position of the collection search row with a hamburger `Menu` icon so the left control consistently indicates opening the navigation drawer.
+- **User Problem / Goal**: Improve affordance clarity: a hamburger icon more clearly communicates "open navigation drawer" than a vertical overflow menu in the left-side, reducing confusion.
+- **Justification**: Nielsen's heuristics on match between system and the real world and consistency recommend using platform-expected metaphors for common navigation affordances. The hamburger icon is a widely-recognized pattern for opening a navigation drawer.
+- **Impact**: The left button on Lists/Pantry/Products now visually matches the expected drawer affordance. Existing three-dot menus used for per-card or per-item overflow remain unchanged (they still use `MoreVert`) to preserve their semantic meaning.
+
 Add future decisions in chronological order so the report can reference this single source of truth.
 

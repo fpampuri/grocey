@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import com.example.groceyapp.R
 import com.example.groceyapp.ui.components.CategoryCard
 import com.example.groceyapp.ui.components.CategoryCardData
+import com.example.groceyapp.ui.components.GenericCollectionScreen
 import com.example.groceyapp.ui.components.ListCard
 import com.example.groceyapp.ui.components.ListCardData
 import com.example.groceyapp.ui.components.ProductItemData
@@ -75,54 +76,27 @@ fun ListsScreen(
     onMenuClick: () -> Unit = {}
 ) {
     val resolvedItems = items ?: defaultListItems()
-    var searchQuery by remember { mutableStateOf("") }
-    
-    // Filter items based on search query
-    val filteredItems = remember(searchQuery, resolvedItems) {
-        if (searchQuery.isBlank()) {
-            resolvedItems
-        } else {
-            resolvedItems.filter { list ->
-                list.title.contains(searchQuery, ignoreCase = true)
-            }
-        }
-    }
-    
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-        ) {
-            TopSearchBar(
-                placeholder = stringResource(R.string.search_lists_placeholder),
-                filterDescription = stringResource(R.string.filter_content_description),
-                onFilterClick = onFilterClick,
-                searchQuery = searchQuery,
-                onSearchQueryChange = { searchQuery = it },
-                onMenuClick = onMenuClick,
-                showFilterInside = true
+
+    GenericCollectionScreen(
+        items = resolvedItems,
+        placeholder = stringResource(R.string.search_lists_placeholder),
+        filterDescription = stringResource(R.string.filter_content_description),
+        showFilterInside = true,
+        onFilterClick = onFilterClick,
+        onMenuClick = onMenuClick,
+        itemMatchesQuery = { list, q -> list.title.contains(q, ignoreCase = true) },
+        itemKey = { it.id },
+        itemContent = { item ->
+            ListCard(
+                data = item,
+                onClick = onListClick,
+                onFavoriteToggle = onFavoriteToggle,
+                onRename = onRename,
+                onDelete = onDelete,
+                onShare = onShare
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(bottom = 80.dp)
-            ) {
-                items(filteredItems) { item ->
-                    ListCard(
-                        data = item,
-                        onClick = onListClick,
-                        onFavoriteToggle = onFavoriteToggle,
-                        onRename = onRename,
-                        onDelete = onDelete,
-                        onShare = onShare
-                    )
-                }
-            }
         }
-    }
+    )
 }
 
 @Composable
@@ -133,33 +107,20 @@ fun PantryScreen(
     onMenuClick: () -> Unit = {}
 ) {
     val resolvedItems = items ?: defaultPantryItems()
-    var searchQuery by remember { mutableStateOf("") }
-    
-    // Filter items based on search query - matches category title OR products within
-    val filteredItems = remember(searchQuery, resolvedItems) {
-        if (searchQuery.isBlank()) {
-            resolvedItems
-        } else {
-            resolvedItems.filter { category ->
-                // Match category title
-                category.title.contains(searchQuery, ignoreCase = true) ||
-                // OR match any product within the category
-                category.products.any { product ->
-                    product.contains(searchQuery, ignoreCase = true)
-                }
-            }
-        }
-    }
-    
-    CollectionContent(
-        modifier = modifier,
-        searchPlaceholder = stringResource(R.string.search_pantry_placeholder),
+
+    GenericCollectionScreen(
+        items = resolvedItems,
+        placeholder = stringResource(R.string.search_pantry_placeholder),
         filterDescription = stringResource(R.string.filter_content_description),
-        items = filteredItems,
+        showFilterInside = true,
         onFilterClick = onFilterClick,
-        searchQuery = searchQuery,
-        onSearchQueryChange = { searchQuery = it },
-        onMenuClick = onMenuClick
+        onMenuClick = onMenuClick,
+        itemMatchesQuery = { category, q ->
+            category.title.contains(q, ignoreCase = true) ||
+                category.products.any { product -> product.contains(q, ignoreCase = true) }
+        },
+        itemKey = { it.title },
+        itemContent = { item -> CategoryCard(item) }
     )
 }
 
@@ -171,75 +132,21 @@ fun ProductsScreen(
     onMenuClick: () -> Unit = {}
 ) {
     val resolvedItems = items ?: defaultProductItems()
-    var searchQuery by remember { mutableStateOf("") }
-    
-    // Filter items based on search query - matches category title OR products within
-    val filteredItems = remember(searchQuery, resolvedItems) {
-        if (searchQuery.isBlank()) {
-            resolvedItems
-        } else {
-            resolvedItems.filter { category ->
-                // Match category title
-                category.title.contains(searchQuery, ignoreCase = true) ||
-                // OR match any product within the category
-                category.products.any { product ->
-                    product.contains(searchQuery, ignoreCase = true)
-                }
-            }
-        }
-    }
-    
-    CollectionContent(
-        modifier = modifier,
-        searchPlaceholder = stringResource(R.string.search_products_placeholder),
-        filterDescription = stringResource(R.string.filter_content_description),
-        items = filteredItems,
-        onFilterClick = onFilterClick,
-        searchQuery = searchQuery,
-        onSearchQueryChange = { searchQuery = it },
-        onMenuClick = onMenuClick
-    )
-}
 
-@Composable
-private fun CollectionContent(
-    modifier: Modifier = Modifier,
-    searchPlaceholder: String,
-    filterDescription: String,
-    items: List<CategoryCardData>,
-    onFilterClick: () -> Unit,
-    searchQuery: String,
-    onSearchQueryChange: (String) -> Unit,
-    onMenuClick: () -> Unit
-) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-        ) {
-            TopSearchBar(
-                placeholder = searchPlaceholder,
-                filterDescription = filterDescription,
-                onFilterClick = onFilterClick,
-                searchQuery = searchQuery,
-                onSearchQueryChange = onSearchQueryChange,
-                onMenuClick = onMenuClick,
-                showFilterInside = true
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(bottom = 80.dp)
-            ) {
-                items(items) { item ->
-                    CategoryCard(item)
-                }
-            }
-        }
-    }
+    GenericCollectionScreen(
+        items = resolvedItems,
+        placeholder = stringResource(R.string.search_products_placeholder),
+        filterDescription = stringResource(R.string.filter_content_description),
+        showFilterInside = true,
+        onFilterClick = onFilterClick,
+        onMenuClick = onMenuClick,
+        itemMatchesQuery = { category, q ->
+            category.title.contains(q, ignoreCase = true) ||
+                category.products.any { product -> product.contains(q, ignoreCase = true) }
+        },
+        itemKey = { it.title },
+        itemContent = { item -> CategoryCard(item) }
+    )
 }
 
 @Composable
