@@ -16,6 +16,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.groceyapp.R
+import com.example.groceyapp.ui.auth.AuthenticationScreen
 import com.example.groceyapp.ui.components.ListCardData
 import com.example.groceyapp.ui.components.MenuDrawer
 import com.example.groceyapp.ui.components.PrimaryFab
@@ -45,9 +46,22 @@ fun ListsApp() {
     var currentDestination by remember { mutableStateOf(HomeDestination.Lists) }
     var selectedListId by remember { mutableStateOf<String?>(null) }
     var isMenuOpen by remember { mutableStateOf(false) }
+    var isAuthenticated by remember { mutableStateOf(true) } // Start authenticated; set to false to show login
     
     // Mock data - would come from a ViewModel in a real app
     val mockLists: List<ListCardData> = defaultListItemsPublic()
+
+    // Show authentication screen if not authenticated
+    if (!isAuthenticated) {
+        AuthenticationScreen(
+            onLoginClick = { email, password ->
+                // TODO: Implement actual authentication logic
+                // For now, just set authenticated to true
+                isAuthenticated = true
+            }
+        )
+        return
+    }
 
     // Determine if we're showing list detail
     val selectedList: ListCardData? = selectedListId?.let { id: String ->
@@ -115,7 +129,10 @@ fun ListsApp() {
         // Menu drawer overlay
         MenuDrawer(
             isOpen = isMenuOpen,
-            onDismiss = { isMenuOpen = false }
+            onDismiss = { isMenuOpen = false },
+            onLogoutClick = {
+                isAuthenticated = false
+            }
         )
     }
 }
