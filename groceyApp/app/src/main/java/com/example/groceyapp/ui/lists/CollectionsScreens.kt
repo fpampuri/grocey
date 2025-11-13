@@ -1,8 +1,10 @@
 package com.example.groceyapp.ui.lists
 
 import androidx.annotation.StringRes
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,15 +14,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Circle
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Store
@@ -29,6 +37,8 @@ import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.rounded.LocalGroceryStore
 import androidx.compose.material.icons.rounded.ShoppingCart
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -47,6 +57,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -68,7 +79,8 @@ data class CollectionCardData(
     val subtitle: String,
     val leadingIcon: ImageVector,
     val badgeText: String? = null,
-    val trailingIcon: ImageVector? = null
+    val trailingIcon: ImageVector? = null,
+    val products: List<String> = emptyList() // List of products in this category
 )
 
 @Composable
@@ -188,7 +200,13 @@ private fun SearchRow(
 
 @Composable
 private fun CollectionCard(data: CollectionCardData) {
+    var isExpanded by remember { mutableStateOf(false) }
+    var showMenu by remember { mutableStateOf(false) }
     val borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+    val rotationAngle by animateFloatAsState(
+        targetValue = if (isExpanded) 90f else 0f,
+        label = "chevron rotation"
+    )
 
     OutlinedCard(
         colors = CardDefaults.outlinedCardColors(
@@ -198,39 +216,129 @@ private fun CollectionCard(data: CollectionCardData) {
         shape = RoundedCornerShape(24.dp),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = data.leadingIcon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = data.title,
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                )
-                Text(
-                    text = data.subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-            data.badgeText?.let { badge ->
-                SharedBadge(badge)
-                Spacer(modifier = Modifier.width(12.dp))
-            }
-            data.trailingIcon?.let { trailing ->
+        Column {
+            // Main card row (clickable to expand/collapse)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { isExpanded = !isExpanded }
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Icon(
-                    imageVector = trailing,
+                    imageVector = data.leadingIcon,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                    tint = MaterialTheme.colorScheme.primary
                 )
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = data.title,
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                    )
+                    Text(
+                        text = data.subtitle,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                data.badgeText?.let { badge ->
+                    SharedBadge(badge)
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+
+                // Chevron icon (rotates when expanded)
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = if (isExpanded) "Collapse" else "Expand",
+                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                    modifier = Modifier.rotate(rotationAngle)
+                )
+
+                Spacer(modifier = Modifier.width(4.dp))
+
+                // Three-dot menu
+                IconButton(
+                    onClick = { showMenu = !showMenu },
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = "Options",
+                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                    )
+                }
+
+                // Dropdown menu
+                DropdownMenu(
+                    expanded = showMenu,
+                    onDismissRequest = { showMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Rename") },
+                        onClick = {
+                            showMenu = false
+                            // TODO: Handle rename
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = null
+                            )
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Delete") },
+                        onClick = {
+                            showMenu = false
+                            // TODO: Handle delete
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = null
+                            )
+                        }
+                    )
+                }
+            }
+
+            // Expanded content with products list
+            if (isExpanded && data.products.isNotEmpty()) {
+                val lightGreenBg = if (isSystemInDarkTheme()) {
+                    BrandGreenLightDarkTheme.copy(alpha = 0.15f)
+                } else {
+                    BrandGreenLight.copy(alpha = 0.15f)
+                }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(lightGreenBg)
+                        .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp)
+                ) {
+                    data.products.forEach { product ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Circle,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(8.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = product,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -292,20 +400,20 @@ private fun defaultListItems(): List<CollectionCardData> {
             title = "Weekly Shopping",
             subtitle = countZero,
             leadingIcon = Icons.Rounded.ShoppingCart,
-            trailingIcon = Icons.Filled.Person
+            products = emptyList()
         ),
         CollectionCardData(
             title = "Market List",
             subtitle = countZero,
             leadingIcon = Icons.Rounded.LocalGroceryStore,
             badgeText = shared,
-            trailingIcon = Icons.Filled.Person
+            products = emptyList()
         ),
         CollectionCardData(
             title = "Cleaning Products",
             subtitle = countZero,
             leadingIcon = Icons.Filled.Home,
-            trailingIcon = Icons.Filled.Person
+            products = emptyList()
         )
     )
 }
@@ -321,19 +429,19 @@ private fun defaultPantryItems(): List<CollectionCardData> {
             subtitle = countFour,
             leadingIcon = Icons.Filled.Inventory2,
             badgeText = null,
-            trailingIcon = Icons.Outlined.CheckCircle
+            products = listOf("Basmati Rice", "Brown Rice", "Jasmine Rice", "Wild Rice")
         ),
         CollectionCardData(
             title = "Olive Oil",
             subtitle = countTwo,
             leadingIcon = Icons.Filled.Inventory2,
-            trailingIcon = Icons.Outlined.CheckCircle
+            products = listOf("Extra Virgin", "Light Olive Oil")
         ),
         CollectionCardData(
             title = "Paprika",
             subtitle = countOne,
             leadingIcon = Icons.Filled.Inventory2,
-            trailingIcon = Icons.Outlined.CheckCircle
+            products = listOf("Smoked Paprika")
         )
     )
 }
@@ -343,25 +451,38 @@ private fun defaultProductItems(): List<CollectionCardData> {
     val countTwelve = stringResource(id = R.string.items_count, 12)
     val countSix = stringResource(id = R.string.items_count, 6)
     val countThree = stringResource(id = R.string.items_count, 3)
+    val countTwo = stringResource(id = R.string.items_count, 2)
     return listOf(
         CollectionCardData(
-            title = "Seasonal Fruits",
+            title = "General",
             subtitle = countTwelve,
-            leadingIcon = Icons.Rounded.LocalGroceryStore,
-            badgeText = stringResource(id = R.string.shared_label),
-            trailingIcon = Icons.Outlined.Star
-        ),
-        CollectionCardData(
-            title = "Household Essentials",
-            subtitle = countSix,
             leadingIcon = Icons.Filled.Store,
-            trailingIcon = Icons.Outlined.Star
+            products = listOf("Bread", "Eggs", "Butter", "Salt", "Sugar", "Flour")
         ),
         CollectionCardData(
-            title = "Snacks",
+            title = "Dairy",
+            subtitle = countTwo,
+            leadingIcon = Icons.Rounded.LocalGroceryStore,
+            products = listOf("Milk", "Cheese")
+        ),
+        CollectionCardData(
+            title = "Bakery",
             subtitle = countThree,
             leadingIcon = Icons.Filled.Store,
-            trailingIcon = Icons.Outlined.Star
+            products = listOf("Croissants", "Baguette", "Muffins")
+        ),
+        CollectionCardData(
+            title = "Fruits",
+            subtitle = countSix,
+            leadingIcon = Icons.Rounded.LocalGroceryStore,
+            badgeText = stringResource(id = R.string.shared_label),
+            products = listOf("Apples", "Bananas", "Oranges", "Grapes", "Strawberries", "Pears")
+        ),
+        CollectionCardData(
+            title = "Vegetables",
+            subtitle = countSix,
+            leadingIcon = Icons.Filled.Store,
+            products = listOf("Carrots", "Tomatoes", "Lettuce", "Onions", "Peppers", "Cucumbers")
         )
     )
 }
