@@ -7,6 +7,7 @@ This log captures each deliberate UI/UX choice made for the mobile app so that t
 Use the template below for every change:
 
 ```
+
 ### [Feature / Component] — [Date YYYY-MM-DD]
 - **Change**: What changed in the UI.
 - **User Problem / Goal**: What need or pain point this solves.
@@ -142,4 +143,10 @@ Add future decisions in chronological order so the report can reference this sin
 - **User Problem / Goal**: Improve filesystem organization for maintainability while preserving import paths so callers don't need immediate changes.
 - **Justification**: Physical grouping of related components reduces cognitive overhead when navigating the codebase. Keeping the package stable avoids large-scale import churn and reduces the migration surface (safer refactor).
 - **Impact**: Developers can now find card implementations under `ui/components/cards/`. The original files in `ui/components/` were left as small placeholders to avoid breaking imports during the transition. This is a low-risk refactor and is recorded here for traceability.
+
+### Create List Dialog — Icon parity with web (MDI mapping) — 2025-11-13
+- **Change**: While adding the Create List dialog and its icon picker, we intentionally preserved the web app's icon language by mapping the original MDI icon choices to the closest available Android Compose Material icons in the same order when possible. Exact matches were substituted with visually similar Material icons and all substitutions are documented in the code. A compilation-safe fallback set was applied so the feature could be delivered quickly; TODOs mark where exact SVG/vector assets may replace substitutes later.
+- **User Problem / Goal**: Keep visual continuity between web and mobile so users instantly recognize familiar icons (cart, bread, coffee, etc.). This reduces friction when users switch platforms and supports recognition-based navigation.
+- **Justification**: Cross-platform consistency is a strong usability heuristic (Nielsen: consistency and standards; recognition over recall). Reusing platform-native Material icons avoids shipping custom assets prematurely and respects platform conventions while still honoring the original web vocabulary.
+- **Impact**: Users will see icons that are the same or very similar to the web product, improving recognition and reducing cognitive load. The codebase documents substitutions and contains TODOs for later replacement by exact MDI SVGs if full visual parity is required.
 

@@ -83,10 +83,10 @@ fun CategoryCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        data.badgeText?.let { badge ->
-            SharedBadge(badge)
-            Spacer(modifier = Modifier.width(8.dp))
-        }
+        // data.badgeText?.let { badge ->
+        //     SharedBadge(badge)
+        //     Spacer(modifier = Modifier.width(8.dp))
+        // }
 
         // Chevron icon (rotates when expanded)
         Icon(

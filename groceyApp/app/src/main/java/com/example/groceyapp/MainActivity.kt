@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -23,6 +24,7 @@ import com.example.groceyapp.ui.components.ListCardData
 import com.example.groceyapp.ui.components.MenuDrawer
 import com.example.groceyapp.ui.components.PrimaryFab
 import com.example.groceyapp.ui.lists.defaultListItemsPublic
+import com.example.groceyapp.ui.lists.CreateListDialog
 import com.example.groceyapp.ui.lists.HomeBottomBar
 import com.example.groceyapp.ui.lists.HomeDestination
 import com.example.groceyapp.ui.lists.ListDetailScreen
@@ -62,10 +64,14 @@ fun ListsApp() {
     var currentLanguage by remember { mutableStateOf("en") }
     
     // Mock data - would come from a ViewModel/Repository in a real app
-    // API CHANGE: Replace `defaultListItemsPublic()` with a ViewModel-provided state (e.g.
-    // `val mockLists by collectionsViewModel.listsState.collectAsState()`) that reads from
-    // the Repository/DB or remote API instead of hard-coded sample data.
-    val mockLists: List<ListCardData> = defaultListItemsPublic()
+    // API CHANGE: Replace the in-memory `lists` below with a ViewModel-provided state
+    // (e.g. `val lists by collectionsViewModel.listsState.collectAsState()`), and perform
+    // creation via a Repository/DB or remote API rather than mutating local state.
+    // Call the composable that returns sample data directly in composition,
+    // then use that result to initialize the remember-backed mutable list.
+    val initialLists = defaultListItemsPublic()
+    val lists = remember { mutableStateListOf<ListCardData>().apply { addAll(initialLists) } }
+    var showCreateListDialog by remember { mutableStateOf(false) }
 
     // Show authentication screen if not authenticated
     if (!isAuthenticated) {
@@ -83,8 +89,8 @@ fun ListsApp() {
     val userName = "${currentUser?.name ?: "User"} ${currentUser?.surname ?: ""}"
 
     // Determine if we're showing list detail
-    val selectedList: ListCardData? = selectedListId?.let { id: String ->
-        mockLists.find { list -> list.id == id }
+    val selectedList: ListCardData? = selectedListId?.let { id ->
+        lists.find { list -> list.id == id }
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -114,7 +120,7 @@ fun ListsApp() {
                     val (labelRes, action) = when (currentDestination) {
                         HomeDestination.Pantry -> R.string.add_pantry_item to { /* TODO: pantry add action */ }
                         HomeDestination.Products -> R.string.add_product to { /* TODO: product add action */ }
-                        HomeDestination.Lists -> R.string.add_list to { /* TODO: list add action */ }
+                        HomeDestination.Lists -> R.string.add_list to { showCreateListDialog = true }
                     }
                     PrimaryFab(contentDescriptionRes = labelRes, onClick = action)
                 },
@@ -137,7 +143,7 @@ fun ListsApp() {
                     )
                     HomeDestination.Lists -> ListsScreen(
                         modifier = contentModifier,
-                        items = mockLists,
+                        items = lists,
                         onListClick = { listId -> selectedListId = listId },
                         onMenuClick = { isMenuOpen = true }
                     )
@@ -173,6 +179,28 @@ fun ListsApp() {
                 // This would typically involve changing the app's locale
             }
         )
+
+        // Create List dialog (ephemeral UI) - persistence should be handled by ViewModel/Repository
+        if (showCreateListDialog && currentDestination == HomeDestination.Lists) {
+            CreateListDialog(
+                onDismiss = { showCreateListDialog = false },
+                onCreate = { title, leadingIcon ->
+                    // Create a new ListCardData and prepend to local list. In the future delegate
+                    // this to a Repository/ViewModel that handles persistence (API/DB).
+                    val newList = ListCardData(
+                        id = "list_${System.currentTimeMillis()}",
+                        title = title.ifBlank { "New List" },
+                        itemCount = 0,
+                        leadingIcon = leadingIcon,
+                        isFavorite = false,
+                        isShared = false,
+                        products = emptyList()
+                    )
+                    lists.add(0, newList)
+                    showCreateListDialog = false
+                }
+            )
+        }
     }
 }
 

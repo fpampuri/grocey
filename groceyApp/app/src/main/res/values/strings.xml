@@ -14,6 +14,7 @@
     <string name="pantry_tab">Pantry</string>
     <string name="products_tab">Products</string>
     <string name="add_list">Add List</string>
+    <string name="select_icon">Select icon</string>
     <string name="add_pantry_item">Add Pantry Item</string>
     <string name="add_product">Add Product</string>
     <string name="shared_label">Shared</string>
