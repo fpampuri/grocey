@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -16,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.groceyapp.R
 import com.example.groceyapp.ui.components.ListCardData
+import com.example.groceyapp.ui.components.MenuDrawer
 import com.example.groceyapp.ui.components.PrimaryFab
 import com.example.groceyapp.ui.lists.defaultListItemsPublic
 import com.example.groceyapp.ui.lists.HomeBottomBar
@@ -42,6 +44,7 @@ class MainActivity : ComponentActivity() {
 fun ListsApp() {
     var currentDestination by remember { mutableStateOf(HomeDestination.Lists) }
     var selectedListId by remember { mutableStateOf<String?>(null) }
+    var isMenuOpen by remember { mutableStateOf(false) }
     
     // Mock data - would come from a ViewModel in a real app
     val mockLists: List<ListCardData> = defaultListItemsPublic()
@@ -51,53 +54,69 @@ fun ListsApp() {
         mockLists.find { list -> list.id == id }
     }
 
-    if (selectedList != null) {
-        // Show detail screen
-        ListDetailScreen(
-            listData = selectedList,
-            onBackClick = { selectedListId = null },
-            onProductToggle = { productId ->
-                // TODO: Handle product toggle
-            },
-            onQuantityChange = { productId, newQuantity ->
-                // TODO: Handle quantity change
-            },
-            currentDestination = currentDestination,
-            onDestinationSelected = { destination ->
-                currentDestination = destination
-                selectedListId = null  // Go back to main view when switching tabs
-            }
-        )
-    } else {
-        // Show main app with bottom navigation
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            floatingActionButton = {
-                val (labelRes, action) = when (currentDestination) {
-                    HomeDestination.Pantry -> R.string.add_pantry_item to { /* TODO: pantry add action */ }
-                    HomeDestination.Products -> R.string.add_product to { /* TODO: product add action */ }
-                    HomeDestination.Lists -> R.string.add_list to { /* TODO: list add action */ }
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (selectedList != null) {
+            // Show detail screen
+            ListDetailScreen(
+                listData = selectedList,
+                onBackClick = { selectedListId = null },
+                onProductToggle = { productId ->
+                    // TODO: Handle product toggle
+                },
+                onQuantityChange = { productId, newQuantity ->
+                    // TODO: Handle quantity change
+                },
+                currentDestination = currentDestination,
+                onDestinationSelected = { destination ->
+                    currentDestination = destination
+                    selectedListId = null  // Go back to main view when switching tabs
+                },
+                onMenuClick = { isMenuOpen = true }
+            )
+        } else {
+            // Show main app with bottom navigation
+            Scaffold(
+                modifier = Modifier.fillMaxSize(),
+                floatingActionButton = {
+                    val (labelRes, action) = when (currentDestination) {
+                        HomeDestination.Pantry -> R.string.add_pantry_item to { /* TODO: pantry add action */ }
+                        HomeDestination.Products -> R.string.add_product to { /* TODO: product add action */ }
+                        HomeDestination.Lists -> R.string.add_list to { /* TODO: list add action */ }
+                    }
+                    PrimaryFab(contentDescriptionRes = labelRes, onClick = action)
+                },
+                bottomBar = {
+                    HomeBottomBar(
+                        currentDestination = currentDestination,
+                        onDestinationSelected = { currentDestination = it }
+                    )
                 }
-                PrimaryFab(contentDescriptionRes = labelRes, onClick = action)
-            },
-            bottomBar = {
-                HomeBottomBar(
-                    currentDestination = currentDestination,
-                    onDestinationSelected = { currentDestination = it }
-                )
-            }
-        ) { innerPadding ->
-            val contentModifier = Modifier.padding(innerPadding)
-            when (currentDestination) {
-                HomeDestination.Pantry -> PantryScreen(modifier = contentModifier)
-                HomeDestination.Products -> ProductsScreen(modifier = contentModifier)
-                HomeDestination.Lists -> ListsScreen(
-                    modifier = contentModifier,
-                    items = mockLists,
-                    onListClick = { listId -> selectedListId = listId }
-                )
+            ) { innerPadding ->
+                val contentModifier = Modifier.padding(innerPadding)
+                when (currentDestination) {
+                    HomeDestination.Pantry -> PantryScreen(
+                        modifier = contentModifier,
+                        onMenuClick = { isMenuOpen = true }
+                    )
+                    HomeDestination.Products -> ProductsScreen(
+                        modifier = contentModifier,
+                        onMenuClick = { isMenuOpen = true }
+                    )
+                    HomeDestination.Lists -> ListsScreen(
+                        modifier = contentModifier,
+                        items = mockLists,
+                        onListClick = { listId -> selectedListId = listId },
+                        onMenuClick = { isMenuOpen = true }
+                    )
+                }
             }
         }
+        
+        // Menu drawer overlay
+        MenuDrawer(
+            isOpen = isMenuOpen,
+            onDismiss = { isMenuOpen = false }
+        )
     }
 }
 

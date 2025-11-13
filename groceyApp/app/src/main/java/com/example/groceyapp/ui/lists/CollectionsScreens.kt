@@ -70,7 +70,8 @@ fun ListsScreen(
     onFavoriteToggle: (String) -> Unit = {},
     onRename: (String) -> Unit = {},
     onDelete: (String) -> Unit = {},
-    onShare: (String) -> Unit = {}
+    onShare: (String) -> Unit = {},
+    onMenuClick: () -> Unit = {}
 ) {
     val resolvedItems = items ?: defaultListItems()
     var searchQuery by remember { mutableStateOf("") }
@@ -89,30 +90,34 @@ fun ListsScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
-        SearchRow(
-            placeholder = stringResource(R.string.search_lists_placeholder),
-            filterDescription = stringResource(R.string.filter_content_description),
-            onFilterClick = onFilterClick,
-            searchQuery = searchQuery,
-            onSearchQueryChange = { searchQuery = it }
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(bottom = 80.dp)
+        com.example.groceyapp.ui.components.ScreenTopBar(onMenuClick = onMenuClick)
+        Column(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            items(filteredItems) { item ->
-                ListCard(
-                    data = item,
-                    onClick = onListClick,
-                    onFavoriteToggle = onFavoriteToggle,
-                    onRename = onRename,
-                    onDelete = onDelete,
-                    onShare = onShare
-                )
+            SearchRow(
+                placeholder = stringResource(R.string.search_lists_placeholder),
+                filterDescription = stringResource(R.string.filter_content_description),
+                onFilterClick = onFilterClick,
+                searchQuery = searchQuery,
+                onSearchQueryChange = { searchQuery = it }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(bottom = 80.dp)
+            ) {
+                items(filteredItems) { item ->
+                    ListCard(
+                        data = item,
+                        onClick = onListClick,
+                        onFavoriteToggle = onFavoriteToggle,
+                        onRename = onRename,
+                        onDelete = onDelete,
+                        onShare = onShare
+                    )
+                }
             }
         }
     }
@@ -122,7 +127,8 @@ fun ListsScreen(
 fun PantryScreen(
     modifier: Modifier = Modifier,
     items: List<CategoryCardData>? = null,
-    onFilterClick: () -> Unit = {}
+    onFilterClick: () -> Unit = {},
+    onMenuClick: () -> Unit = {}
 ) {
     val resolvedItems = items ?: defaultPantryItems()
     var searchQuery by remember { mutableStateOf("") }
@@ -150,7 +156,8 @@ fun PantryScreen(
         items = filteredItems,
         onFilterClick = onFilterClick,
         searchQuery = searchQuery,
-        onSearchQueryChange = { searchQuery = it }
+        onSearchQueryChange = { searchQuery = it },
+        onMenuClick = onMenuClick
     )
 }
 
@@ -158,7 +165,8 @@ fun PantryScreen(
 fun ProductsScreen(
     modifier: Modifier = Modifier,
     items: List<CategoryCardData>? = null,
-    onFilterClick: () -> Unit = {}
+    onFilterClick: () -> Unit = {},
+    onMenuClick: () -> Unit = {}
 ) {
     val resolvedItems = items ?: defaultProductItems()
     var searchQuery by remember { mutableStateOf("") }
@@ -186,7 +194,8 @@ fun ProductsScreen(
         items = filteredItems,
         onFilterClick = onFilterClick,
         searchQuery = searchQuery,
-        onSearchQueryChange = { searchQuery = it }
+        onSearchQueryChange = { searchQuery = it },
+        onMenuClick = onMenuClick
     )
 }
 
@@ -198,28 +207,33 @@ private fun CollectionContent(
     items: List<CategoryCardData>,
     onFilterClick: () -> Unit,
     searchQuery: String,
-    onSearchQueryChange: (String) -> Unit
+    onSearchQueryChange: (String) -> Unit,
+    onMenuClick: () -> Unit
 ) {
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
-        SearchRow(
-            placeholder = searchPlaceholder,
-            filterDescription = filterDescription,
-            onFilterClick = onFilterClick,
-            searchQuery = searchQuery,
-            onSearchQueryChange = onSearchQueryChange
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(bottom = 80.dp)
+        com.example.groceyapp.ui.components.ScreenTopBar(onMenuClick = onMenuClick)
+        Column(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            items(items) { item ->
-                CategoryCard(item)
+            SearchRow(
+                placeholder = searchPlaceholder,
+                filterDescription = filterDescription,
+                onFilterClick = onFilterClick,
+                searchQuery = searchQuery,
+                onSearchQueryChange = onSearchQueryChange
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(bottom = 80.dp)
+            ) {
+                items(items) { item ->
+                    CategoryCard(item)
+                }
             }
         }
     }

@@ -26,4 +26,7 @@
     <string name="more_options">Más opciones</string>
     <string name="increase_quantity">Aumentar cantidad</string>
     <string name="decrease_quantity">Disminuir cantidad</string>
+    <string name="menu_button">Menú</string>
+    <string name="menu_profile">Perfil</string>
+    <string name="menu_settings">Configuración</string>
 </resources>
