@@ -20,6 +20,7 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Inventory2
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Store
 import androidx.compose.material.icons.rounded.LocalGroceryStore
@@ -91,7 +92,6 @@ fun ListsScreen(
         modifier = modifier
             .fillMaxSize()
     ) {
-        com.example.groceyapp.ui.components.ScreenTopBar(onMenuClick = onMenuClick)
         Column(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
@@ -100,7 +100,8 @@ fun ListsScreen(
                 filterDescription = stringResource(R.string.filter_content_description),
                 onFilterClick = onFilterClick,
                 searchQuery = searchQuery,
-                onSearchQueryChange = { searchQuery = it }
+                onSearchQueryChange = { searchQuery = it },
+                onMenuClick = onMenuClick
             )
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn(
@@ -214,7 +215,6 @@ private fun CollectionContent(
         modifier = modifier
             .fillMaxSize()
     ) {
-        com.example.groceyapp.ui.components.ScreenTopBar(onMenuClick = onMenuClick)
         Column(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
@@ -223,7 +223,8 @@ private fun CollectionContent(
                 filterDescription = filterDescription,
                 onFilterClick = onFilterClick,
                 searchQuery = searchQuery,
-                onSearchQueryChange = onSearchQueryChange
+                onSearchQueryChange = onSearchQueryChange,
+                onMenuClick = onMenuClick
             )
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn(
@@ -245,7 +246,8 @@ private fun SearchRow(
     filterDescription: String,
     onFilterClick: () -> Unit,
     searchQuery: String,
-    onSearchQueryChange: (String) -> Unit
+    onSearchQueryChange: (String) -> Unit,
+    onMenuClick: () -> Unit
 ) {
     val lightGreenBg = if (isSystemInDarkTheme()) {
         BrandGreenLightDarkTheme.copy(alpha = 0.2f)
@@ -255,8 +257,21 @@ private fun SearchRow(
 
     Row(
         modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        IconButton(
+            onClick = onMenuClick,
+            modifier = Modifier
+                .clip(RoundedCornerShape(16.dp))
+                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+        ) {
+            Icon(
+                imageVector = Icons.Default.MoreVert,
+                contentDescription = stringResource(R.string.menu_button),
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
         TextField(
             value = searchQuery,
             onValueChange = onSearchQueryChange,
@@ -287,7 +302,6 @@ private fun SearchRow(
             ),
             shape = RoundedCornerShape(16.dp)
         )
-        Spacer(modifier = Modifier.width(12.dp))
         IconButton(
             onClick = onFilterClick,
             modifier = Modifier

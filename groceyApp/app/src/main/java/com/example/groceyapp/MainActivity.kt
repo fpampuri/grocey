@@ -48,6 +48,14 @@ fun ListsApp() {
     var isMenuOpen by remember { mutableStateOf(false) }
     var isAuthenticated by remember { mutableStateOf(true) } // Start authenticated; set to false to show login
     
+    // User profile state
+    var userEmail by remember { mutableStateOf("user@gmail.com") }
+    var userName by remember { mutableStateOf("John Doe") }
+    
+    // Settings state
+    var isDarkMode by remember { mutableStateOf(false) }
+    var currentLanguage by remember { mutableStateOf("en") }
+    
     // Mock data - would come from a ViewModel in a real app
     val mockLists: List<ListCardData> = defaultListItemsPublic()
 
@@ -56,7 +64,8 @@ fun ListsApp() {
         AuthenticationScreen(
             onLoginClick = { email, password ->
                 // TODO: Implement actual authentication logic
-                // For now, just set authenticated to true
+                // For now, just set authenticated to true and store email
+                userEmail = email
                 isAuthenticated = true
             }
         )
@@ -132,6 +141,17 @@ fun ListsApp() {
             onDismiss = { isMenuOpen = false },
             onLogoutClick = {
                 isAuthenticated = false
+            },
+            userEmail = userEmail,
+            userName = userName,
+            onNameChange = { newName -> userName = newName },
+            isDarkMode = isDarkMode,
+            onDarkModeToggle = { isDarkMode = it },
+            currentLanguage = currentLanguage,
+            onLanguageChange = { newLanguage ->
+                currentLanguage = newLanguage
+                // TODO: Implement actual language change logic
+                // This would typically involve changing the app's locale
             }
         )
     }

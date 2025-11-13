@@ -1,5 +1,6 @@
 package com.example.groceyapp.ui.auth
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -15,10 +17,12 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -55,6 +59,12 @@ fun AuthenticationScreen(
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
+    
+    val greenColor = if (isSystemInDarkTheme()) {
+        com.example.groceyapp.ui.theme.BrandGreenDarkTheme
+    } else {
+        com.example.groceyapp.ui.theme.BrandGreen
+    }
 
     Scaffold(
         modifier = modifier.fillMaxSize()
@@ -95,7 +105,8 @@ fun AuthenticationScreen(
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Email,
-                        contentDescription = null
+                        contentDescription = null,
+                        tint = greenColor
                     )
                 },
                 modifier = Modifier.fillMaxWidth(),
@@ -106,7 +117,14 @@ fun AuthenticationScreen(
                 ),
                 keyboardActions = KeyboardActions(
                     onNext = { focusManager.moveFocus(FocusDirection.Down) }
-                )
+                ),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = greenColor,
+                    unfocusedBorderColor = greenColor,
+                    focusedLabelColor = greenColor,
+                    cursorColor = greenColor
+                ),
+                shape = RoundedCornerShape(12.dp)
             )
             
             Spacer(modifier = Modifier.height(16.dp))
@@ -120,7 +138,8 @@ fun AuthenticationScreen(
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Lock,
-                        contentDescription = null
+                        contentDescription = null,
+                        tint = greenColor
                     )
                 },
                 trailingIcon = {
@@ -133,7 +152,8 @@ fun AuthenticationScreen(
                             contentDescription = if (passwordVisible)
                                 stringResource(R.string.auth_hide_password)
                             else
-                                stringResource(R.string.auth_show_password)
+                                stringResource(R.string.auth_show_password),
+                            tint = greenColor
                         )
                     }
                 },
@@ -154,7 +174,14 @@ fun AuthenticationScreen(
                             onLoginClick(email, password)
                         }
                     }
-                )
+                ),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = greenColor,
+                    unfocusedBorderColor = greenColor,
+                    focusedLabelColor = greenColor,
+                    cursorColor = greenColor
+                ),
+                shape = RoundedCornerShape(12.dp)
             )
             
             Spacer(modifier = Modifier.height(32.dp))
@@ -169,7 +196,12 @@ fun AuthenticationScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
-                enabled = email.isNotBlank() && password.isNotBlank()
+                enabled = email.isNotBlank() && password.isNotBlank(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = greenColor,
+                    contentColor = androidx.compose.ui.graphics.Color.White
+                ),
+                shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
                     text = stringResource(R.string.auth_login_button),

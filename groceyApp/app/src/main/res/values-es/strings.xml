@@ -31,6 +31,24 @@
     <string name="menu_settings">Configuración</string>
     <string name="menu_logout">Cerrar sesión</string>
     
+    <!-- Profile strings -->
+    <string name="profile_email_label">Correo electrónico</string>
+    <string name="profile_name_label">Nombre</string>
+    <string name="profile_password_label">Contraseña</string>
+    <string name="profile_change_password">Cambiar contraseña</string>
+    
+    <!-- Settings strings -->
+    <string name="settings_dark_mode">Modo oscuro</string>
+    <string name="settings_language">Idioma</string>
+    
+    <!-- Password change dialog -->
+    <string name="dialog_change_password_title">Cambiar contraseña</string>
+    <string name="dialog_old_password">Contraseña actual</string>
+    <string name="dialog_new_password">Nueva contraseña</string>
+    <string name="dialog_confirm_password">Confirmar contraseña</string>
+    <string name="dialog_change">Cambiar</string>
+    <string name="dialog_cancel">Cancelar</string>
+    
     <!-- Authentication strings -->
     <string name="auth_welcome_message">¡Bienvenido de nuevo! Inicia sesión para continuar.</string>
     <string name="auth_email_label">Correo electrónico</string>
