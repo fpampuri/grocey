@@ -30,8 +30,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -72,6 +73,18 @@ fun ListsScreen(
     onShare: (String) -> Unit = {}
 ) {
     val resolvedItems = items ?: defaultListItems()
+    var searchQuery by remember { mutableStateOf("") }
+    
+    // Filter items based on search query
+    val filteredItems = remember(searchQuery, resolvedItems) {
+        if (searchQuery.isBlank()) {
+            resolvedItems
+        } else {
+            resolvedItems.filter { list ->
+                list.title.contains(searchQuery, ignoreCase = true)
+            }
+        }
+    }
     
     Column(
         modifier = modifier
@@ -81,7 +94,9 @@ fun ListsScreen(
         SearchRow(
             placeholder = stringResource(R.string.search_lists_placeholder),
             filterDescription = stringResource(R.string.filter_content_description),
-            onFilterClick = onFilterClick
+            onFilterClick = onFilterClick,
+            searchQuery = searchQuery,
+            onSearchQueryChange = { searchQuery = it }
         )
         Spacer(modifier = Modifier.height(16.dp))
         LazyColumn(
@@ -89,7 +104,7 @@ fun ListsScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = PaddingValues(bottom = 80.dp)
         ) {
-            items(resolvedItems) { item ->
+            items(filteredItems) { item ->
                 ListCard(
                     data = item,
                     onClick = onListClick,
@@ -110,12 +125,27 @@ fun PantryScreen(
     onFilterClick: () -> Unit = {}
 ) {
     val resolvedItems = items ?: defaultPantryItems()
+    var searchQuery by remember { mutableStateOf("") }
+    
+    // Filter items based on search query
+    val filteredItems = remember(searchQuery, resolvedItems) {
+        if (searchQuery.isBlank()) {
+            resolvedItems
+        } else {
+            resolvedItems.filter { category ->
+                category.title.contains(searchQuery, ignoreCase = true)
+            }
+        }
+    }
+    
     CollectionContent(
         modifier = modifier,
         searchPlaceholder = stringResource(R.string.search_pantry_placeholder),
         filterDescription = stringResource(R.string.filter_content_description),
-        items = resolvedItems,
-        onFilterClick = onFilterClick
+        items = filteredItems,
+        onFilterClick = onFilterClick,
+        searchQuery = searchQuery,
+        onSearchQueryChange = { searchQuery = it }
     )
 }
 
@@ -126,12 +156,27 @@ fun ProductsScreen(
     onFilterClick: () -> Unit = {}
 ) {
     val resolvedItems = items ?: defaultProductItems()
+    var searchQuery by remember { mutableStateOf("") }
+    
+    // Filter items based on search query
+    val filteredItems = remember(searchQuery, resolvedItems) {
+        if (searchQuery.isBlank()) {
+            resolvedItems
+        } else {
+            resolvedItems.filter { category ->
+                category.title.contains(searchQuery, ignoreCase = true)
+            }
+        }
+    }
+    
     CollectionContent(
         modifier = modifier,
         searchPlaceholder = stringResource(R.string.search_products_placeholder),
         filterDescription = stringResource(R.string.filter_content_description),
-        items = resolvedItems,
-        onFilterClick = onFilterClick
+        items = filteredItems,
+        onFilterClick = onFilterClick,
+        searchQuery = searchQuery,
+        onSearchQueryChange = { searchQuery = it }
     )
 }
 
@@ -141,7 +186,9 @@ private fun CollectionContent(
     searchPlaceholder: String,
     filterDescription: String,
     items: List<CategoryCardData>,
-    onFilterClick: () -> Unit
+    onFilterClick: () -> Unit,
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -151,7 +198,9 @@ private fun CollectionContent(
         SearchRow(
             placeholder = searchPlaceholder,
             filterDescription = filterDescription,
-            onFilterClick = onFilterClick
+            onFilterClick = onFilterClick,
+            searchQuery = searchQuery,
+            onSearchQueryChange = onSearchQueryChange
         )
         Spacer(modifier = Modifier.height(16.dp))
         LazyColumn(
@@ -170,21 +219,49 @@ private fun CollectionContent(
 private fun SearchRow(
     placeholder: String,
     filterDescription: String,
-    onFilterClick: () -> Unit
+    onFilterClick: () -> Unit,
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit
 ) {
-    var query by remember { mutableStateOf("") }
+    val lightGreenBg = if (isSystemInDarkTheme()) {
+        BrandGreenLightDarkTheme.copy(alpha = 0.2f)
+    } else {
+        BrandGreenLight.copy(alpha = 0.2f)
+    }
 
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        OutlinedTextField(
-            value = query,
-            onValueChange = { query = it },
-            modifier = Modifier.weight(1f),
+        TextField(
+            value = searchQuery,
+            onValueChange = onSearchQueryChange,
+            modifier = Modifier
+                .weight(1f)
+                .clip(RoundedCornerShape(16.dp)),
             singleLine = true,
-            placeholder = { Text(placeholder) },
-            leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = null) }
+            placeholder = { 
+                Text(
+                    text = placeholder,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                ) 
+            },
+            leadingIcon = { 
+                Icon(
+                    imageVector = Icons.Default.Search, 
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                ) 
+            },
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = lightGreenBg,
+                unfocusedContainerColor = lightGreenBg,
+                disabledContainerColor = lightGreenBg,
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
+            ),
+            shape = RoundedCornerShape(16.dp)
         )
         Spacer(modifier = Modifier.width(12.dp))
         IconButton(
