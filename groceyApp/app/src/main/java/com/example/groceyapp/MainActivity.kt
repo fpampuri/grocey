@@ -9,12 +9,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.groceyapp.R
 import com.example.groceyapp.ui.auth.AuthenticationScreen
 import com.example.groceyapp.ui.components.ListCardData
@@ -28,6 +30,7 @@ import com.example.groceyapp.ui.lists.ListsScreen
 import com.example.groceyapp.ui.lists.PantryScreen
 import com.example.groceyapp.ui.lists.ProductsScreen
 import com.example.groceyapp.ui.theme.GroceyAppTheme
+import com.example.groceyapp.ui.viewmodel.AuthViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,14 +46,16 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ListsApp() {
+    // Get AuthViewModel instance
+    val authViewModel: AuthViewModel = viewModel()
+    
+    // Collect authentication state
+    val isAuthenticated by authViewModel.isAuthenticated.collectAsState()
+    val currentUser by authViewModel.currentUser.collectAsState()
+    
     var currentDestination by remember { mutableStateOf(HomeDestination.Lists) }
     var selectedListId by remember { mutableStateOf<String?>(null) }
     var isMenuOpen by remember { mutableStateOf(false) }
-    var isAuthenticated by remember { mutableStateOf(true) } // Start authenticated; set to false to show login
-    
-    // User profile state
-    var userEmail by remember { mutableStateOf("user@gmail.com") }
-    var userName by remember { mutableStateOf("John Doe") }
     
     // Settings state
     var isDarkMode by remember { mutableStateOf(false) }
@@ -65,15 +70,17 @@ fun ListsApp() {
     // Show authentication screen if not authenticated
     if (!isAuthenticated) {
         AuthenticationScreen(
-            onLoginClick = { email, password ->
-                // TODO: Implement actual authentication logic
-                // For now, just set authenticated to true and store email
-                userEmail = email
-                isAuthenticated = true
+            onLoginSuccess = {
+                // Authentication handled by viewModel
+                // User will be automatically authenticated when login succeeds
             }
         )
         return
     }
+    
+    // Extract user info from currentUser
+    val userEmail = currentUser?.email ?: "user@gmail.com"
+    val userName = "${currentUser?.name ?: "User"} ${currentUser?.surname ?: ""}"
 
     // Determine if we're showing list detail
     val selectedList: ListCardData? = selectedListId?.let { id: String ->
@@ -143,11 +150,20 @@ fun ListsApp() {
             isOpen = isMenuOpen,
             onDismiss = { isMenuOpen = false },
             onLogoutClick = {
-                isAuthenticated = false
+                authViewModel.logout()
             },
             userEmail = userEmail,
             userName = userName,
-            onNameChange = { newName -> userName = newName },
+            onNameChange = { newName ->
+                // Parse name into first and last name
+                val nameParts = newName.trim().split(" ", limit = 2)
+                val firstName = nameParts.getOrNull(0) ?: ""
+                val lastName = nameParts.getOrNull(1) ?: ""
+                
+                if (firstName.isNotBlank()) {
+                    authViewModel.updateProfile(firstName, lastName)
+                }
+            },
             isDarkMode = isDarkMode,
             onDarkModeToggle = { isDarkMode = it },
             currentLanguage = currentLanguage,

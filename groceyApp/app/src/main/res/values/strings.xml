@@ -58,4 +58,24 @@
     <string name="auth_show_password">Show password</string>
     <string name="auth_hide_password">Hide password</string>
     <string name="auth_login_button">Login</string>
+    <string name="auth_no_account">Don\'t have an account?</string>
+    <string name="auth_create_account">Create one</string>
+    <string name="auth_have_account">Already have an account?</string>
+    <string name="auth_sign_in">Sign in</string>
+    
+    <!-- Registration strings -->
+    <string name="register_welcome_message">Create your account to get started</string>
+    <string name="register_first_name_label">First Name</string>
+    <string name="register_first_name_placeholder">John</string>
+    <string name="register_last_name_label">Last Name</string>
+    <string name="register_last_name_placeholder">Doe</string>
+    <string name="register_button">Create Account</string>
+    <string name="register_success">Account created! Check your email for verification code.</string>
+    
+    <!-- Verification strings -->
+    <string name="verify_welcome_message">Enter the verification code sent to your email</string>
+    <string name="verify_code_label">Verification Code</string>
+    <string name="verify_code_placeholder">Enter 6-digit code</string>
+    <string name="verify_button">Verify Account</string>
+    <string name="verify_resend">Resend code</string>
 </resources>
