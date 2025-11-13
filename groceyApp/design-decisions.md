@@ -136,3 +136,10 @@ Add future decisions in chronological order so the report can reference this sin
 - **Justification**: Nielsen's "Visibility of system status" and "Response time" heuristics — immediate local updates maintain perceived performance. Architectural pragmatism: keep UI responsive while preparing an explicit migration to a single source of truth (ViewModel + Repository) to avoid later refactors.
 - **Impact**: Better perceived responsiveness and smoother UX while the backend is integrated. Implementation uses a local mutable list copied from the passed model for now; important persistence points are annotated with "API CHANGE" comments so migrating to ViewModel/Repository is straightforward.
 
+
+### Physical reorganization: card components folder — 2025-11-13
+- **Change**: Moved concrete card components into a physical subfolder `app/src/main/java/.../ui/components/cards/` (files: `ListCard.kt`, `CategoryCard.kt`, `ProductItemCard.kt`, `SharedBadge.kt`) while keeping the Kotlin package `com.example.groceyapp.ui.components` unchanged.
+- **User Problem / Goal**: Improve filesystem organization for maintainability while preserving import paths so callers don't need immediate changes.
+- **Justification**: Physical grouping of related components reduces cognitive overhead when navigating the codebase. Keeping the package stable avoids large-scale import churn and reduces the migration surface (safer refactor).
+- **Impact**: Developers can now find card implementations under `ui/components/cards/`. The original files in `ui/components/` were left as small placeholders to avoid breaking imports during the transition. This is a low-risk refactor and is recorded here for traceability.
+
