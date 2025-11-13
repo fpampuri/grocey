@@ -142,6 +142,10 @@ fun ListDetailScreen(
                 }
                 
                 // Product items
+                // API CHANGE: Persistence for product state (bought flag, quantity) should be
+                // handled by a ViewModel/Repository. Wire `onToggleBought` and `onQuantityChange`
+                // to the ListDetailViewModel (e.g. `viewModel.toggleBought(productId)`,
+                // `viewModel.setQuantity(productId, q)`) so changes persist in the DB/API.
                 items(listData.products) { product ->
                     ProductItemCard(
                         data = product,

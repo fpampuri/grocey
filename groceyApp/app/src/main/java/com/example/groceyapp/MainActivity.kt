@@ -56,7 +56,10 @@ fun ListsApp() {
     var isDarkMode by remember { mutableStateOf(false) }
     var currentLanguage by remember { mutableStateOf("en") }
     
-    // Mock data - would come from a ViewModel in a real app
+    // Mock data - would come from a ViewModel/Repository in a real app
+    // API CHANGE: Replace `defaultListItemsPublic()` with a ViewModel-provided state (e.g.
+    // `val mockLists by collectionsViewModel.listsState.collectAsState()`) that reads from
+    // the Repository/DB or remote API instead of hard-coded sample data.
     val mockLists: List<ListCardData> = defaultListItemsPublic()
 
     // Show authentication screen if not authenticated

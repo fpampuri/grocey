@@ -76,6 +76,9 @@ fun ListsScreen(
     onMenuClick: () -> Unit = {}
 ) {
     val resolvedItems = items ?: defaultListItems()
+    // API CHANGE: Replace `defaultListItems()` with data provided by a ViewModel/Repository
+    // (e.g. `val lists by collectionsViewModel.listsState.collectAsState()`),
+    // and remove the hard-coded mock data usage here.
 
     GenericCollectionScreen(
         items = resolvedItems,
@@ -107,6 +110,9 @@ fun PantryScreen(
     onMenuClick: () -> Unit = {}
 ) {
     val resolvedItems = items ?: defaultPantryItems()
+    // API CHANGE: Replace `defaultPantryItems()` with data from a ViewModel/Repository
+    // (e.g. `val pantry by collectionsViewModel.pantryState.collectAsState()`),
+    // and perform filtering through the ViewModel or repository APIs.
 
     GenericCollectionScreen(
         items = resolvedItems,
@@ -132,6 +138,9 @@ fun ProductsScreen(
     onMenuClick: () -> Unit = {}
 ) {
     val resolvedItems = items ?: defaultProductItems()
+    // API CHANGE: Replace `defaultProductItems()` with data from a ViewModel/Repository
+    // (e.g. `val products by collectionsViewModel.productsState.collectAsState()`),
+    // and perform filtering through the ViewModel or repository APIs.
 
     GenericCollectionScreen(
         items = resolvedItems,
@@ -190,6 +199,10 @@ fun defaultListItemsPublic(): List<ListCardData> {
 }
 
 @Composable
+// API CHANGE: `defaultListItems`, `defaultPantryItems`, and `defaultProductItems` are
+// mock/sample data used for previews and local testing. When integrating an API/DB,
+// move these samples to a preview/test-only file (e.g. `ui/preview/SampleData.kt`) and
+// fetch real data via a Repository/ViewModel instead of calling these functions.
 private fun defaultListItems(): List<ListCardData> {
     return listOf(
         ListCardData(

@@ -159,6 +159,9 @@ fun ListCard(
             }
             
             // Favorite star toggle
+            // API CHANGE: The favorite toggle should persist via ViewModel/Repository.
+            // Callers should pass a ViewModel method (e.g. `collectionsViewModel.toggleFavorite(id)`) 
+            // that updates the backend/DB instead of mutating only in-memory state.
             IconButton(
                 onClick = { 
                     onFavoriteToggle(data.id)
@@ -197,6 +200,10 @@ fun ListCard(
                     expanded = showMenu,
                     onDismissRequest = { showMenu = false }
                 ) {
+                    // API CHANGE: Renaming/sharing/deleting a list should call into a ViewModel
+                    // method that updates the repository (remote/local DB). Ensure the
+                    // implementation performs the persistence operation and emits new state
+                    // observable for the UI to consume.
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.rename_list)) },
                         onClick = {
@@ -273,6 +280,10 @@ fun ProductItemCard(
                 checked = data.isBought,
                 onCheckedChange = { onToggleBought() }
             )
+                // API CHANGE: This action should call a ViewModel/Repository method to persist
+                // the bought state (e.g. `listDetailViewModel.toggleBought(productId)`);
+                // ensure callers pass a function that performs persistence instead of only
+                // mutating in-memory UI state.
             
             Spacer(modifier = Modifier.width(8.dp))
             
@@ -320,6 +331,8 @@ fun ProductItemCard(
                             MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
                     )
                 }
+                    // API CHANGE: Quantity updates should be persisted via ViewModel/Repository
+                    // (e.g. `listDetailViewModel.setQuantity(productId, newQuantity)`).
                 
                 // Quantity display
                 Box(
