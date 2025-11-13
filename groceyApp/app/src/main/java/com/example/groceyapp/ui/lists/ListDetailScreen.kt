@@ -22,10 +22,13 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.groceyapp.R
 import com.example.groceyapp.ui.components.ListCardData
+import com.example.groceyapp.ui.components.PrimaryFab
 import com.example.groceyapp.ui.components.ProductItemCard
 import com.example.groceyapp.ui.components.ProductItemData
 
@@ -40,6 +43,8 @@ fun ListDetailScreen(
     onBackClick: () -> Unit = {},
     onProductToggle: (String) -> Unit = {},
     onQuantityChange: (String, Int) -> Unit = { _, _ -> },
+    currentDestination: HomeDestination,
+    onDestinationSelected: (HomeDestination) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -67,6 +72,18 @@ fun ListDetailScreen(
                     titleContentColor = MaterialTheme.colorScheme.onSurface,
                     navigationIconContentColor = MaterialTheme.colorScheme.onSurface
                 )
+            )
+        },
+        floatingActionButton = {
+            PrimaryFab(
+                contentDescriptionRes = R.string.add_product,
+                onClick = { /* TODO: Add product action */ }
+            )
+        },
+        bottomBar = {
+            HomeBottomBar(
+                currentDestination = currentDestination,
+                onDestinationSelected = onDestinationSelected
             )
         }
     ) { paddingValues ->

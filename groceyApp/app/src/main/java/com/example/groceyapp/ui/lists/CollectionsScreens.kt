@@ -127,13 +127,18 @@ fun PantryScreen(
     val resolvedItems = items ?: defaultPantryItems()
     var searchQuery by remember { mutableStateOf("") }
     
-    // Filter items based on search query
+    // Filter items based on search query - matches category title OR products within
     val filteredItems = remember(searchQuery, resolvedItems) {
         if (searchQuery.isBlank()) {
             resolvedItems
         } else {
             resolvedItems.filter { category ->
-                category.title.contains(searchQuery, ignoreCase = true)
+                // Match category title
+                category.title.contains(searchQuery, ignoreCase = true) ||
+                // OR match any product within the category
+                category.products.any { product ->
+                    product.contains(searchQuery, ignoreCase = true)
+                }
             }
         }
     }
@@ -158,13 +163,18 @@ fun ProductsScreen(
     val resolvedItems = items ?: defaultProductItems()
     var searchQuery by remember { mutableStateOf("") }
     
-    // Filter items based on search query
+    // Filter items based on search query - matches category title OR products within
     val filteredItems = remember(searchQuery, resolvedItems) {
         if (searchQuery.isBlank()) {
             resolvedItems
         } else {
             resolvedItems.filter { category ->
-                category.title.contains(searchQuery, ignoreCase = true)
+                // Match category title
+                category.title.contains(searchQuery, ignoreCase = true) ||
+                // OR match any product within the category
+                category.products.any { product ->
+                    product.contains(searchQuery, ignoreCase = true)
+                }
             }
         }
     }

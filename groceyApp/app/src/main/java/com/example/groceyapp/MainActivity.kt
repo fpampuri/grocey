@@ -61,6 +61,11 @@ fun ListsApp() {
             },
             onQuantityChange = { productId, newQuantity ->
                 // TODO: Handle quantity change
+            },
+            currentDestination = currentDestination,
+            onDestinationSelected = { destination ->
+                currentDestination = destination
+                selectedListId = null  // Go back to main view when switching tabs
             }
         )
     } else {
