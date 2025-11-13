@@ -20,7 +20,6 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Inventory2
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Store
 import androidx.compose.material.icons.rounded.LocalGroceryStore
@@ -102,7 +101,8 @@ fun ListsScreen(
                 onFilterClick = onFilterClick,
                 searchQuery = searchQuery,
                 onSearchQueryChange = { searchQuery = it },
-                onMenuClick = onMenuClick
+                onMenuClick = onMenuClick,
+                showFilterInside = true
             )
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn(
@@ -225,7 +225,8 @@ private fun CollectionContent(
                 onFilterClick = onFilterClick,
                 searchQuery = searchQuery,
                 onSearchQueryChange = onSearchQueryChange,
-                onMenuClick = onMenuClick
+                onMenuClick = onMenuClick,
+                showFilterInside = true
             )
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn(

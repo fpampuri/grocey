@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,7 +40,8 @@ fun TopSearchBar(
     onFilterClick: () -> Unit,
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
-    onMenuClick: () -> Unit
+    onMenuClick: () -> Unit,
+    showFilterInside: Boolean = false
 ) {
     val lightGreenBg = if (isSystemInDarkTheme()) {
         BrandGreenLightDarkTheme.copy(alpha = 0.2f)
@@ -60,7 +61,7 @@ fun TopSearchBar(
                 .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
         ) {
             Icon(
-                imageVector = Icons.Default.MoreVert,
+                imageVector = Icons.Default.Menu,
                 contentDescription = stringResource(R.string.menu_button),
                 tint = MaterialTheme.colorScheme.primary
             )
@@ -85,6 +86,21 @@ fun TopSearchBar(
                     tint = MaterialTheme.colorScheme.primary
                 )
             },
+            trailingIcon = if (showFilterInside) {
+                {
+                    IconButton(
+                        onClick = onFilterClick,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.FilterList,
+                            contentDescription = filterDescription,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            } else null,
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = lightGreenBg,
                 unfocusedContainerColor = lightGreenBg,
@@ -95,17 +111,19 @@ fun TopSearchBar(
             ),
             shape = RoundedCornerShape(16.dp)
         )
-        IconButton(
-            onClick = onFilterClick,
-            modifier = Modifier
-                .clip(RoundedCornerShape(16.dp))
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-        ) {
-            Icon(
-                imageVector = Icons.Default.FilterList,
-                contentDescription = filterDescription,
-                tint = MaterialTheme.colorScheme.primary
-            )
+        if (!showFilterInside) {
+            IconButton(
+                onClick = onFilterClick,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+            ) {
+                Icon(
+                    imageVector = Icons.Default.FilterList,
+                    contentDescription = filterDescription,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
         }
     }
 }
