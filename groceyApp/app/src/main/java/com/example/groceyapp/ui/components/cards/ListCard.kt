@@ -68,44 +68,27 @@ fun ListCard(
     var showMenu by remember { mutableStateOf(false) }
     val borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
 
-    OutlinedCard(
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        border = BorderStroke(1.dp, SolidColor(borderColor)),
-        shape = RoundedCornerShape(24.dp),
-        modifier = modifier.fillMaxWidth()
+    CollectionCardShell(
+        onClick = { onClick(data.id) },
+        modifier = modifier
     ) {
-        // Main card header - larger than category cards
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { onClick(data.id) }
-                .padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Icon - larger for lists
             Icon(
                 imageVector = data.leadingIcon,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(24.dp)
             )
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
             // Title and item count
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = data.title,
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
-                    )
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
                 )
-                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = androidx.compose.ui.res.stringResource(R.string.items_count, data.itemCount),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -116,7 +99,7 @@ fun ListCard(
                 Spacer(modifier = Modifier.width(8.dp))
             }
 
-            // Favorite star toggle
+            // Favorite star toggle (size aligned with CategoryCard)
             // API CHANGE: The favorite toggle should persist via ViewModel/Repository.
             // Callers should pass a ViewModel method (e.g. `collectionsViewModel.toggleFavorite(id)`) 
             // that updates the backend/DB instead of mutating only in-memory state.
@@ -124,7 +107,7 @@ fun ListCard(
                 onClick = { 
                     onFavoriteToggle(data.id)
                 },
-                modifier = Modifier.size(28.dp)
+                modifier = Modifier.size(24.dp)
             ) {
                 Icon(
                     imageVector = if (data.isFavorite) Icons.Filled.Star else Icons.Outlined.StarBorder,
@@ -145,7 +128,7 @@ fun ListCard(
             androidx.compose.foundation.layout.Box {
                 IconButton(
                     onClick = { showMenu = !showMenu },
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.MoreVert,
@@ -206,4 +189,3 @@ fun ListCard(
             }
         }
     }
-}

@@ -60,136 +60,125 @@ fun CategoryCard(
         label = "chevron rotation"
     )
 
-    OutlinedCard(
-        colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        border = androidx.compose.foundation.BorderStroke(1.dp, SolidColor(borderColor)),
-        shape = RoundedCornerShape(24.dp),
-        modifier = modifier.fillMaxWidth()
+    CollectionCardShell(
+        onClick = { isExpanded = !isExpanded },
+        modifier = modifier
     ) {
-        Column {
-            // Main card row (clickable to expand/collapse)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { isExpanded = !isExpanded }
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = data.leadingIcon,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                androidx.compose.foundation.layout.Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = data.title,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
-                    )
-                    Text(
-                        text = data.subtitle,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                data.badgeText?.let { badge ->
-                    SharedBadge(badge)
-                    Spacer(modifier = Modifier.width(8.dp))
-                }
+        // Main card row (content placed directly into the Row provided by the shell)
+        Icon(
+            imageVector = data.leadingIcon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        androidx.compose.foundation.layout.Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = data.title,
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+            )
+            Text(
+                text = data.subtitle,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        data.badgeText?.let { badge ->
+            SharedBadge(badge)
+            Spacer(modifier = Modifier.width(8.dp))
+        }
 
-                // Chevron icon (rotates when expanded)
-                Icon(
-                    imageVector = Icons.Default.ChevronRight,
-                    contentDescription = if (isExpanded) "Collapse" else "Expand",
-                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-                    modifier = Modifier.rotate(rotationAngle)
-                )
+        // Chevron icon (rotates when expanded)
+        Icon(
+            imageVector = Icons.Default.ChevronRight,
+            contentDescription = if (isExpanded) "Collapse" else "Expand",
+            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+            modifier = Modifier.rotate(rotationAngle)
+        )
 
-                Spacer(modifier = Modifier.width(4.dp))
+        Spacer(modifier = Modifier.width(4.dp))
 
-                // Three-dot menu
-                IconButton(
-                    onClick = { showMenu = !showMenu },
-                    modifier = Modifier.size(24.dp)
-                ) {
+        // Three-dot menu
+        IconButton(
+            onClick = { showMenu = !showMenu },
+            modifier = Modifier.size(24.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.MoreVert,
+                contentDescription = "Options",
+                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+            )
+        }
+
+        // Dropdown menu
+        DropdownMenu(
+            expanded = showMenu,
+            onDismissRequest = { showMenu = false }
+        ) {
+            DropdownMenuItem(
+                text = { Text("Rename") },
+                onClick = {
+                    showMenu = false
+                },
+                leadingIcon = {
                     Icon(
-                        imageVector = Icons.Default.MoreVert,
-                        contentDescription = "Options",
-                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = null
                     )
                 }
-
-                // Dropdown menu
-                DropdownMenu(
-                    expanded = showMenu,
-                    onDismissRequest = { showMenu = false }
-                ) {
-                    DropdownMenuItem(
-                        text = { Text("Rename") },
-                        onClick = {
-                            showMenu = false
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = null
-                            )
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Delete") },
-                        onClick = {
-                            showMenu = false
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = null
-                            )
-                        }
+            )
+            DropdownMenuItem(
+                text = { Text("Delete") },
+                onClick = {
+                    showMenu = false
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = null
                     )
                 }
-            }
+            )
+        }
+    }
 
-            // Expanded content with products list
-            if (isExpanded && data.products.isNotEmpty()) {
-                val lightGreenBg = if (isSystemInDarkTheme()) {
-                    BrandGreenLightDarkTheme.copy(alpha = 0.15f)
-                } else {
-                    BrandGreenLight.copy(alpha = 0.15f)
-                }
+    // Expanded content with products list
+    if (isExpanded && data.products.isNotEmpty()) {
+        val lightGreenBg = if (isSystemInDarkTheme()) {
+            BrandGreenLightDarkTheme.copy(alpha = 0.15f)
+        } else {
+            BrandGreenLight.copy(alpha = 0.15f)
+        }
 
-                androidx.compose.foundation.layout.Column(
+        androidx.compose.foundation.layout.Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(lightGreenBg)
+                .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp)
+        ) {
+            data.products.forEach { product ->
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(lightGreenBg)
-                        .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp)
+                        .padding(vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    data.products.forEach { product ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Circle,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(8.dp)
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(
-                                text = product,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-                    }
+                    Icon(
+                        imageVector = Icons.Default.Circle,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(8.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = product,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                 }
             }
         }
     }
+
 }
+
