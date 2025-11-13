@@ -22,6 +22,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -98,7 +102,12 @@ fun ListDetailScreen(
             )
         }
     ) { paddingValues ->
-        if (listData.products.isEmpty()) {
+        // Use a local, mutable list state initialized from the passed-in model so
+        // the UI is immediately interactive. This is intentionally simple so it
+        // can be replaced later by a ViewModel/Repository without changing the UI.
+        val productsState = remember { mutableStateListOf<ProductItemData>().apply { addAll(listData.products) } }
+
+        if (productsState.isEmpty()) {
             // Empty state
             Column(
                 modifier = Modifier
@@ -146,11 +155,27 @@ fun ListDetailScreen(
                 // handled by a ViewModel/Repository. Wire `onToggleBought` and `onQuantityChange`
                 // to the ListDetailViewModel (e.g. `viewModel.toggleBought(productId)`,
                 // `viewModel.setQuantity(productId, q)`) so changes persist in the DB/API.
-                items(listData.products) { product ->
+                items(productsState, key = { it.id }) { product ->
                     ProductItemCard(
                         data = product,
-                        onToggleBought = { onProductToggle(product.id) },
-                        onQuantityChange = { newQuantity -> 
+                        onToggleBought = {
+                            // Update local UI state immediately
+                            val idx = productsState.indexOfFirst { it.id == product.id }
+                            if (idx >= 0) {
+                                productsState[idx] = productsState[idx].copy(isBought = !productsState[idx].isBought)
+                            }
+                            // API CHANGE: Persist this change via ViewModel/Repository. Example:
+                            // `listDetailViewModel.toggleBought(product.id)`
+                            onProductToggle(product.id)
+                        },
+                        onQuantityChange = { newQuantity ->
+                            // Update local UI state immediately
+                            val idx = productsState.indexOfFirst { it.id == product.id }
+                            if (idx >= 0) {
+                                productsState[idx] = productsState[idx].copy(quantity = newQuantity)
+                            }
+                            // API CHANGE: Persist this change via ViewModel/Repository. Example:
+                            // `listDetailViewModel.setQuantity(product.id, newQuantity)`
                             onQuantityChange(product.id, newQuantity)
                         }
                     )

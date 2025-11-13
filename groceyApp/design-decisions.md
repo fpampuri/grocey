@@ -130,3 +130,9 @@ Aim to link each justification to the specific theories covered in class (e.g., 
 
 Add future decisions in chronological order so the report can reference this single source of truth.
 
+### Local interactive product state (temporary) — 2025-11-13
+- **Change**: Implemented ephemeral local state in `ListDetailScreen` so ProductItemCards immediately reflect user actions: checking an item marks it bought (grays + strikethrough), quantity can be incremented/decremented and edited manually via a small numeric input.
+- **User Problem / Goal**: Users expect immediate visual feedback when marking items bought or changing quantities while shopping. Waiting for a network round-trip would make the UI feel sluggish.
+- **Justification**: Nielsen's "Visibility of system status" and "Response time" heuristics — immediate local updates maintain perceived performance. Architectural pragmatism: keep UI responsive while preparing an explicit migration to a single source of truth (ViewModel + Repository) to avoid later refactors.
+- **Impact**: Better perceived responsiveness and smoother UX while the backend is integrated. Implementation uses a local mutable list copied from the passed model for now; important persistence points are annotated with "API CHANGE" comments so migrating to ViewModel/Repository is straightforward.
+

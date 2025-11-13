@@ -38,11 +38,17 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+// keyboardOptions/KeyboardType are referenced fully-qualified below to avoid
+// potential import-resolution issues with different Compose versions.
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -292,10 +298,12 @@ fun ProductItemCard(
                 Text(
                     text = data.name,
                     style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
-                    color = if (data.isBought) 
-                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f) 
-                    else 
-                        MaterialTheme.colorScheme.onSurface
+                    color = if (data.isBought)
+                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    else
+                        MaterialTheme.colorScheme.onSurface,
+                    // Strike-through when bought
+                    textDecoration = if (data.isBought) TextDecoration.LineThrough else TextDecoration.None
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
@@ -335,19 +343,33 @@ fun ProductItemCard(
                     // (e.g. `listDetailViewModel.setQuantity(productId, newQuantity)`).
                 
                 // Quantity display
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = data.quantity.toString(),
-                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                        color = MaterialTheme.colorScheme.onSurface
+                // Editable quantity field (small). We keep a transient string state here so
+                // typing is smooth; final value is emitted via `onQuantityChange`.
+                var qtyText by remember { mutableStateOf(data.quantity.toString()) }
+                // Keep the local text in sync when the data.quantity from parent changes
+                LaunchedEffect(data.quantity) { qtyText = data.quantity.toString() }
+
+                TextField(
+                    value = qtyText,
+                    onValueChange = { newText ->
+                        // Allow only digits (empty allowed while editing)
+                        val filtered = newText.filter { it.isDigit() }
+                        qtyText = filtered
+                        val parsed = filtered.toIntOrNull()
+                        if (parsed != null) {
+                            onQuantityChange(parsed)
+                        }
+                    },
+                    singleLine = true,
+                    modifier = Modifier.width(72.dp),
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                        keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
+                    ),
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        textAlign = TextAlign.Center
                     )
-                }
+                )
                 
                 // Plus button
                 IconButton(
