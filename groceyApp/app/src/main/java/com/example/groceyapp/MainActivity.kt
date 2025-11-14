@@ -515,6 +515,15 @@ fun ListsApp() {
                         metadata = emptyMap(),
                         onSuccess = {
                             showCreateProductDialog = false
+                            coroutineScope.launch {
+                                lastSnackbarIsSuccess = true
+                                val msg = context.getString(R.string.product_created, name)
+                                snackbarHostState.showSnackbar(
+                                    message = msg,
+                                    duration = SnackbarDuration.Short
+                                )
+                                lastSnackbarIsSuccess = false
+                            }
                         }
                     )
                 }
@@ -533,6 +542,15 @@ fun ListsApp() {
                         metadata = mapOf("icon" to iconName),
                         onSuccess = {
                             showCreateCategoryDialog = false
+                            coroutineScope.launch {
+                                lastSnackbarIsSuccess = true
+                                val msg = context.getString(R.string.category_created, name)
+                                snackbarHostState.showSnackbar(
+                                    message = msg,
+                                    duration = SnackbarDuration.Short
+                                )
+                                lastSnackbarIsSuccess = false
+                            }
                         }
                     )
                 }
@@ -550,12 +568,21 @@ fun ListsApp() {
                     categoryToDelete = null
                 },
                 onConfirm = {
+                    val deletedName = categories.find { it.id == categoryToDelete }?.name ?: "Category"
                     categoryToDelete?.let { id ->
                         productViewModel.deleteCategory(
                             id = id,
                             onSuccess = {
                                 showDeleteCategoryDialog = false
                                 categoryToDelete = null
+                                coroutineScope.launch {
+                                    lastSnackbarIsSuccess = false
+                                    val msg = context.getString(R.string.category_deleted, deletedName)
+                                    snackbarHostState.showSnackbar(
+                                        message = msg,
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
                             }
                         )
                     }
@@ -587,6 +614,15 @@ fun ListsApp() {
                         onSuccess = {
                             showEditCategoryDialog = false
                             categoryToEdit = null
+                            coroutineScope.launch {
+                                lastSnackbarIsSuccess = true
+                                val msg = context.getString(R.string.category_updated, newName)
+                                snackbarHostState.showSnackbar(
+                                    message = msg,
+                                    duration = SnackbarDuration.Short
+                                )
+                                lastSnackbarIsSuccess = false
+                            }
                         }
                     )
                 }
@@ -654,6 +690,15 @@ fun ListsApp() {
                         onSuccess = {
                             showRenameListDialog = false
                             listToRename = null
+                            coroutineScope.launch {
+                                lastSnackbarIsSuccess = true
+                                val msg = context.getString(R.string.list_updated, newName)
+                                snackbarHostState.showSnackbar(
+                                    message = msg,
+                                    duration = SnackbarDuration.Short
+                                )
+                                lastSnackbarIsSuccess = false
+                            }
                         }
                     )
                 }
