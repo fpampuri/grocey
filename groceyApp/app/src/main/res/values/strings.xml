@@ -114,5 +114,6 @@
     <string name="rename_category">Rename Category</string>
     <string name="delete_product">Delete Product</string>
     <string name="delete_product_message">Are you sure you want to delete "%1$s"?</string>
+    <string name="delete_list_message">Are you sure you want to delete "%1$s"? This action cannot be undone.</string>
 </resources>
 

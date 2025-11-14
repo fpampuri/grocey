@@ -19,7 +19,7 @@ import com.example.groceyapp.ui.components.general.ButtonVariant
 import com.example.groceyapp.ui.components.general.StandardButton
 
 /**
- * Confirmation dialog for deleting items (categories, products, etc.)
+ * Confirmation dialog for deleting items (categories, lists, products, etc.)
  */
 @Composable
 fun ConfirmDeleteDialog(
@@ -45,12 +45,15 @@ fun ConfirmDeleteDialog(
                     title = stringResource(id = android.R.string.cancel),
                     onClick = onDismiss,
                     icon = Icons.Filled.Close,
-                    variant = ButtonVariant.PRIMARY
+                    variant = ButtonVariant.DANGER
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 StandardButton(
                     title = stringResource(id = R.string.delete),
-                    onClick = onConfirm,
+                    onClick = {
+                        onConfirm()
+                        onDismiss()
+                    },
                     icon = Icons.Filled.Delete,
                     variant = ButtonVariant.DANGER
                 )

@@ -44,7 +44,7 @@ import com.example.groceyapp.ui.screens.ProductsScreen
 import com.example.groceyapp.ui.components.dialogs.CreateCategoryDialog
 import com.example.groceyapp.ui.components.dialogs.CreateProductDialog
 import com.example.groceyapp.ui.components.dialogs.ConfirmDeleteDialog
-import com.example.groceyapp.ui.components.dialogs.RenameCategoryDialog
+import com.example.groceyapp.ui.components.dialogs.RenameDialog
 import com.example.groceyapp.ui.theme.GroceyAppTheme
 import com.example.groceyapp.ui.viewmodel.AuthViewModel
 import com.example.groceyapp.ui.viewmodel.ProductViewModel
@@ -90,6 +90,10 @@ fun ListsApp() {
     // Shopping lists from API
     val apiLists by shoppingListViewModel.lists.collectAsState()
     var showCreateListDialog by remember { mutableStateOf(false) }
+    var showDeleteListDialog by remember { mutableStateOf(false) }
+    var showRenameListDialog by remember { mutableStateOf(false) }
+    var listToDelete by remember { mutableStateOf<Int?>(null) }
+    var listToRename by remember { mutableStateOf<Pair<Int, String>?>(null) }
     
     // Products and categories dialog states
     var showCreateProductDialog by remember { mutableStateOf(false) }
@@ -315,7 +319,21 @@ fun ListsApp() {
                         modifier = contentModifier,
                         items = lists,
                         onListClick = { listId -> selectedListId = listId },
-                        onMenuClick = { isMenuOpen = true }
+                        onMenuClick = { isMenuOpen = true },
+                        onRename = { listId ->
+                            val list = apiLists.find { it.id.toString() == listId }
+                            list?.id?.let { id ->
+                                listToRename = Pair(id, list.name)
+                                showRenameListDialog = true
+                            }
+                        },
+                        onDelete = { listId ->
+                            val list = apiLists.find { it.id.toString() == listId }
+                            list?.id?.let { id ->
+                                listToDelete = id
+                                showDeleteListDialog = true
+                            }
+                        }
                     )
                 }
             }
@@ -477,8 +495,10 @@ fun ListsApp() {
         // Rename Category dialog
         if (showRenameCategoryDialog && categoryToRename != null) {
             val (categoryId, categoryName) = categoryToRename!!
-            RenameCategoryDialog(
+            RenameDialog(
+                title = stringResource(id = R.string.rename_category),
                 currentName = categoryName,
+                label = stringResource(id = R.string.category_name_hint),
                 onDismiss = {
                     showRenameCategoryDialog = false
                     categoryToRename = null
@@ -492,6 +512,54 @@ fun ListsApp() {
                         onSuccess = {
                             showRenameCategoryDialog = false
                             categoryToRename = null
+                        }
+                    )
+                }
+            )
+        }
+        
+        // Delete List confirmation dialog
+        if (showDeleteListDialog && listToDelete != null) {
+            val listName = apiLists.find { it.id == listToDelete }?.name ?: "this list"
+            ConfirmDeleteDialog(
+                title = stringResource(id = R.string.delete_list),
+                message = stringResource(id = R.string.delete_list_message, listName),
+                onDismiss = {
+                    showDeleteListDialog = false
+                    listToDelete = null
+                },
+                onConfirm = {
+                    listToDelete?.let { id ->
+                        shoppingListViewModel.deleteShoppingList(
+                            id = id,
+                            onSuccess = {
+                                showDeleteListDialog = false
+                                listToDelete = null
+                            }
+                        )
+                    }
+                }
+            )
+        }
+        
+        // Rename List dialog
+        if (showRenameListDialog && listToRename != null) {
+            val (listId, listName) = listToRename!!
+            RenameDialog(
+                title = stringResource(id = R.string.rename_list),
+                currentName = listName,
+                label = stringResource(id = R.string.list_name_hint),
+                onDismiss = {
+                    showRenameListDialog = false
+                    listToRename = null
+                },
+                onRename = { newName ->
+                    shoppingListViewModel.updateShoppingList(
+                        id = listId,
+                        name = newName,
+                        onSuccess = {
+                            showRenameListDialog = false
+                            listToRename = null
                         }
                     )
                 }

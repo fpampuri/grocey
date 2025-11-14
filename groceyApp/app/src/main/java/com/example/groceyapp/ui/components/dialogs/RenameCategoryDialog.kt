@@ -25,11 +25,13 @@ import com.example.groceyapp.ui.components.general.ButtonVariant
 import com.example.groceyapp.ui.components.general.StandardButton
 
 /**
- * Dialog for renaming a category
+ * Generic dialog for renaming items (categories, lists, etc.)
  */
 @Composable
-fun RenameCategoryDialog(
+fun RenameDialog(
+    title: String,
     currentName: String,
+    label: String,
     onDismiss: () -> Unit,
     onRename: (String) -> Unit
 ) {
@@ -38,14 +40,14 @@ fun RenameCategoryDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(text = stringResource(id = R.string.rename_category))
+            Text(text = title)
         },
         text = {
             Column {
                 OutlinedTextField(
                     value = newName,
                     onValueChange = { newName = it },
-                    label = { Text(stringResource(id = R.string.category_name_hint)) },
+                    label = { Text(label) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -60,13 +62,15 @@ fun RenameCategoryDialog(
                     title = stringResource(id = android.R.string.cancel),
                     onClick = onDismiss,
                     icon = Icons.Filled.Close,
-                    variant = ButtonVariant.PRIMARY
+                    variant = ButtonVariant.DANGER
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 StandardButton(
                     title = stringResource(id = R.string.save),
                     onClick = {
-                        onRename(newName.trim())
+                        if (newName.trim().isNotBlank()) {
+                            onRename(newName.trim())
+                        }
                     },
                     icon = Icons.Filled.Check,
                     enabled = newName.trim().isNotBlank() && newName.trim() != currentName
@@ -76,3 +80,4 @@ fun RenameCategoryDialog(
         dismissButton = null
     )
 }
+
