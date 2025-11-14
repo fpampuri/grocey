@@ -43,7 +43,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+// Use colors from the theme (defined in ui.theme.Color.kt)
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -55,8 +55,7 @@ import com.example.groceyapp.ui.components.ListCard
 import com.example.groceyapp.ui.components.ListCardData
 import com.example.groceyapp.ui.components.ProductItemData
 import com.example.groceyapp.ui.components.general.TopSearchBar
-import com.example.groceyapp.ui.theme.BrandGreenLight
-import com.example.groceyapp.ui.theme.BrandGreenLightDarkTheme
+// Colors are provided by MaterialTheme.colorScheme
 
 enum class HomeDestination(@StringRes val labelRes: Int, val icon: ImageVector) {
     Pantry(R.string.pantry_tab, Icons.Filled.Inventory2),
@@ -172,15 +171,11 @@ fun HomeBottomBar(
     currentDestination: HomeDestination,
     onDestinationSelected: (HomeDestination) -> Unit
 ) {
-    val containerColor = if (isSystemInDarkTheme()) {
-        BrandGreenLightDarkTheme
-    } else {
-        BrandGreenLight
-    }
+    val containerColor = MaterialTheme.colorScheme.primary
 
-    val selectedColor = Color.White
-    val unselectedColor = Color.White.copy(alpha = 0.7f)
-    val indicatorColor = Color.White.copy(alpha = 0.2f)
+    val selectedColor = MaterialTheme.colorScheme.onPrimary
+    val unselectedColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+    val indicatorColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)
 
     NavigationBar(containerColor = containerColor) {
         HomeDestination.entries.forEach { destination ->

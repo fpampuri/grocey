@@ -7,6 +7,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -46,7 +47,7 @@ fun ConfirmDeleteDialog(
                     onClick = onDismiss,
                     icon = Icons.Filled.Close,
                     variant = ButtonVariant.PRIMARY,
-                    backgroundColor = androidx.compose.ui.graphics.Color(0xFF757575),
+                    backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
                     modifier = Modifier.width(120.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))

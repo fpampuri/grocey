@@ -15,6 +15,12 @@ val TextPrimaryLight = Color(0xDE000000)
 val TextSecondaryLight = Color(0x80000000)
 val TextTertiaryLight = Color(0x61000000)
 
+// Utility colors
+val Black = Color(0xFF000000)
+val DisabledGray = Color(0xFFCCCCCC)
+val NeutralGray = Color(0xFF757575)
+val Transparent = Color(0x00000000)
+
 // Dark theme palette (mirrors the web frontend)
 val BrandGreenDarkTheme = Color(0xFF66BB6A)
 val BrandGreenLightDarkTheme = Color(0xFF81C784)

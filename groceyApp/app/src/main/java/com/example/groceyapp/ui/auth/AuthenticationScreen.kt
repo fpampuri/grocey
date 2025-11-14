@@ -93,11 +93,7 @@ fun AuthenticationScreen(
     
     val snackbarHostState = remember { SnackbarHostState() }
     
-    val greenColor = if (isSystemInDarkTheme()) {
-        com.example.groceyapp.ui.theme.BrandGreenDarkTheme
-    } else {
-        com.example.groceyapp.ui.theme.BrandGreen
-    }
+    val greenColor = MaterialTheme.colorScheme.primary
     
     // Handle authentication success
     LaunchedEffect(isAuthenticated) {
@@ -333,14 +329,14 @@ private fun LoginContent(
         enabled = email.isNotBlank() && password.isNotBlank() && !isLoading,
         colors = ButtonDefaults.buttonColors(
             containerColor = greenColor,
-            contentColor = androidx.compose.ui.graphics.Color.White
+            contentColor = MaterialTheme.colorScheme.onPrimary
         ),
         shape = RoundedCornerShape(12.dp)
     ) {
         if (isLoading) {
             CircularProgressIndicator(
                 modifier = Modifier.size(24.dp),
-                color = androidx.compose.ui.graphics.Color.White,
+                color = MaterialTheme.colorScheme.onPrimary,
                 strokeWidth = 2.dp
             )
         } else {
@@ -568,14 +564,14 @@ private fun RegisterContent(
                   email.isNotBlank() && password.isNotBlank() && !isLoading,
         colors = ButtonDefaults.buttonColors(
             containerColor = greenColor,
-            contentColor = androidx.compose.ui.graphics.Color.White
+            contentColor = MaterialTheme.colorScheme.onPrimary
         ),
         shape = RoundedCornerShape(12.dp)
     ) {
         if (isLoading) {
             CircularProgressIndicator(
                 modifier = Modifier.size(24.dp),
-                color = androidx.compose.ui.graphics.Color.White,
+                color = MaterialTheme.colorScheme.onPrimary,
                 strokeWidth = 2.dp
             )
         } else {
@@ -665,14 +661,14 @@ private fun VerifyContent(
         enabled = verificationCode.isNotBlank() && !isLoading,
         colors = ButtonDefaults.buttonColors(
             containerColor = greenColor,
-            contentColor = androidx.compose.ui.graphics.Color.White
+            contentColor = MaterialTheme.colorScheme.onPrimary
         ),
         shape = RoundedCornerShape(12.dp)
     ) {
         if (isLoading) {
             CircularProgressIndicator(
                 modifier = Modifier.size(24.dp),
-                color = androidx.compose.ui.graphics.Color.White,
+                color = MaterialTheme.colorScheme.onPrimary,
                 strokeWidth = 2.dp
             )
         } else {

@@ -38,8 +38,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
 import com.example.groceyapp.Constants
-import com.example.groceyapp.ui.theme.BrandGreenLight
-import com.example.groceyapp.ui.theme.BrandGreenLightDarkTheme
+// Use semantic roles from MaterialTheme.colorScheme
 
 data class CategoryCardData(
     val id: Long? = null,
@@ -154,11 +153,7 @@ fun CategoryCard(
 
     // Expanded content with products list
     if (isExpanded && data.products.isNotEmpty()) {
-        val lightGreenBg = if (isSystemInDarkTheme()) {
-            BrandGreenLightDarkTheme.copy(alpha = 0.15f)
-        } else {
-            BrandGreenLight.copy(alpha = 0.15f)
-        }
+        val lightGreenBg = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.15f)
 
         androidx.compose.foundation.layout.Column(
             modifier = Modifier

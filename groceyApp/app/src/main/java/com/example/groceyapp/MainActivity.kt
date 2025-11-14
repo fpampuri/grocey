@@ -56,7 +56,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.MaterialTheme
-// color import removed; use MaterialTheme.colorScheme
 import android.util.Log
 import androidx.compose.ui.platform.LocalContext
 

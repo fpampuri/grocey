@@ -51,15 +51,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.groceyapp.R
-import com.example.groceyapp.ui.theme.BrandGreen
-import com.example.groceyapp.ui.theme.BrandGreenDarkTheme
+// Use semantic roles from MaterialTheme.colorScheme
 import java.util.Locale
 
 /**
@@ -113,7 +111,7 @@ fun MenuDrawer(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.5f))
+                    .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
@@ -150,7 +148,7 @@ fun MenuDrawer(
                 HorizontalDivider(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     thickness = 1.dp,
-                    color = MaterialTheme.colorScheme.outlineVariant
+                    color = MaterialTheme.colorScheme.outline
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 
@@ -174,8 +172,8 @@ fun MenuDrawer(
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer,
-                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
                     )
                 ) {
                     Icon(
@@ -203,11 +201,7 @@ private fun ProfileSection(
     onPasswordChangeClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val borderColor = if (androidx.compose.foundation.isSystemInDarkTheme()) {
-        BrandGreenDarkTheme
-    } else {
-        BrandGreen
-    }
+    val borderColor = MaterialTheme.colorScheme.primary
     
     var isEditingName by remember { mutableStateOf(false) }
     
@@ -364,11 +358,7 @@ private fun SettingsSection(
 ) {
     var showLanguageMenu by remember { mutableStateOf(false) }
     
-    val borderColor = if (androidx.compose.foundation.isSystemInDarkTheme()) {
-        BrandGreenDarkTheme
-    } else {
-        BrandGreen
-    }
+    val borderColor = MaterialTheme.colorScheme.primary
     
     Column(
         modifier = modifier

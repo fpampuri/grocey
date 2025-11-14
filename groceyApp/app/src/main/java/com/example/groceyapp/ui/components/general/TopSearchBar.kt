@@ -23,12 +23,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.groceyapp.R
-import com.example.groceyapp.ui.theme.BrandGreenLight
-import com.example.groceyapp.ui.theme.BrandGreenLightDarkTheme
+// Use semantic color roles from MaterialTheme.colorScheme
 
 /**
  * Shared top search bar used by Lists, Pantry and Products screens.
@@ -44,11 +42,7 @@ fun TopSearchBar(
     onMenuClick: () -> Unit,
     showFilterInside: Boolean = false
 ) {
-    val lightGreenBg = if (isSystemInDarkTheme()) {
-        BrandGreenLightDarkTheme.copy(alpha = 0.2f)
-    } else {
-        BrandGreenLight.copy(alpha = 0.2f)
-    }
+    val lightGreenBg = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.2f)
 
     Row(
         modifier = Modifier.fillMaxWidth().statusBarsPadding(),
@@ -106,9 +100,9 @@ fun TopSearchBar(
                 focusedContainerColor = lightGreenBg,
                 unfocusedContainerColor = lightGreenBg,
                 disabledContainerColor = lightGreenBg,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent,
+                    focusedIndicatorColor = MaterialTheme.colorScheme.surface.copy(alpha = 0f),
+                    unfocusedIndicatorColor = MaterialTheme.colorScheme.surface.copy(alpha = 0f),
+                    disabledIndicatorColor = MaterialTheme.colorScheme.surface.copy(alpha = 0f),
             ),
             shape = RoundedCornerShape(16.dp)
         )
