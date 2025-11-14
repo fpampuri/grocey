@@ -54,6 +54,7 @@ fun CategoryDetailScreen(
     onProductAddToList: (String) -> Unit = {},
     onProductAddToPantry: (String) -> Unit = {},
     onProductDelete: (Int) -> Unit = {},
+    onProductCreate: (String, Int) -> Unit = { _, _ -> },
     onCategoryRename: (Long?) -> Unit = {},
     onCategoryDelete: (Long?) -> Unit = {},
     currentDestination: HomeDestination,
@@ -63,6 +64,7 @@ fun CategoryDetailScreen(
     // State for dialogs
     var showMoveCategoryDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showAddProductDialog by remember { mutableStateOf(false) }
     var selectedProduct by remember { mutableStateOf<com.example.groceyapp.data.model.Product?>(null) }
     
     // Filter products for this category
@@ -107,7 +109,7 @@ fun CategoryDetailScreen(
         floatingActionButton = {
             PrimaryFab(
                 contentDescriptionRes = R.string.add_product,
-                onClick = { /* TODO: Add product action */ }
+                onClick = { showAddProductDialog = true }
             )
         },
         bottomBar = {
@@ -220,6 +222,20 @@ fun CategoryDetailScreen(
                 }
                 showDeleteDialog = false
                 selectedProduct = null
+            }
+        )
+    }
+    
+    // Add Product Dialog (outside Scaffold)
+    if (showAddProductDialog) {
+        com.example.groceyapp.ui.components.dialogs.AddProductToCategoryDialog(
+            categoryName = categoryData.title,
+            onDismiss = { showAddProductDialog = false },
+            onConfirm = { productName ->
+                categoryData.id?.toInt()?.let { categoryId ->
+                    onProductCreate(productName, categoryId)
+                }
+                showAddProductDialog = false
             }
         )
     }

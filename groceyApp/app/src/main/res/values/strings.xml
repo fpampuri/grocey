@@ -124,6 +124,7 @@
     <string name="category_updated">Category updated: %1$s</string>
     <string name="category_deleted">Category deleted: %1$s</string>
     <string name="product_created">Product created: %1$s</string>
+    <string name="add_product_to_category">Add product to %1$s</string>
     
     <!-- Product options menu strings -->
     <string name="move_to_category">Move to Category</string>

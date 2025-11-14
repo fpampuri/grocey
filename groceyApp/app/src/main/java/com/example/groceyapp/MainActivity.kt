@@ -299,6 +299,24 @@ fun ListsApp() {
                         }
                     )
                 },
+                onProductCreate = { productName, categoryId ->
+                    productViewModel.createProduct(
+                        name = productName,
+                        categoryId = categoryId,
+                        onSuccess = {
+                            productViewModel.loadProducts()
+                            // Show success feedback
+                            coroutineScope.launch {
+                                lastSnackbarIsSuccess = true
+                                snackbarHostState.showSnackbar(
+                                    message = "Product created successfully",
+                                    duration = SnackbarDuration.Short
+                                )
+                                lastSnackbarIsSuccess = false
+                            }
+                        }
+                    )
+                },
                 onCategoryRename = { categoryId ->
                     categoryId?.let { catId ->
                         val apiCategory = categories.find { cat -> cat.id == catId.toInt() }
