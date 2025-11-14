@@ -50,6 +50,15 @@ import com.example.groceyapp.ui.viewmodel.AuthViewModel
 import com.example.groceyapp.ui.viewmodel.ProductViewModel
 import com.example.groceyapp.ui.viewmodel.ShoppingListViewModel
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.MaterialTheme
+// color import removed; use MaterialTheme.colorScheme
+import android.util.Log
+import androidx.compose.ui.platform.LocalContext
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -107,6 +116,26 @@ fun ListsApp() {
     // Products and categories from API
     val products by productViewModel.products.collectAsState()
     val categories by productViewModel.categories.collectAsState()
+
+    val context = LocalContext.current
+
+    // Snackbar + coroutine scope for showing feedback
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+    var lastSnackbarIsSuccess by remember { mutableStateOf(false) }
+    val errorMessage by shoppingListViewModel.errorMessage.collectAsState()
+
+    // Show error messages from ViewModel in a Snackbar
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let { msg ->
+            // mark as error
+            lastSnackbarIsSuccess = false
+            coroutineScope.launch {
+                snackbarHostState.showSnackbar(msg)
+            }
+            shoppingListViewModel.clearError()
+        }
+    }
     
     // Load shopping lists when authenticated
     LaunchedEffect(isAuthenticated) {
@@ -217,13 +246,13 @@ fun ListsApp() {
     Box(modifier = Modifier.fillMaxSize()) {
         if (selectedList != null) {
             // Show detail screen
-            ListDetailScreen(
+                ListDetailScreen(
                 listData = selectedList,
                 onBackClick = { selectedListId = null },
-                onProductToggle = { productId ->
+                onProductToggle = { _ ->
                     // TODO: Handle product toggle
                 },
-                onQuantityChange = { productId, newQuantity ->
+                onQuantityChange = { _, _ ->
                     // TODO: Handle quantity change
                 },
                 currentDestination = currentDestination,
@@ -236,6 +265,14 @@ fun ListsApp() {
         } else {
             // Show main app with bottom navigation
             Scaffold(
+                snackbarHost = {
+                        SnackbarHost(hostState = snackbarHostState) { data ->
+                            Snackbar(
+                                snackbarData = data,
+                                containerColor = if (lastSnackbarIsSuccess) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.error
+                            )
+                        }
+                },
                 modifier = Modifier.fillMaxSize(),
                 floatingActionButton = {
                     when (currentDestination) {
@@ -380,14 +417,23 @@ fun ListsApp() {
                         Icons.Filled.Inventory2 -> "inventory"
                         else -> "list"
                     }
-                    
+                    Log.d("MainActivity", "Create clicked: title=$title, icon=$iconName")
+
                     shoppingListViewModel.createShoppingList(
                         name = title.ifBlank { "New List" },
                         description = "",  // Required by backend
                         recurring = false,  // Required by backend
                         metadata = mapOf("icon" to iconName),
-                        onSuccess = {
+                        onSuccess = { createdList ->
                             showCreateListDialog = false
+                            // Show success feedback
+                                coroutineScope.launch {
+                                    // show localized success message
+                                    lastSnackbarIsSuccess = true
+                                    val msg = context.getString(R.string.list_created, createdList.name)
+                                    snackbarHostState.showSnackbar(msg)
+                                    lastSnackbarIsSuccess = false
+                                }
                         }
                     )
                 }
@@ -534,6 +580,14 @@ fun ListsApp() {
                             id = id,
                             onSuccess = {
                                 showDeleteListDialog = false
+                                // Show success snackbar for deletion
+                                val deletedName = apiLists.find { it.id == id }?.name ?: "Lista"
+                                coroutineScope.launch {
+                                    // deletion should show red (error) snackbar
+                                    lastSnackbarIsSuccess = false
+                                    val msg = context.getString(R.string.list_deleted, deletedName)
+                                    snackbarHostState.showSnackbar(msg)
+                                }
                                 listToDelete = null
                             }
                         )

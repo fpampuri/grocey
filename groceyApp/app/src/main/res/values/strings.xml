@@ -115,5 +115,7 @@
     <string name="delete_list_message">Are you sure you want to delete "%1$s"? This action cannot be undone.</string>
     <string name="category_name_hint">Category name</string>
     <string name="list_name_hint">List name</string>
+    <string name="list_created">List created: %1$s</string>
+    <string name="list_deleted">List deleted: %1$s</string>
 </resources>
 

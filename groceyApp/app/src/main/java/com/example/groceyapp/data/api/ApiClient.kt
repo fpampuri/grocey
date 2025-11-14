@@ -70,7 +70,7 @@ object ApiClient {
      * Retrofit instance
      */
     private val retrofit: Retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL_PHYSICAL_DEVICE)
+        .baseUrl(BASE_URL)
         .client(okHttpClient)
         .addConverterFactory(GsonConverterFactory.create())
         .build()

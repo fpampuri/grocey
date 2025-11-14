@@ -115,4 +115,6 @@
     <string name="delete_list_message">¿Estás seguro de que quieres eliminar "%1$s"? Esta acción no se puede deshacer.</string>
     <string name="category_name_hint">Nombre de categoría</string>
     <string name="list_name_hint">Nombre de lista</string>
+    <string name="list_created">Lista creada: %1$s</string>
+    <string name="list_deleted">Lista eliminada: %1$s</string>
 </resources>
