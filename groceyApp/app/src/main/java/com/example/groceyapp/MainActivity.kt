@@ -1,6 +1,7 @@
 package com.example.groceyapp
 
 import android.os.Bundle
+import androidx.compose.material3.SnackbarDuration
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -33,12 +34,14 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.groceyapp.R
 import com.example.groceyapp.ui.auth.AuthenticationScreen
 import com.example.groceyapp.ui.components.ListCardData
+import com.example.groceyapp.ui.components.CategoryCardData
 import com.example.groceyapp.ui.components.general.MenuDrawer
 import com.example.groceyapp.ui.components.general.PrimaryFab
 import com.example.groceyapp.ui.components.dialogs.CreateListDialog
 import com.example.groceyapp.ui.screens.HomeBottomBar
 import com.example.groceyapp.ui.screens.HomeDestination
 import com.example.groceyapp.ui.screens.ListDetailScreen
+import com.example.groceyapp.ui.screens.CategoryDetailScreen
 import com.example.groceyapp.ui.screens.ListsScreen
 import com.example.groceyapp.ui.screens.PantryScreen
 import com.example.groceyapp.ui.screens.ProductsScreen
@@ -90,6 +93,7 @@ fun ListsApp() {
     
     var currentDestination by remember { mutableStateOf(HomeDestination.Lists) }
     var selectedListId by remember { mutableStateOf<String?>(null) }
+    var selectedCategory by remember { mutableStateOf<CategoryCardData?>(null) }
     var isMenuOpen by remember { mutableStateOf(false) }
     
     // Settings state
@@ -131,7 +135,9 @@ fun ListsApp() {
             // mark as error
             lastSnackbarIsSuccess = false
             coroutineScope.launch {
-                snackbarHostState.showSnackbar(msg)
+                snackbarHostState.showSnackbar(
+                    message = msg,
+                    duration = SnackbarDuration.Short)
             }
             shoppingListViewModel.clearError()
         }
@@ -213,6 +219,7 @@ fun ListsApp() {
             .map { it.name }
         
         com.example.groceyapp.ui.components.CategoryCardData(
+            id = category.id?.toLong(),
             title = category.name,
             subtitle = "${categoryProducts.size} products",
             leadingIcon = icon,
@@ -242,7 +249,7 @@ fun ListsApp() {
 
     Box(modifier = Modifier.fillMaxSize()) {
         if (selectedList != null) {
-            // Show detail screen
+            // Show list detail screen
                 ListDetailScreen(
                     listData = selectedList,
                     onBackClick = { selectedListId = null },
@@ -274,6 +281,38 @@ fun ListsApp() {
                     },
                     onShare = { _ -> /* share intentionally disabled until specified */ }
                 )
+        } else if (selectedCategory != null) {
+            // Show category detail screen
+            val category = selectedCategory!!
+            CategoryDetailScreen(
+                categoryData = category,
+                onBackClick = { selectedCategory = null },
+                onProductMenuClick = { _ ->
+                    // TODO: Handle product menu click
+                },
+                onCategoryRename = { categoryId ->
+                    categoryId?.let {
+                        val apiCategory = categories.find { cat -> cat.id == it.toInt() }
+                        apiCategory?.let { cat ->
+                            cat.id?.let { id ->
+                                categoryToRename = Pair(id, cat.name)
+                                showRenameCategoryDialog = true
+                            }
+                        }
+                    }
+                },
+                onCategoryDelete = { categoryId ->
+                    categoryId?.let {
+                        categoryToDelete = it.toInt()
+                        showDeleteCategoryDialog = true
+                    }
+                },
+                currentDestination = currentDestination,
+                onDestinationSelected = { destination ->
+                    currentDestination = destination
+                    selectedCategory = null  // Go back to main view when switching tabs
+                }
+            )
         } else {
             // Show main app with bottom navigation
             Scaffold(
@@ -362,6 +401,9 @@ fun ListsApp() {
                                     }
                                 }
                             }
+                        },
+                        onCategoryClick = { categoryData ->
+                            selectedCategory = categoryData
                         }
                     )
                     HomeDestination.Lists -> ListsScreen(
@@ -439,7 +481,9 @@ fun ListsApp() {
                                     // show localized success message
                                     lastSnackbarIsSuccess = true
                                     val msg = context.getString(R.string.list_created, createdList.name)
-                                    snackbarHostState.showSnackbar(msg)
+                                    snackbarHostState.showSnackbar(
+                                        message = msg,
+                                        duration = SnackbarDuration.Short)
                                     lastSnackbarIsSuccess = false
                                 }
                         }
@@ -594,7 +638,9 @@ fun ListsApp() {
                                     // deletion should show red (error) snackbar
                                     lastSnackbarIsSuccess = false
                                     val msg = context.getString(R.string.list_deleted, deletedName)
-                                    snackbarHostState.showSnackbar(msg)
+                                    snackbarHostState.showSnackbar(
+                                        message = msg,
+                                        duration = SnackbarDuration.Short)
                                 }
                                 listToDelete = null
                             }

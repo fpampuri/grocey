@@ -137,7 +137,8 @@ fun ProductsScreen(
     onFilterClick: () -> Unit = {},
     onMenuClick: () -> Unit = {},
     onCategoryDelete: (Long?) -> Unit = {},
-    onCategoryRename: (Long?) -> Unit = {}
+    onCategoryRename: (Long?) -> Unit = {},
+    onCategoryClick: (CategoryCardData) -> Unit = {}
 ) {
     val resolvedItems = items ?: emptyList()
 
@@ -157,7 +158,8 @@ fun ProductsScreen(
             CategoryCard(
                 item,
                 onDelete = onCategoryDelete,
-                onRename = onCategoryRename
+                onRename = onCategoryRename,
+                onClick = onCategoryClick
             )
         },
         emptyIcon = Icons.Filled.Store,

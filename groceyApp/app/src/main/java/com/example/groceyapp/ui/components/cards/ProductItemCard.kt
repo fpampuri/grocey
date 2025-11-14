@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -39,6 +40,14 @@ import androidx.compose.ui.unit.sp
 import com.example.groceyapp.R
 
 /**
+ * Mode for displaying the product item card
+ */
+enum class ProductCardMode {
+    LIST,      // In a shopping list: shows checkbox and quantity controls
+    CATEGORY   // In a category view: shows only name and 3-dot menu
+}
+
+/**
  * Data class representing a product item within a list
  */
 data class ProductItemData(
@@ -52,12 +61,15 @@ data class ProductItemData(
 /**
  * Product item card - Displays individual products within a list
  * Features: Checkbox (mark as bought), name, category, quantity controls
+ * Can be displayed in two modes: LIST (with checkbox/quantity) or CATEGORY (with menu)
  */
 @Composable
 fun ProductItemCard(
     data: ProductItemData,
     onToggleBought: () -> Unit = {},
     onQuantityChange: (Int) -> Unit = {},
+    mode: ProductCardMode = ProductCardMode.LIST,
+    onMenuClick: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -74,104 +86,123 @@ fun ProductItemCard(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Checkbox for marking as bought
-            Checkbox(
-                checked = data.isBought,
-                onCheckedChange = { onToggleBought() }
-            )
-            // API CHANGE: This action should call a ViewModel/Repository method to persist
-            // the bought state (e.g. `listDetailViewModel.toggleBought(productId)`);
-            // ensure callers pass a function that performs persistence instead of only
-            // mutating in-memory UI state.
+            // Checkbox for marking as bought (only in LIST mode)
+            if (mode == ProductCardMode.LIST) {
+                Checkbox(
+                    checked = data.isBought,
+                    onCheckedChange = { onToggleBought() }
+                )
+                // API CHANGE: This action should call a ViewModel/Repository method to persist
+                // the bought state (e.g. `listDetailViewModel.toggleBought(productId)`);
+                // ensure callers pass a function that performs persistence instead of only
+                // mutating in-memory UI state.
 
-            Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+            }
 
             // Product name and category
             androidx.compose.foundation.layout.Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = data.name,
                     style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
-                    color = if (data.isBought)
+                    color = if (mode == ProductCardMode.LIST && data.isBought)
                         MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                     else
                         MaterialTheme.colorScheme.onSurface,
-                    // Strike-through when bought
-                    textDecoration = if (data.isBought) TextDecoration.LineThrough else TextDecoration.None
+                    // Strike-through when bought (only in LIST mode)
+                    textDecoration = if (mode == ProductCardMode.LIST && data.isBought) TextDecoration.LineThrough else TextDecoration.None
                 )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = data.category,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                )
+                // Only show category in LIST mode
+                if (mode == ProductCardMode.LIST) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = data.category,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Quantity controls
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                // Minus button
-                IconButton(
-                    onClick = { 
-                        if (data.quantity > 1) {
-                            onQuantityChange(data.quantity - 1)
-                        }
-                    },
-                    enabled = data.quantity > 1,
-                    modifier = Modifier.size(32.dp)
+            // Quantity controls (only in LIST mode)
+            if (mode == ProductCardMode.LIST) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Remove,
-                        contentDescription = androidx.compose.ui.res.stringResource(R.string.decrease_quantity),
-                        tint = if (data.quantity > 1) 
-                            MaterialTheme.colorScheme.primary 
-                        else 
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                    // Minus button
+                    IconButton(
+                        onClick = { 
+                            if (data.quantity > 1) {
+                                onQuantityChange(data.quantity - 1)
+                            }
+                        },
+                        enabled = data.quantity > 1,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Remove,
+                            contentDescription = androidx.compose.ui.res.stringResource(R.string.decrease_quantity),
+                            tint = if (data.quantity > 1) 
+                                MaterialTheme.colorScheme.primary 
+                            else 
+                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f)
+                        )
+                    }
+                    // API CHANGE: Quantity updates should be persisted via ViewModel/Repository
+                    // (e.g. `listDetailViewModel.setQuantity(productId, newQuantity)`).
+
+                    // Editable quantity field (small). We keep a transient string state here so
+                    // typing is smooth; final value is emitted via `onQuantityChange`.
+                    var qtyText by remember { mutableStateOf(data.quantity.toString()) }
+                    // Keep the local text in sync when the data.quantity from parent changes
+                    LaunchedEffect(data.quantity) { qtyText = data.quantity.toString() }
+
+                    TextField(
+                        value = qtyText,
+                        onValueChange = { newText ->
+                            // Allow only digits (empty allowed while editing)
+                            val filtered = newText.filter { it.isDigit() }
+                            qtyText = filtered
+                            val parsed = filtered.toIntOrNull()
+                            if (parsed != null) {
+                                onQuantityChange(parsed)
+                            }
+                        },
+                        singleLine = true,
+                        modifier = Modifier.width(72.dp),
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                            keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
+                        ),
+                        textStyle = MaterialTheme.typography.bodyLarge.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            textAlign = TextAlign.Center
+                        )
                     )
+
+                    // Plus button
+                    IconButton(
+                        onClick = { onQuantityChange(data.quantity + 1) },
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = androidx.compose.ui.res.stringResource(R.string.increase_quantity),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
-                // API CHANGE: Quantity updates should be persisted via ViewModel/Repository
-                // (e.g. `listDetailViewModel.setQuantity(productId, newQuantity)`).
-
-                // Editable quantity field (small). We keep a transient string state here so
-                // typing is smooth; final value is emitted via `onQuantityChange`.
-                var qtyText by remember { mutableStateOf(data.quantity.toString()) }
-                // Keep the local text in sync when the data.quantity from parent changes
-                LaunchedEffect(data.quantity) { qtyText = data.quantity.toString() }
-
-                TextField(
-                    value = qtyText,
-                    onValueChange = { newText ->
-                        // Allow only digits (empty allowed while editing)
-                        val filtered = newText.filter { it.isDigit() }
-                        qtyText = filtered
-                        val parsed = filtered.toIntOrNull()
-                        if (parsed != null) {
-                            onQuantityChange(parsed)
-                        }
-                    },
-                    singleLine = true,
-                    modifier = Modifier.width(72.dp),
-                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                        keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
-                    ),
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(
-                        fontWeight = FontWeight.SemiBold,
-                        textAlign = TextAlign.Center
-                    )
-                )
-
-                // Plus button
+            } else {
+                // Three-dot menu (only in CATEGORY mode)
                 IconButton(
-                    onClick = { onQuantityChange(data.quantity + 1) },
+                    onClick = { onMenuClick(data.id) },
                     modifier = Modifier.size(32.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = androidx.compose.ui.res.stringResource(R.string.increase_quantity),
-                        tint = MaterialTheme.colorScheme.primary
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = "Options",
+                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
                     )
                 }
             }

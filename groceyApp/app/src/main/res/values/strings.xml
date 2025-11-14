@@ -95,6 +95,8 @@
     <string name="empty_products_hint">Start organizing your products</string>
     <string name="empty_list_detail_message">This list is empty</string>
     <string name="empty_list_detail_hint">Tap the + button to add products</string>
+    <string name="empty_category_message">This category has no products</string>
+    <string name="empty_category_hint">Tap the + button to add products</string>
     <string name="add_product_title">Add Product</string>
     <string name="product_name_label">Product name</string>
     <string name="or_text">OR</string>

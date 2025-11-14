@@ -54,19 +54,14 @@ fun CategoryCard(
     data: CategoryCardData,
     modifier: Modifier = Modifier,
     onDelete: (Long?) -> Unit = {},
-    onRename: (Long?) -> Unit = {}
+    onRename: (Long?) -> Unit = {},
+    onClick: (CategoryCardData) -> Unit = {}
 ) {
-    var isExpanded by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
-    val borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
-    val rotationAngle by animateFloatAsState(
-        targetValue = if (isExpanded) 90f else 0f,
-        label = "chevron rotation"
-    )
     val isMiscellaneous = data.id == Constants.MISCELLANEOUS_CATEGORY_ID
 
     CollectionCardShell(
-        onClick = { isExpanded = !isExpanded },
+        onClick = { onClick(data) },
         modifier = modifier
     ) {
         // Main card row (content placed directly into the Row provided by the shell)
@@ -93,34 +88,35 @@ fun CategoryCard(
         //     Spacer(modifier = Modifier.width(8.dp))
         // }
 
-        // Chevron icon (rotates when expanded)
+        // Chevron icon
         Icon(
             imageVector = Icons.Default.ChevronRight,
-            contentDescription = if (isExpanded) "Collapse" else "Expand",
-            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-            modifier = Modifier.rotate(rotationAngle)
+            contentDescription = "View details",
+            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
         )
 
         Spacer(modifier = Modifier.width(4.dp))
 
-        // Three-dot menu
-        IconButton(
-            onClick = { showMenu = !showMenu },
-            modifier = Modifier.size(24.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.MoreVert,
-                contentDescription = "Options",
-                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-            )
-        }
+        // Three-dot menu (only show if not Miscellaneous)
+        if (!isMiscellaneous) {
+            IconButton(
+                onClick = { 
+                    showMenu = !showMenu
+                },
+                modifier = Modifier.size(24.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.MoreVert,
+                    contentDescription = "Options",
+                    tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                )
+            }
 
-        // Dropdown menu
-        DropdownMenu(
-            expanded = showMenu,
-            onDismissRequest = { showMenu = false }
-        ) {
-            if (!isMiscellaneous) {
+            // Dropdown menu
+            DropdownMenu(
+                expanded = showMenu,
+                onDismissRequest = { showMenu = false }
+            ) {
                 DropdownMenuItem(
                     text = { Text("Rename") },
                     onClick = {
@@ -150,59 +146,6 @@ fun CategoryCard(
             }
         }
     }
-
-    // Expanded content with products list
-    if (isExpanded && data.products.isNotEmpty()) {
-        val lightGreenBg = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.15f)
-
-        androidx.compose.foundation.layout.Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-                .border(
-                    width = 1.dp,
-                    color = borderColor,
-                    shape = RoundedCornerShape(
-                        topStart = 0.dp,
-                        topEnd = 0.dp,
-                        bottomStart = 12.dp,
-                        bottomEnd = 12.dp
-                    )
-                )
-                .background(
-                    color = lightGreenBg,
-                    shape = RoundedCornerShape(
-                        topStart = 0.dp,
-                        topEnd = 0.dp,
-                        bottomStart = 12.dp,
-                        bottomEnd = 12.dp
-                    )
-                )
-                .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp)
-        ) {
-            data.products.forEach { product ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Circle,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(8.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = product,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-            }
-        }
-    }
-
 }
+
 
