@@ -111,7 +111,7 @@
     <string name="save">Guardar</string>
     <string name="delete_category">Eliminar Categoría</string>
     <string name="delete_category_message">¿Estás seguro de que quieres eliminar "%1$s"? Esta acción no se puede deshacer y todos los productos en esta categoría también serán eliminados.</string>
-    <string name="rename_category">Renombrar Categoría</string>
+    <string name="edit_category">Editar Categoría</string>
     <string name="delete_product">Eliminar Producto</string>
     <string name="delete_product_message">¿Estás seguro de que quieres eliminar "%1$s"?</string>
     <string name="delete_list_message">¿Estás seguro de que quieres eliminar "%1$s"? Esta acción no se puede deshacer.</string>

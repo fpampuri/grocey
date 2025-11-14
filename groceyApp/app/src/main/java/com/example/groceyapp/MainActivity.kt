@@ -53,6 +53,8 @@ import com.example.groceyapp.ui.theme.GroceyAppTheme
 import com.example.groceyapp.ui.viewmodel.AuthViewModel
 import com.example.groceyapp.ui.viewmodel.ProductViewModel
 import com.example.groceyapp.ui.viewmodel.ShoppingListViewModel
+import com.example.groceyapp.ui.utils.mapIconToString
+import com.example.groceyapp.ui.utils.mapStringToIcon
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
@@ -113,9 +115,9 @@ fun ListsApp() {
     var showCreateCategoryDialog by remember { mutableStateOf(false) }
     var showProductFabMenu by remember { mutableStateOf(false) }
     var showDeleteCategoryDialog by remember { mutableStateOf(false) }
-    var showRenameCategoryDialog by remember { mutableStateOf(false) }
+    var showEditCategoryDialog by remember { mutableStateOf(false) }
     var categoryToDelete by remember { mutableStateOf<Int?>(null) }
-    var categoryToRename by remember { mutableStateOf<Pair<Int, String>?>(null) }
+    var categoryToEdit by remember { mutableStateOf<Triple<Int, String, androidx.compose.ui.graphics.vector.ImageVector?>?>(null) }
     
     // Products and categories from API
     val products by productViewModel.products.collectAsState()
@@ -172,46 +174,9 @@ fun ListsApp() {
 
     // Convert API categories and products to UI format
     val categoryCards = categories.map { category ->
-        // Extract icon from metadata
+        // Extract icon from metadata and map to ImageVector
         val iconName = category.metadata?.get("icon") as? String
-        val icon = when (iconName) {
-            "ShoppingCart" -> Icons.Rounded.ShoppingCart
-            "store" -> Icons.Filled.Store
-            "inventory" -> Icons.Filled.Inventory2
-            "List" -> Icons.AutoMirrored.Filled.List
-            "Star" -> Icons.Filled.Star
-            "StarBorder" -> Icons.Outlined.StarBorder
-            "Add" -> Icons.Filled.Add
-            "Remove" -> Icons.Filled.Remove
-            "MoreVert" -> Icons.Filled.MoreVert
-            "Delete" -> Icons.Filled.Delete
-            "Edit" -> Icons.Filled.Edit
-            "Share" -> Icons.Filled.Share
-            "FilterList" -> Icons.Filled.FilterList
-            "Search" -> Icons.Filled.Search
-            "ChevronRight" -> Icons.Filled.ChevronRight
-            "Circle" -> Icons.Filled.Circle
-            "Person" -> Icons.Filled.Person
-            "Email" -> Icons.Filled.Email
-            "Lock" -> Icons.Filled.Lock
-            "DarkMode" -> Icons.Filled.DarkMode
-            "Language" -> Icons.Filled.Language
-            "Visibility" -> Icons.Filled.Visibility
-            "VisibilityOff" -> Icons.Filled.VisibilityOff
-            "ArrowBack" -> Icons.AutoMirrored.Filled.ArrowBack
-            "Home" -> Icons.Filled.Home
-            "Bookmark" -> Icons.Filled.Bookmark
-            "LocalOffer" -> Icons.Filled.LocalOffer
-            "Tag" -> Icons.Filled.Tag
-            "LocalGroceryStore" -> Icons.Rounded.LocalGroceryStore
-            "Favorite" -> Icons.Filled.Favorite
-            "FavoriteBorder" -> Icons.Filled.FavoriteBorder
-            "ShoppingBasket" -> Icons.Filled.ShoppingBasket
-            "Restaurant" -> Icons.Filled.Restaurant
-            "Fastfood" -> Icons.Filled.Fastfood
-            "LocalDining" -> Icons.Filled.LocalDining
-            else -> Icons.Filled.Category
-        }
+        val icon = mapStringToIcon(iconName)
         
         // Get products for this category
         val categoryProducts = products
@@ -291,12 +256,13 @@ fun ListsApp() {
                     // TODO: Handle product menu click
                 },
                 onCategoryRename = { categoryId ->
-                    categoryId?.let {
-                        val apiCategory = categories.find { cat -> cat.id == it.toInt() }
+                    categoryId?.let { catId ->
+                        val apiCategory = categories.find { cat -> cat.id == catId.toInt() }
+                        val categoryCard = categoryCards.find { card -> card.id == catId }
                         apiCategory?.let { cat ->
                             cat.id?.let { id ->
-                                categoryToRename = Pair(id, cat.name)
-                                showRenameCategoryDialog = true
+                                categoryToEdit = Triple(id, cat.name, categoryCard?.leadingIcon)
+                                showEditCategoryDialog = true
                             }
                         }
                     }
@@ -392,12 +358,13 @@ fun ListsApp() {
                             }
                         },
                         onCategoryRename = { categoryId ->
-                            categoryId?.let {
-                                val category = categories.find { cat -> cat.id == it.toInt() }
+                            categoryId?.let { catId ->
+                                val category = categories.find { cat -> cat.id == catId.toInt() }
+                                val categoryCard = categoryCards.find { card -> card.id == catId }
                                 category?.let { cat ->
                                     cat.id?.let { id ->
-                                        categoryToRename = Pair(id, cat.name)
-                                        showRenameCategoryDialog = true
+                                        categoryToEdit = Triple(id, cat.name, categoryCard?.leadingIcon)
+                                        showEditCategoryDialog = true
                                     }
                                 }
                             }
@@ -515,45 +482,7 @@ fun ListsApp() {
             CreateCategoryDialog(
                 onDismiss = { showCreateCategoryDialog = false },
                 onCreate = { name, icon ->
-                    // Map icon to simple name for storage
-                    val iconName = when (icon) {
-                        Icons.Rounded.ShoppingCart -> "ShoppingCart"
-                        Icons.Filled.Store -> "store"
-                        Icons.Filled.Inventory2 -> "inventory"
-                        Icons.AutoMirrored.Filled.List -> "List"
-                        Icons.Filled.Star -> "Star"
-                        Icons.Outlined.StarBorder -> "StarBorder"
-                        Icons.Filled.Add -> "Add"
-                        Icons.Filled.Remove -> "Remove"
-                        Icons.Filled.MoreVert -> "MoreVert"
-                        Icons.Filled.Delete -> "Delete"
-                        Icons.Filled.Edit -> "Edit"
-                        Icons.Filled.Share -> "Share"
-                        Icons.Filled.FilterList -> "FilterList"
-                        Icons.Filled.Search -> "Search"
-                        Icons.Filled.ChevronRight -> "ChevronRight"
-                        Icons.Filled.Circle -> "Circle"
-                        Icons.Filled.Person -> "Person"
-                        Icons.Filled.Email -> "Email"
-                        Icons.Filled.Lock -> "Lock"
-                        Icons.Filled.DarkMode -> "DarkMode"
-                        Icons.Filled.Language -> "Language"
-                        Icons.Filled.Visibility -> "Visibility"
-                        Icons.Filled.VisibilityOff -> "VisibilityOff"
-                        Icons.AutoMirrored.Filled.ArrowBack -> "ArrowBack"
-                        Icons.Filled.Home -> "Home"
-                        Icons.Filled.Bookmark -> "Bookmark"
-                        Icons.Filled.LocalOffer -> "LocalOffer"
-                        Icons.Filled.Tag -> "Tag"
-                        Icons.Rounded.LocalGroceryStore -> "LocalGroceryStore"
-                        Icons.Filled.Favorite -> "Favorite"
-                        Icons.Filled.FavoriteBorder -> "FavoriteBorder"
-                        Icons.Filled.ShoppingBasket -> "ShoppingBasket"
-                        Icons.Filled.Restaurant -> "Restaurant"
-                        Icons.Filled.Fastfood -> "Fastfood"
-                        Icons.Filled.LocalDining -> "LocalDining"
-                        else -> "category"
-                    }
+                    val iconName = icon?.let { mapIconToString(it) } ?: "Category"
                     
                     productViewModel.createCategory(
                         name = name,
@@ -590,26 +519,30 @@ fun ListsApp() {
             )
         }
         
-        // Rename Category dialog
-        if (showRenameCategoryDialog && categoryToRename != null) {
-            val (categoryId, categoryName) = categoryToRename!!
-            RenameDialog(
-                title = stringResource(id = R.string.rename_category),
+        // Edit Category dialog
+        if (showEditCategoryDialog && categoryToEdit != null) {
+            val (categoryId, categoryName, categoryIcon) = categoryToEdit!!
+            com.example.groceyapp.ui.components.dialogs.EditCategoryDialog(
                 currentName = categoryName,
-                label = stringResource(id = R.string.category_name_hint),
+                currentIcon = categoryIcon,
                 onDismiss = {
-                    showRenameCategoryDialog = false
-                    categoryToRename = null
+                    showEditCategoryDialog = false
+                    categoryToEdit = null
                 },
-                onRename = { newName ->
+                onUpdate = { newName, newIcon ->
                     val category = categories.find { it.id == categoryId }
+                    val iconName = mapIconToString(newIcon)
+                    val updatedMetadata = (category?.metadata ?: emptyMap()).toMutableMap().apply {
+                        put("icon", iconName)
+                    }
+                    
                     productViewModel.updateCategory(
                         id = categoryId,
                         name = newName,
-                        metadata = category?.metadata,
+                        metadata = updatedMetadata,
                         onSuccess = {
-                            showRenameCategoryDialog = false
-                            categoryToRename = null
+                            showEditCategoryDialog = false
+                            categoryToEdit = null
                         }
                     )
                 }
@@ -682,94 +615,6 @@ fun ListsApp() {
                 }
             )
         }
-    }
-}
-
-/**
- * Map ImageVector to string identifier for backend storage
- */
-fun mapIconToString(icon: ImageVector): String {
-    return when (icon) {
-        Icons.Rounded.ShoppingCart -> "shopping_cart"
-        Icons.Filled.Store -> "store"
-        Icons.Filled.Inventory2 -> "inventory"
-        Icons.AutoMirrored.Filled.List -> "list"
-        Icons.Filled.Star -> "star"
-        Icons.Outlined.StarBorder -> "star_border"
-        Icons.Filled.Add -> "add"
-        Icons.Filled.Remove -> "remove"
-        Icons.Filled.MoreVert -> "more_vert"
-        Icons.Filled.Delete -> "delete"
-        Icons.Filled.Edit -> "edit"
-        Icons.Filled.Share -> "share"
-        Icons.Filled.FilterList -> "filter_list"
-        Icons.Filled.Search -> "search"
-        Icons.Filled.ChevronRight -> "chevron_right"
-        Icons.Filled.Circle -> "circle"
-        Icons.Filled.Person -> "person"
-        Icons.Filled.Email -> "email"
-        Icons.Filled.Lock -> "lock"
-        Icons.Filled.DarkMode -> "dark_mode"
-        Icons.Filled.Language -> "language"
-        Icons.Filled.Visibility -> "visibility"
-        Icons.Filled.VisibilityOff -> "visibility_off"
-        Icons.AutoMirrored.Filled.ArrowBack -> "arrow_back"
-        Icons.Filled.Home -> "home"
-        Icons.Filled.Bookmark -> "bookmark"
-        Icons.Filled.LocalOffer -> "local_offer"
-        Icons.Filled.Tag -> "tag"
-        Icons.Rounded.LocalGroceryStore -> "local_grocery_store"
-        Icons.Filled.Favorite -> "favorite"
-        Icons.Filled.FavoriteBorder -> "favorite_border"
-        Icons.Filled.ShoppingBasket -> "shopping_basket"
-        Icons.Filled.Restaurant -> "restaurant"
-        Icons.Filled.Fastfood -> "fastfood"
-        Icons.Filled.LocalDining -> "local_dining"
-        else -> "shopping_cart"
-    }
-}
-
-/**
- * Map string identifier from backend to ImageVector
- */
-fun mapStringToIcon(iconName: String?): ImageVector {
-    return when (iconName) {
-        "shopping_cart" -> Icons.Rounded.ShoppingCart
-        "store" -> Icons.Filled.Store
-        "inventory" -> Icons.Filled.Inventory2
-        "list" -> Icons.AutoMirrored.Filled.List
-        "star" -> Icons.Filled.Star
-        "star_border" -> Icons.Outlined.StarBorder
-        "add" -> Icons.Filled.Add
-        "remove" -> Icons.Filled.Remove
-        "more_vert" -> Icons.Filled.MoreVert
-        "delete" -> Icons.Filled.Delete
-        "edit" -> Icons.Filled.Edit
-        "share" -> Icons.Filled.Share
-        "filter_list" -> Icons.Filled.FilterList
-        "search" -> Icons.Filled.Search
-        "chevron_right" -> Icons.Filled.ChevronRight
-        "circle" -> Icons.Filled.Circle
-        "person" -> Icons.Filled.Person
-        "email" -> Icons.Filled.Email
-        "lock" -> Icons.Filled.Lock
-        "dark_mode" -> Icons.Filled.DarkMode
-        "language" -> Icons.Filled.Language
-        "visibility" -> Icons.Filled.Visibility
-        "visibility_off" -> Icons.Filled.VisibilityOff
-        "arrow_back" -> Icons.AutoMirrored.Filled.ArrowBack
-        "home" -> Icons.Filled.Home
-        "bookmark" -> Icons.Filled.Bookmark
-        "local_offer" -> Icons.Filled.LocalOffer
-        "tag" -> Icons.Filled.Tag
-        "local_grocery_store" -> Icons.Rounded.LocalGroceryStore
-        "favorite" -> Icons.Filled.Favorite
-        "favorite_border" -> Icons.Filled.FavoriteBorder
-        "shopping_basket" -> Icons.Filled.ShoppingBasket
-        "restaurant" -> Icons.Filled.Restaurant
-        "fastfood" -> Icons.Filled.Fastfood
-        "local_dining" -> Icons.Filled.LocalDining
-        else -> Icons.Rounded.ShoppingCart
     }
 }
 

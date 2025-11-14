@@ -57,7 +57,7 @@ fun CategoryOptionsMenu(
             offset = DpOffset(x = 0.dp, y = 4.dp)
         ) {
             DropdownMenuItem(
-                text = { Text(stringResource(R.string.rename_category)) },
+                text = { Text(stringResource(R.string.edit_category)) },
                 onClick = {
                     showMenu = false
                     onRename(categoryId)
