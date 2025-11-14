@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material.icons.rounded.LocalGroceryStore
 import androidx.compose.material.icons.rounded.ShoppingCart
+import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.groceyapp.R
 import com.example.groceyapp.ui.auth.AuthenticationScreen
 import com.example.groceyapp.ui.components.ListCardData
@@ -101,7 +102,7 @@ fun ListsApp() {
     var showDeleteListDialog by remember { mutableStateOf(false) }
     var showRenameListDialog by remember { mutableStateOf(false) }
     var listToDelete by remember { mutableStateOf<Int?>(null) }
-    var listToRename by remember { mutableStateOf<Pair<Int, String>?>(null) }
+    var listToRename by remember { mutableStateOf<Triple<Int, String, androidx.compose.ui.graphics.vector.ImageVector?>?>(null) }
     
     // Products and categories dialog states
     var showCreateProductDialog by remember { mutableStateOf(false) }
@@ -149,11 +150,8 @@ fun ListsApp() {
     val lists = apiLists.map { apiList ->
         // Extract icon from metadata, default to shopping cart
         val iconName = apiList.metadata?.get("icon") as? String
-        val icon = when (iconName) {
-            "store" -> Icons.Filled.Store
-            "inventory" -> Icons.Filled.Inventory2
-            else -> Icons.Rounded.ShoppingCart
-        }
+        Log.d("MainActivity", "List ${apiList.name} has icon metadata: $iconName")
+        val icon = mapStringToIcon(iconName)
         
         ListCardData(
             id = apiList.id?.toString() ?: "",
@@ -246,21 +244,36 @@ fun ListsApp() {
         if (selectedList != null) {
             // Show detail screen
                 ListDetailScreen(
-                listData = selectedList,
-                onBackClick = { selectedListId = null },
-                onProductToggle = { _ ->
-                    // TODO: Handle product toggle
-                },
-                onQuantityChange = { _, _ ->
-                    // TODO: Handle quantity change
-                },
-                currentDestination = currentDestination,
-                onDestinationSelected = { destination ->
-                    currentDestination = destination
-                    selectedListId = null  // Go back to main view when switching tabs
-                },
-                onMenuClick = { isMenuOpen = true }
-            )
+                    listData = selectedList,
+                    onBackClick = { selectedListId = null },
+                    onProductToggle = { _ ->
+                        // TODO: Handle product toggle
+                    },
+                    onQuantityChange = { _, _ ->
+                        // TODO: Handle quantity change
+                    },
+                    currentDestination = currentDestination,
+                    onDestinationSelected = { destination ->
+                        currentDestination = destination
+                        selectedListId = null  // Go back to main view when switching tabs
+                    },
+                    onRename = { listId ->
+                        val list = apiLists.find { it.id.toString() == listId }
+                        val uiList = lists.find { it.id == listId }
+                        list?.id?.let { id ->
+                            listToRename = Triple(id, list.name, uiList?.leadingIcon)
+                            showRenameListDialog = true
+                        }
+                    },
+                    onDelete = { listId ->
+                        val list = apiLists.find { it.id.toString() == listId }
+                        list?.id?.let { id ->
+                            listToDelete = id
+                            showDeleteListDialog = true
+                        }
+                    },
+                    onShare = { _ -> /* share intentionally disabled until specified */ }
+                )
         } else {
             // Show main app with bottom navigation
             Scaffold(
@@ -358,8 +371,9 @@ fun ListsApp() {
                         onMenuClick = { isMenuOpen = true },
                         onRename = { listId ->
                             val list = apiLists.find { it.id.toString() == listId }
+                            val uiList = lists.find { it.id == listId }
                             list?.id?.let { id ->
-                                listToRename = Pair(id, list.name)
+                                listToRename = Triple(id, list.name, uiList?.leadingIcon)
                                 showRenameListDialog = true
                             }
                         },
@@ -410,12 +424,7 @@ fun ListsApp() {
                 onDismiss = { showCreateListDialog = false },
                 onCreate = { title, leadingIcon ->
                     // Create list via API with icon in metadata
-                    val iconName = when (leadingIcon) {
-                        Icons.Rounded.ShoppingCart -> "shopping_cart"
-                        Icons.Filled.Store -> "store"
-                        Icons.Filled.Inventory2 -> "inventory"
-                        else -> "list"
-                    }
+                    val iconName = mapIconToString(leadingIcon)
                     Log.d("MainActivity", "Create clicked: title=$title, icon=$iconName")
 
                     shoppingListViewModel.createShoppingList(
@@ -595,21 +604,30 @@ fun ListsApp() {
             )
         }
         
-        // Rename List dialog
+        // Edit List dialog (rename + icon)
         if (showRenameListDialog && listToRename != null) {
-            val (listId, listName) = listToRename!!
-            RenameDialog(
-                title = stringResource(id = R.string.rename_list),
+            val (listId, listName, listIcon) = listToRename!!
+            com.example.groceyapp.ui.components.dialogs.EditListDialog(
                 currentName = listName,
-                label = stringResource(id = R.string.list_name_hint),
+                currentIcon = listIcon,
                 onDismiss = {
                     showRenameListDialog = false
                     listToRename = null
                 },
-                onRename = { newName ->
+                onUpdate = { newName, newIcon ->
+                    // Map selected ImageVector to metadata key expected by backend
+                    val iconName = mapIconToString(newIcon)
+
+                    // Get existing metadata and update icon
+                    val existingList = apiLists.find { it.id == listId }
+                    val updatedMetadata = (existingList?.metadata?.toMutableMap() ?: mutableMapOf()).apply {
+                        this["icon"] = iconName
+                    }
+
                     shoppingListViewModel.updateShoppingList(
                         id = listId,
                         name = newName,
+                        metadata = updatedMetadata,
                         onSuccess = {
                             showRenameListDialog = false
                             listToRename = null
@@ -618,6 +636,94 @@ fun ListsApp() {
                 }
             )
         }
+    }
+}
+
+/**
+ * Map ImageVector to string identifier for backend storage
+ */
+fun mapIconToString(icon: ImageVector): String {
+    return when (icon) {
+        Icons.Rounded.ShoppingCart -> "shopping_cart"
+        Icons.Filled.Store -> "store"
+        Icons.Filled.Inventory2 -> "inventory"
+        Icons.AutoMirrored.Filled.List -> "list"
+        Icons.Filled.Star -> "star"
+        Icons.Outlined.StarBorder -> "star_border"
+        Icons.Filled.Add -> "add"
+        Icons.Filled.Remove -> "remove"
+        Icons.Filled.MoreVert -> "more_vert"
+        Icons.Filled.Delete -> "delete"
+        Icons.Filled.Edit -> "edit"
+        Icons.Filled.Share -> "share"
+        Icons.Filled.FilterList -> "filter_list"
+        Icons.Filled.Search -> "search"
+        Icons.Filled.ChevronRight -> "chevron_right"
+        Icons.Filled.Circle -> "circle"
+        Icons.Filled.Person -> "person"
+        Icons.Filled.Email -> "email"
+        Icons.Filled.Lock -> "lock"
+        Icons.Filled.DarkMode -> "dark_mode"
+        Icons.Filled.Language -> "language"
+        Icons.Filled.Visibility -> "visibility"
+        Icons.Filled.VisibilityOff -> "visibility_off"
+        Icons.AutoMirrored.Filled.ArrowBack -> "arrow_back"
+        Icons.Filled.Home -> "home"
+        Icons.Filled.Bookmark -> "bookmark"
+        Icons.Filled.LocalOffer -> "local_offer"
+        Icons.Filled.Tag -> "tag"
+        Icons.Rounded.LocalGroceryStore -> "local_grocery_store"
+        Icons.Filled.Favorite -> "favorite"
+        Icons.Filled.FavoriteBorder -> "favorite_border"
+        Icons.Filled.ShoppingBasket -> "shopping_basket"
+        Icons.Filled.Restaurant -> "restaurant"
+        Icons.Filled.Fastfood -> "fastfood"
+        Icons.Filled.LocalDining -> "local_dining"
+        else -> "shopping_cart"
+    }
+}
+
+/**
+ * Map string identifier from backend to ImageVector
+ */
+fun mapStringToIcon(iconName: String?): ImageVector {
+    return when (iconName) {
+        "shopping_cart" -> Icons.Rounded.ShoppingCart
+        "store" -> Icons.Filled.Store
+        "inventory" -> Icons.Filled.Inventory2
+        "list" -> Icons.AutoMirrored.Filled.List
+        "star" -> Icons.Filled.Star
+        "star_border" -> Icons.Outlined.StarBorder
+        "add" -> Icons.Filled.Add
+        "remove" -> Icons.Filled.Remove
+        "more_vert" -> Icons.Filled.MoreVert
+        "delete" -> Icons.Filled.Delete
+        "edit" -> Icons.Filled.Edit
+        "share" -> Icons.Filled.Share
+        "filter_list" -> Icons.Filled.FilterList
+        "search" -> Icons.Filled.Search
+        "chevron_right" -> Icons.Filled.ChevronRight
+        "circle" -> Icons.Filled.Circle
+        "person" -> Icons.Filled.Person
+        "email" -> Icons.Filled.Email
+        "lock" -> Icons.Filled.Lock
+        "dark_mode" -> Icons.Filled.DarkMode
+        "language" -> Icons.Filled.Language
+        "visibility" -> Icons.Filled.Visibility
+        "visibility_off" -> Icons.Filled.VisibilityOff
+        "arrow_back" -> Icons.AutoMirrored.Filled.ArrowBack
+        "home" -> Icons.Filled.Home
+        "bookmark" -> Icons.Filled.Bookmark
+        "local_offer" -> Icons.Filled.LocalOffer
+        "tag" -> Icons.Filled.Tag
+        "local_grocery_store" -> Icons.Rounded.LocalGroceryStore
+        "favorite" -> Icons.Filled.Favorite
+        "favorite_border" -> Icons.Filled.FavoriteBorder
+        "shopping_basket" -> Icons.Filled.ShoppingBasket
+        "restaurant" -> Icons.Filled.Restaurant
+        "fastfood" -> Icons.Filled.Fastfood
+        "local_dining" -> Icons.Filled.LocalDining
+        else -> Icons.Rounded.ShoppingCart
     }
 }
 

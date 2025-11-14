@@ -124,68 +124,12 @@ fun ListCard(
 
             Spacer(modifier = Modifier.width(4.dp))
 
-            // Three-dot menu
-            androidx.compose.foundation.layout.Box {
-                IconButton(
-                    onClick = { showMenu = !showMenu },
-                    modifier = Modifier.size(24.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.MoreVert,
-                        contentDescription = androidx.compose.ui.res.stringResource(R.string.more_options),
-                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-                    )
-                }
-                
-                androidx.compose.material3.DropdownMenu(
-                    expanded = showMenu,
-                    onDismissRequest = { showMenu = false }
-                ) {
-                    // API CHANGE: Renaming/sharing/deleting a list should call into a ViewModel
-                    // method that updates the repository (remote/local DB). Ensure the
-                    // implementation performs the persistence operation and emits new state
-                    // observable for the UI to consume.
-                    androidx.compose.material3.DropdownMenuItem(
-                        text = { Text(androidx.compose.ui.res.stringResource(R.string.rename_list)) },
-                        onClick = {
-                            showMenu = false
-                            onRename(data.id)
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = null
-                            )
-                        }
-                    )
-                    androidx.compose.material3.DropdownMenuItem(
-                        text = { Text(androidx.compose.ui.res.stringResource(R.string.share_list)) },
-                        onClick = {
-                            showMenu = false
-                            onShare(data.id)
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Share,
-                                contentDescription = null
-                            )
-                        }
-                    )
-                    androidx.compose.material3.DropdownMenuItem(
-                        text = { Text(androidx.compose.ui.res.stringResource(R.string.delete_list)) },
-                        onClick = {
-                            showMenu = false
-                            onDelete(data.id)
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error
-                            )
-                        }
-                    )
-                }
-            }
+            // Reuse shared options menu to avoid duplicate logic
+            com.example.groceyapp.ui.components.general.ListOptionsMenu(
+                itemId = data.id,
+                onRename = onRename,
+                onShare = onShare,
+                onDelete = onDelete
+            )
         }
     }

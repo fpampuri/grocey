@@ -63,8 +63,7 @@ fun RenameDialog(
                     title = stringResource(id = R.string.cancel),
                     onClick = onDismiss,
                     icon = Icons.Filled.Close,
-                    variant = ButtonVariant.PRIMARY,
-                    backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
+                    variant = ButtonVariant.DANGER,
                     modifier = Modifier.width(120.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
@@ -77,6 +76,7 @@ fun RenameDialog(
                     },
                     icon = Icons.Filled.Check,
                     enabled = newName.trim().isNotBlank() && newName.trim() != currentName,
+                    variant = ButtonVariant.PRIMARY,
                     modifier = Modifier.width(120.dp)
                 )
             }

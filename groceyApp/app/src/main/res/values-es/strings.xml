@@ -18,7 +18,7 @@
     <string name="add_product">Agregar producto</string>
     <string name="shared_label">Compartida</string>
     <string name="items_count">%1$d ítems</string>
-    <string name="rename_list">Renombrar</string>
+    <string name="edit_list">Editar lista</string>
     <string name="delete_list">Eliminar</string>
     <string name="share_list">Compartir</string>
     <string name="add_to_favorites">Agregar a favoritos</string>

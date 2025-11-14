@@ -1,8 +1,8 @@
 package com.example.groceyapp.ui.components.dialogs
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,24 +40,19 @@ fun ConfirmDeleteDialog(
         confirmButton = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 StandardButton(
-                    title = stringResource(id = R.string.cancel),
+                    title = stringResource(R.string.cancel),
                     onClick = onDismiss,
-                    icon = Icons.Filled.Close,
-                    variant = ButtonVariant.PRIMARY,
-                    backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
+                    icon = Icons.Rounded.Close,
+                    variant = ButtonVariant.OUTLINED,
                     modifier = Modifier.width(120.dp)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
                 StandardButton(
-                    title = stringResource(id = R.string.delete),
-                    onClick = {
-                        onConfirm()
-                        onDismiss()
-                    },
-                    icon = Icons.Filled.Delete,
+                    title = stringResource(R.string.delete),
+                    onClick = onConfirm,
+                    icon = Icons.Rounded.Delete,
                     variant = ButtonVariant.DANGER,
                     modifier = Modifier.width(120.dp)
                 )

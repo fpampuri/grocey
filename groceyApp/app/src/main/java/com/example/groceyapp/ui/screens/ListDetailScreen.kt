@@ -54,7 +54,9 @@ fun ListDetailScreen(
     onQuantityChange: (String, Int) -> Unit = { _, _ -> },
     currentDestination: HomeDestination,
     onDestinationSelected: (HomeDestination) -> Unit = {},
-    onMenuClick: () -> Unit = {},
+    onRename: (String) -> Unit = {},
+    onShare: (String) -> Unit = {},
+    onDelete: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -78,13 +80,12 @@ fun ListDetailScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = onMenuClick) {
-                        Icon(
-                            imageVector = Icons.Default.MoreVert,
-                            contentDescription = stringResource(R.string.menu_button),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
+                    com.example.groceyapp.ui.components.general.ListOptionsMenu(
+                        itemId = listData.id,
+                        onRename = onRename,
+                        onShare = onShare,
+                        onDelete = onDelete
+                    )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,

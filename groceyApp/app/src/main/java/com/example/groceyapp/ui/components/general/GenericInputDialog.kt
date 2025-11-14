@@ -53,14 +53,18 @@ fun GenericInputDialog(
     confirmButtonText: String,
     showIconPicker: Boolean = false,
     defaultIcons: List<ImageVector>? = null,
+    initialInputText: String = "",
+    initialSelectedIcon: ImageVector? = null,
+    confirmIcon: ImageVector? = null,
+    confirmButtonVariant: ButtonVariant = ButtonVariant.PRIMARY,
     onDismiss: () -> Unit,
     onConfirm: (String, ImageVector?) -> Unit
 ) {
-    var inputText by remember { mutableStateOf("") }
+    var inputText by remember { mutableStateOf(initialInputText) }
     var isIconPickerOpen by remember { mutableStateOf(false) }
-    
+
     val icons = defaultIcons ?: getDefaultIcons()
-    var selectedIcon by remember { mutableStateOf(icons.first()) }
+    var selectedIcon by remember { mutableStateOf(initialSelectedIcon ?: icons.first()) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -121,7 +125,9 @@ fun GenericInputDialog(
                         val icon = if (showIconPicker) selectedIcon else null
                         onConfirm(inputText.trim(), icon)
                     },
-                    icon = Icons.Filled.Add,
+                    icon = confirmIcon ?: Icons.Filled.Add,
+                    variant = confirmButtonVariant,
+                    backgroundColor = if (confirmButtonVariant == ButtonVariant.PRIMARY) MaterialTheme.colorScheme.primary else null,
                     enabled = inputText.isNotBlank()
                 )
             }

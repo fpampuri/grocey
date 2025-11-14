@@ -1,5 +1,6 @@
 package com.example.groceyapp.ui.components.general
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
@@ -17,11 +18,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-// Use semantic color roles from MaterialTheme.colorScheme
 
 enum class ButtonVariant {
     PRIMARY,
-    DANGER
+    DANGER,
+    OUTLINED
 }
 
 @Composable
@@ -37,13 +38,20 @@ fun StandardButton(
     val defaultBackgroundColor = when (variant) {
         ButtonVariant.PRIMARY -> MaterialTheme.colorScheme.primary
         ButtonVariant.DANGER -> MaterialTheme.colorScheme.error
+        ButtonVariant.OUTLINED -> MaterialTheme.colorScheme.surface
     }
 
     val resolvedContainerColor = backgroundColor ?: defaultBackgroundColor
     val resolvedContentColor = when (variant) {
         ButtonVariant.PRIMARY -> MaterialTheme.colorScheme.onPrimary
         ButtonVariant.DANGER -> MaterialTheme.colorScheme.onError
+        ButtonVariant.OUTLINED -> MaterialTheme.colorScheme.outline
     }
+    
+    val borderStroke = if (variant == ButtonVariant.OUTLINED) {
+        BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+    } else null
+    
     Button(
         onClick = onClick,
         modifier = modifier.height(48.dp),
@@ -54,6 +62,7 @@ fun StandardButton(
             disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
             disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ),
+        border = borderStroke,
         shape = RoundedCornerShape(12.dp),
         elevation = ButtonDefaults.buttonElevation(
             defaultElevation = 2.dp,
