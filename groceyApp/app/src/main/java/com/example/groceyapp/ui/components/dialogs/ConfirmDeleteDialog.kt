@@ -42,10 +42,12 @@ fun ConfirmDeleteDialog(
                 horizontalArrangement = Arrangement.End
             ) {
                 StandardButton(
-                    title = stringResource(id = android.R.string.cancel),
+                    title = stringResource(id = R.string.cancel),
                     onClick = onDismiss,
                     icon = Icons.Filled.Close,
-                    variant = ButtonVariant.DANGER
+                    variant = ButtonVariant.PRIMARY,
+                    backgroundColor = androidx.compose.ui.graphics.Color(0xFF757575),
+                    modifier = Modifier.width(120.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 StandardButton(
@@ -55,7 +57,8 @@ fun ConfirmDeleteDialog(
                         onDismiss()
                     },
                     icon = Icons.Filled.Delete,
-                    variant = ButtonVariant.DANGER
+                    variant = ButtonVariant.DANGER,
+                    modifier = Modifier.width(120.dp)
                 )
             }
         },

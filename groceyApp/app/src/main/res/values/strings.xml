@@ -14,7 +14,6 @@
     <string name="pantry_tab">Pantry</string>
     <string name="products_tab">Products</string>
     <string name="add_list">Add List</string>
-    <string name="list_name_hint">List Name</string>
     <string name="create">Create</string>
     <string name="select_icon">Select icon</string>
     <string name="add_pantry_item">Add Pantry Item</string>
@@ -84,7 +83,6 @@
     
     <!-- Product and Category strings -->
     <string name="add_category">Add Category</string>
-    <string name="category_name_hint">Category Name</string>
     <string name="product_name_hint">Product Name</string>
     <string name="select_category">Select Category</string>
     <string name="no_category">No Category</string>
@@ -115,5 +113,7 @@
     <string name="delete_product">Delete Product</string>
     <string name="delete_product_message">Are you sure you want to delete "%1$s"?</string>
     <string name="delete_list_message">Are you sure you want to delete "%1$s"? This action cannot be undone.</string>
+    <string name="category_name_hint">Category name</string>
+    <string name="list_name_hint">List name</string>
 </resources>
 

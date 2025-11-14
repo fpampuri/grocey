@@ -59,10 +59,12 @@ fun RenameDialog(
                 horizontalArrangement = Arrangement.End
             ) {
                 StandardButton(
-                    title = stringResource(id = android.R.string.cancel),
+                    title = stringResource(id = R.string.cancel),
                     onClick = onDismiss,
                     icon = Icons.Filled.Close,
-                    variant = ButtonVariant.DANGER
+                    variant = ButtonVariant.PRIMARY,
+                    backgroundColor = androidx.compose.ui.graphics.Color(0xFF757575),
+                    modifier = Modifier.width(120.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 StandardButton(
@@ -73,7 +75,8 @@ fun RenameDialog(
                         }
                     },
                     icon = Icons.Filled.Check,
-                    enabled = newName.trim().isNotBlank() && newName.trim() != currentName
+                    enabled = newName.trim().isNotBlank() && newName.trim() != currentName,
+                    modifier = Modifier.width(120.dp)
                 )
             }
         },

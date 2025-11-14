@@ -81,12 +81,10 @@
     
     <!-- Product and Category strings -->
     <string name="add_category">Agregar Categoría</string>
-    <string name="category_name_hint">Nombre de Categoría</string>
     <string name="product_name_hint">Nombre de Producto</string>
     <string name="select_category">Seleccionar Categoría</string>
     <string name="no_category">Sin Categoría</string>
     <string name="create">Crear</string>
-    <string name="list_name_hint">Nombre de Lista</string>
     <string name="select_icon">Seleccionar ícono</string>
     <string name="choose_action">Elige Acción</string>
     <string name="empty_lists_message">No hay listas aún</string>
@@ -105,4 +103,16 @@
     <string name="cancel">Cancelar</string>
     <string name="add">Agregar</string>
     <string name="miscellaneous">Varios</string>
+    
+    <!-- Delete and rename strings -->
+    <string name="delete">Eliminar</string>
+    <string name="save">Guardar</string>
+    <string name="delete_category">Eliminar Categoría</string>
+    <string name="delete_category_message">¿Estás seguro de que quieres eliminar "%1$s"? Esta acción no se puede deshacer y todos los productos en esta categoría también serán eliminados.</string>
+    <string name="rename_category">Renombrar Categoría</string>
+    <string name="delete_product">Eliminar Producto</string>
+    <string name="delete_product_message">¿Estás seguro de que quieres eliminar "%1$s"?</string>
+    <string name="delete_list_message">¿Estás seguro de que quieres eliminar "%1$s"? Esta acción no se puede deshacer.</string>
+    <string name="category_name_hint">Nombre de categoría</string>
+    <string name="list_name_hint">Nombre de lista</string>
 </resources>

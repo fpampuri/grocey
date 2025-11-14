@@ -30,9 +30,10 @@ fun StandardButton(
     modifier: Modifier = Modifier,
     icon: ImageVector? = null,
     enabled: Boolean = true,
-    variant: ButtonVariant = ButtonVariant.PRIMARY
+    variant: ButtonVariant = ButtonVariant.PRIMARY,
+    backgroundColor: Color? = null
 ) {
-    val backgroundColor = when (variant) {
+    val defaultBackgroundColor = when (variant) {
         ButtonVariant.PRIMARY -> Color(0xFF4CAF50) // Primary green
         ButtonVariant.DANGER -> Color(0xFFE53935) // Delete red
     }
@@ -42,7 +43,7 @@ fun StandardButton(
         modifier = modifier.height(48.dp),
         enabled = enabled,
         colors = ButtonDefaults.buttonColors(
-            containerColor = backgroundColor,
+            containerColor = backgroundColor ?: defaultBackgroundColor,
             contentColor = Color.White,
             disabledContainerColor = Color(0xFFCCCCCC),
             disabledContentColor = Color.White
@@ -58,14 +59,15 @@ fun StandardButton(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                modifier = Modifier.size(22.dp)
+                modifier = Modifier.size(18.dp)
             )
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(4.dp))
         }
         Text(
             text = title,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1
         )
     }
 }
