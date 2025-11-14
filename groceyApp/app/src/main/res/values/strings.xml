@@ -109,7 +109,7 @@
     <!-- Delete and rename strings -->
     <string name="delete">Delete</string>
     <string name="save">Save</string>
-    <string name="delete_category">Delete Category</string>
+    <string name="delete_category">Delete</string>
     <string name="delete_category_message">Are you sure you want to delete "%1$s"? This action cannot be undone and all products in this category will also be deleted.</string>
     <string name="edit_category">Edit Category</string>
     <string name="delete_product">Delete Product</string>
@@ -119,5 +119,12 @@
     <string name="list_name_hint">List name</string>
     <string name="list_created">List created: %1$s</string>
     <string name="list_deleted">List deleted: %1$s</string>
+    
+    <!-- Product options menu strings -->
+    <string name="move_to_category">Move to Category</string>
+    <string name="add_to_list">Add to List</string>
+    <string name="add_to_pantry">Add to Pantry</string>
+    <string name="move_to_category_title">Select Category</string>
+    <string name="move_product_to_category">Move "%1$s" to:</string>
 </resources>
 

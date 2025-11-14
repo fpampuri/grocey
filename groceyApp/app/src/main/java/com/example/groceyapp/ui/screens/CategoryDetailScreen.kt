@@ -21,8 +21,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -45,14 +47,29 @@ import com.example.groceyapp.ui.components.ProductCardMode
 @Composable
 fun CategoryDetailScreen(
     categoryData: CategoryCardData,
+    products: List<com.example.groceyapp.data.model.Product>,
+    categories: List<com.example.groceyapp.data.model.Category>,
     onBackClick: () -> Unit = {},
-    onProductMenuClick: (String) -> Unit = {},
+    onProductMoveToCategory: (Int, Int) -> Unit = { _, _ -> },
+    onProductAddToList: (String) -> Unit = {},
+    onProductAddToPantry: (String) -> Unit = {},
+    onProductDelete: (Int) -> Unit = {},
     onCategoryRename: (Long?) -> Unit = {},
     onCategoryDelete: (Long?) -> Unit = {},
     currentDestination: HomeDestination,
     onDestinationSelected: (HomeDestination) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    // State for dialogs
+    var showMoveCategoryDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var selectedProduct by remember { mutableStateOf<com.example.groceyapp.data.model.Product?>(null) }
+    
+    // Filter products for this category
+    val categoryProducts = products.filter { product ->
+        product.category?.id == categoryData.id?.toInt()
+    }
+    
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -100,25 +117,7 @@ fun CategoryDetailScreen(
             )
         }
     ) { paddingValues ->
-        // Convert product names to ProductItemData objects
-        // In CATEGORY mode, we don't need quantity or isBought
-        val productsState = remember {
-            mutableStateListOf<ProductItemData>().apply {
-                addAll(
-                    categoryData.products.map { productName ->
-                        ProductItemData(
-                            id = productName, // Using name as ID for now
-                            name = productName,
-                            category = categoryData.title,
-                            quantity = 1,
-                            isBought = false
-                        )
-                    }
-                )
-            }
-        }
-
-        if (productsState.isEmpty()) {
+        if (categoryProducts.isEmpty()) {
             // Empty state
             Box(
                 modifier = Modifier
@@ -155,11 +154,26 @@ fun CategoryDetailScreen(
                 }
 
                 // Product items in CATEGORY mode (no checkbox, no quantity, with menu)
-                items(productsState, key = { it.id }) { product ->
+                items(categoryProducts, key = { it.id ?: 0 }) { product ->
                     ProductItemCard(
-                        data = product,
+                        data = ProductItemData(
+                            id = product.id?.toString() ?: "",
+                            name = product.name,
+                            category = product.category?.name ?: "",
+                            quantity = 1,
+                            isBought = false
+                        ),
                         mode = ProductCardMode.CATEGORY,
-                        onMenuClick = onProductMenuClick
+                        onMoveToCategory = {
+                            selectedProduct = product
+                            showMoveCategoryDialog = true
+                        },
+                        onAddToList = { onProductAddToList(product.id?.toString() ?: "") },
+                        onAddToPantry = { onProductAddToPantry(product.id?.toString() ?: "") },
+                        onDeleteProduct = {
+                            selectedProduct = product
+                            showDeleteDialog = true
+                        }
                     )
                 }
 
@@ -169,5 +183,44 @@ fun CategoryDetailScreen(
                 }
             }
         }
+    }
+    
+    // Move to Category Dialog (outside Scaffold)
+    if (showMoveCategoryDialog && selectedProduct != null) {
+        com.example.groceyapp.ui.components.dialogs.SelectCategoryDialog(
+            productName = selectedProduct!!.name,
+            categories = categories,
+            currentCategoryId = selectedProduct!!.category?.id,
+            onDismiss = {
+                showMoveCategoryDialog = false
+                selectedProduct = null
+            },
+            onCategorySelected = { newCategoryId ->
+                selectedProduct?.id?.let { productId ->
+                    onProductMoveToCategory(productId, newCategoryId)
+                }
+                showMoveCategoryDialog = false
+                selectedProduct = null
+            }
+        )
+    }
+    
+    // Delete Product Dialog (outside Scaffold)
+    if (showDeleteDialog && selectedProduct != null) {
+        com.example.groceyapp.ui.components.dialogs.ConfirmDeleteDialog(
+            title = stringResource(id = R.string.delete_product),
+            message = stringResource(id = R.string.delete_product_message, selectedProduct!!.name),
+            onDismiss = {
+                showDeleteDialog = false
+                selectedProduct = null
+            },
+            onConfirm = {
+                selectedProduct?.id?.let { productId ->
+                    onProductDelete(productId)
+                }
+                showDeleteDialog = false
+                selectedProduct = null
+            }
+        )
     }
 }

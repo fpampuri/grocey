@@ -1,10 +1,5 @@
 package com.example.groceyapp.ui.components
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,33 +8,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import com.example.groceyapp.R
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Circle
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.example.groceyapp.Constants
 // Use semantic roles from MaterialTheme.colorScheme
 
 data class CategoryCardData(
@@ -59,9 +35,6 @@ fun CategoryCard(
     onRename: (Long?) -> Unit = {},
     onClick: (CategoryCardData) -> Unit = {}
 ) {
-    var showMenu by remember { mutableStateOf(false) }
-    val isMiscellaneous = data.id == Constants.MISCELLANEOUS_CATEGORY_ID
-
     CollectionCardShell(
         onClick = { onClick(data) },
         modifier = modifier
@@ -99,57 +72,13 @@ fun CategoryCard(
 
         Spacer(modifier = Modifier.width(4.dp))
 
-        // Three-dot menu (only show if not Miscellaneous)
-        if (!isMiscellaneous) {
-            androidx.compose.foundation.layout.Box {
-                IconButton(
-                    onClick = { 
-                        showMenu = !showMenu
-                    },
-                    modifier = Modifier.size(24.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.MoreVert,
-                        contentDescription = "Options",
-                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-                    )
-                }
-
-                // Dropdown menu
-                DropdownMenu(
-                    expanded = showMenu,
-                    onDismissRequest = { showMenu = false },
-                    offset = androidx.compose.ui.unit.DpOffset(x = 0.dp, y = 4.dp)
-                ) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(R.string.edit_category)) },
-                        onClick = {
-                            showMenu = false
-                            onRename(data.id)
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = null
-                            )
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Delete") },
-                        onClick = {
-                            showMenu = false
-                            onDelete(data.id)
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = null
-                            )
-                        }
-                    )
-                }
-            }
-        }
+        // Three-dot menu using shared component
+        com.example.groceyapp.ui.components.general.CategoryOptionsMenu(
+            categoryId = data.id,
+            onRename = onRename,
+            onDelete = onDelete,
+            modifier = Modifier.size(24.dp)
+        )
     }
 }
 

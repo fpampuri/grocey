@@ -251,9 +251,53 @@ fun ListsApp() {
             val category = selectedCategory!!
             CategoryDetailScreen(
                 categoryData = category,
+                products = products,
+                categories = categories,
                 onBackClick = { selectedCategory = null },
-                onProductMenuClick = { _ ->
-                    // TODO: Handle product menu click
+                onProductMoveToCategory = { productId, newCategoryId ->
+                    // Find the product to get its current name
+                    val product = products.find { it.id == productId }
+                    product?.let {
+                        productViewModel.updateProduct(
+                            id = productId,
+                            name = it.name,  // Include the product name
+                            categoryId = newCategoryId,
+                            onSuccess = {
+                                productViewModel.loadProducts()
+                                // Show success feedback
+                                coroutineScope.launch {
+                                    lastSnackbarIsSuccess = true
+                                    snackbarHostState.showSnackbar(
+                                        message = "Product moved successfully",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                    lastSnackbarIsSuccess = false
+                                }
+                            }
+                        )
+                    }
+                },
+                onProductAddToList = { productId ->
+                    // TODO: Handle add to list
+                },
+                onProductAddToPantry = { productId ->
+                    // TODO: Handle add to pantry
+                },
+                onProductDelete = { productId ->
+                    productViewModel.deleteProduct(
+                        id = productId,
+                        onSuccess = {
+                            productViewModel.loadProducts()
+                            // Show success feedback
+                            coroutineScope.launch {
+                                lastSnackbarIsSuccess = false
+                                snackbarHostState.showSnackbar(
+                                    message = "Product deleted",
+                                    duration = SnackbarDuration.Short
+                                )
+                            }
+                        }
+                    )
                 },
                 onCategoryRename = { categoryId ->
                     categoryId?.let { catId ->

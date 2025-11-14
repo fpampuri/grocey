@@ -69,7 +69,10 @@ fun ProductItemCard(
     onToggleBought: () -> Unit = {},
     onQuantityChange: (Int) -> Unit = {},
     mode: ProductCardMode = ProductCardMode.LIST,
-    onMenuClick: (String) -> Unit = {},
+    onMoveToCategory: () -> Unit = {},
+    onAddToList: () -> Unit = {},
+    onAddToPantry: () -> Unit = {},
+    onDeleteProduct: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -195,16 +198,13 @@ fun ProductItemCard(
                 }
             } else {
                 // Three-dot menu (only in CATEGORY mode)
-                IconButton(
-                    onClick = { onMenuClick(data.id) },
+                ProductOptionsMenu(
+                    onMoveToCategory = onMoveToCategory,
+                    onAddToList = onAddToList,
+                    onAddToPantry = onAddToPantry,
+                    onDelete = onDeleteProduct,
                     modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.MoreVert,
-                        contentDescription = "Options",
-                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-                    )
-                }
+                )
             }
         }
     }
