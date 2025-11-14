@@ -23,24 +23,28 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Category
-import androidx.compose.material.icons.filled.Inventory2
-import androidx.compose.material.icons.filled.Store
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.StarBorder
+import androidx.compose.material.icons.rounded.LocalGroceryStore
 import androidx.compose.material.icons.rounded.ShoppingCart
 import com.example.groceyapp.R
 import com.example.groceyapp.ui.auth.AuthenticationScreen
 import com.example.groceyapp.ui.components.ListCardData
-import com.example.groceyapp.ui.components.MenuDrawer
-import com.example.groceyapp.ui.components.PrimaryFab
-import com.example.groceyapp.ui.lists.CreateListDialog
-import com.example.groceyapp.ui.lists.HomeBottomBar
-import com.example.groceyapp.ui.lists.HomeDestination
-import com.example.groceyapp.ui.lists.ListDetailScreen
-import com.example.groceyapp.ui.lists.ListsScreen
-import com.example.groceyapp.ui.lists.PantryScreen
-import com.example.groceyapp.ui.lists.ProductsScreen
-import com.example.groceyapp.ui.products.CreateCategoryDialog
-import com.example.groceyapp.ui.products.CreateProductDialog
+import com.example.groceyapp.ui.components.general.MenuDrawer
+import com.example.groceyapp.ui.components.general.PrimaryFab
+import com.example.groceyapp.ui.components.dialogs.CreateListDialog
+import com.example.groceyapp.ui.screens.HomeBottomBar
+import com.example.groceyapp.ui.screens.HomeDestination
+import com.example.groceyapp.ui.screens.ListDetailScreen
+import com.example.groceyapp.ui.screens.ListsScreen
+import com.example.groceyapp.ui.screens.PantryScreen
+import com.example.groceyapp.ui.screens.ProductsScreen
+import com.example.groceyapp.ui.components.dialogs.CreateCategoryDialog
+import com.example.groceyapp.ui.components.dialogs.CreateProductDialog
+import com.example.groceyapp.ui.components.dialogs.ConfirmDeleteDialog
+import com.example.groceyapp.ui.components.dialogs.RenameCategoryDialog
 import com.example.groceyapp.ui.theme.GroceyAppTheme
 import com.example.groceyapp.ui.viewmodel.AuthViewModel
 import com.example.groceyapp.ui.viewmodel.ProductViewModel
@@ -91,6 +95,10 @@ fun ListsApp() {
     var showCreateProductDialog by remember { mutableStateOf(false) }
     var showCreateCategoryDialog by remember { mutableStateOf(false) }
     var showProductFabMenu by remember { mutableStateOf(false) }
+    var showDeleteCategoryDialog by remember { mutableStateOf(false) }
+    var showRenameCategoryDialog by remember { mutableStateOf(false) }
+    var categoryToDelete by remember { mutableStateOf<Int?>(null) }
+    var categoryToRename by remember { mutableStateOf<Pair<Int, String>?>(null) }
     
     // Products and categories from API
     val products by productViewModel.products.collectAsState()
@@ -131,8 +139,41 @@ fun ListsApp() {
         // Extract icon from metadata
         val iconName = category.metadata?.get("icon") as? String
         val icon = when (iconName) {
+            "ShoppingCart" -> Icons.Rounded.ShoppingCart
             "store" -> Icons.Filled.Store
             "inventory" -> Icons.Filled.Inventory2
+            "List" -> Icons.AutoMirrored.Filled.List
+            "Star" -> Icons.Filled.Star
+            "StarBorder" -> Icons.Outlined.StarBorder
+            "Add" -> Icons.Filled.Add
+            "Remove" -> Icons.Filled.Remove
+            "MoreVert" -> Icons.Filled.MoreVert
+            "Delete" -> Icons.Filled.Delete
+            "Edit" -> Icons.Filled.Edit
+            "Share" -> Icons.Filled.Share
+            "FilterList" -> Icons.Filled.FilterList
+            "Search" -> Icons.Filled.Search
+            "ChevronRight" -> Icons.Filled.ChevronRight
+            "Circle" -> Icons.Filled.Circle
+            "Person" -> Icons.Filled.Person
+            "Email" -> Icons.Filled.Email
+            "Lock" -> Icons.Filled.Lock
+            "DarkMode" -> Icons.Filled.DarkMode
+            "Language" -> Icons.Filled.Language
+            "Visibility" -> Icons.Filled.Visibility
+            "VisibilityOff" -> Icons.Filled.VisibilityOff
+            "ArrowBack" -> Icons.AutoMirrored.Filled.ArrowBack
+            "Home" -> Icons.Filled.Home
+            "Bookmark" -> Icons.Filled.Bookmark
+            "LocalOffer" -> Icons.Filled.LocalOffer
+            "Tag" -> Icons.Filled.Tag
+            "LocalGroceryStore" -> Icons.Rounded.LocalGroceryStore
+            "Favorite" -> Icons.Filled.Favorite
+            "FavoriteBorder" -> Icons.Filled.FavoriteBorder
+            "ShoppingBasket" -> Icons.Filled.ShoppingBasket
+            "Restaurant" -> Icons.Filled.Restaurant
+            "Fastfood" -> Icons.Filled.Fastfood
+            "LocalDining" -> Icons.Filled.LocalDining
             else -> Icons.Filled.Category
         }
         
@@ -251,7 +292,24 @@ fun ListsApp() {
                     HomeDestination.Products -> ProductsScreen(
                         modifier = contentModifier,
                         items = categoryCards,
-                        onMenuClick = { isMenuOpen = true }
+                        onMenuClick = { isMenuOpen = true },
+                        onCategoryDelete = { categoryId ->
+                            categoryId?.let {
+                                categoryToDelete = it.toInt()
+                                showDeleteCategoryDialog = true
+                            }
+                        },
+                        onCategoryRename = { categoryId ->
+                            categoryId?.let {
+                                val category = categories.find { cat -> cat.id == it.toInt() }
+                                category?.let { cat ->
+                                    cat.id?.let { id ->
+                                        categoryToRename = Pair(id, cat.name)
+                                        showRenameCategoryDialog = true
+                                    }
+                                }
+                            }
+                        }
                     )
                     HomeDestination.Lists -> ListsScreen(
                         modifier = contentModifier,
@@ -341,9 +399,43 @@ fun ListsApp() {
             CreateCategoryDialog(
                 onDismiss = { showCreateCategoryDialog = false },
                 onCreate = { name, icon ->
+                    // Map icon to simple name for storage
                     val iconName = when (icon) {
+                        Icons.Rounded.ShoppingCart -> "ShoppingCart"
                         Icons.Filled.Store -> "store"
                         Icons.Filled.Inventory2 -> "inventory"
+                        Icons.AutoMirrored.Filled.List -> "List"
+                        Icons.Filled.Star -> "Star"
+                        Icons.Outlined.StarBorder -> "StarBorder"
+                        Icons.Filled.Add -> "Add"
+                        Icons.Filled.Remove -> "Remove"
+                        Icons.Filled.MoreVert -> "MoreVert"
+                        Icons.Filled.Delete -> "Delete"
+                        Icons.Filled.Edit -> "Edit"
+                        Icons.Filled.Share -> "Share"
+                        Icons.Filled.FilterList -> "FilterList"
+                        Icons.Filled.Search -> "Search"
+                        Icons.Filled.ChevronRight -> "ChevronRight"
+                        Icons.Filled.Circle -> "Circle"
+                        Icons.Filled.Person -> "Person"
+                        Icons.Filled.Email -> "Email"
+                        Icons.Filled.Lock -> "Lock"
+                        Icons.Filled.DarkMode -> "DarkMode"
+                        Icons.Filled.Language -> "Language"
+                        Icons.Filled.Visibility -> "Visibility"
+                        Icons.Filled.VisibilityOff -> "VisibilityOff"
+                        Icons.AutoMirrored.Filled.ArrowBack -> "ArrowBack"
+                        Icons.Filled.Home -> "Home"
+                        Icons.Filled.Bookmark -> "Bookmark"
+                        Icons.Filled.LocalOffer -> "LocalOffer"
+                        Icons.Filled.Tag -> "Tag"
+                        Icons.Rounded.LocalGroceryStore -> "LocalGroceryStore"
+                        Icons.Filled.Favorite -> "Favorite"
+                        Icons.Filled.FavoriteBorder -> "FavoriteBorder"
+                        Icons.Filled.ShoppingBasket -> "ShoppingBasket"
+                        Icons.Filled.Restaurant -> "Restaurant"
+                        Icons.Filled.Fastfood -> "Fastfood"
+                        Icons.Filled.LocalDining -> "LocalDining"
                         else -> "category"
                     }
                     
@@ -352,6 +444,54 @@ fun ListsApp() {
                         metadata = mapOf("icon" to iconName),
                         onSuccess = {
                             showCreateCategoryDialog = false
+                        }
+                    )
+                }
+            )
+        }
+        
+        // Delete Category confirmation dialog
+        if (showDeleteCategoryDialog && categoryToDelete != null) {
+            val categoryName = categories.find { it.id == categoryToDelete }?.name ?: "this category"
+            ConfirmDeleteDialog(
+                title = stringResource(id = R.string.delete_category),
+                message = stringResource(id = R.string.delete_category_message, categoryName),
+                onDismiss = {
+                    showDeleteCategoryDialog = false
+                    categoryToDelete = null
+                },
+                onConfirm = {
+                    categoryToDelete?.let { id ->
+                        productViewModel.deleteCategory(
+                            id = id,
+                            onSuccess = {
+                                showDeleteCategoryDialog = false
+                                categoryToDelete = null
+                            }
+                        )
+                    }
+                }
+            )
+        }
+        
+        // Rename Category dialog
+        if (showRenameCategoryDialog && categoryToRename != null) {
+            val (categoryId, categoryName) = categoryToRename!!
+            RenameCategoryDialog(
+                currentName = categoryName,
+                onDismiss = {
+                    showRenameCategoryDialog = false
+                    categoryToRename = null
+                },
+                onRename = { newName ->
+                    val category = categories.find { it.id == categoryId }
+                    productViewModel.updateCategory(
+                        id = categoryId,
+                        name = newName,
+                        metadata = category?.metadata,
+                        onSuccess = {
+                            showRenameCategoryDialog = false
+                            categoryToRename = null
                         }
                     )
                 }

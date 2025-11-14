@@ -1,4 +1,4 @@
-package com.example.groceyapp.ui.components
+package com.example.groceyapp.ui.components.general
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height

@@ -53,7 +53,9 @@ data class CategoryCardData(
 @Composable
 fun CategoryCard(
     data: CategoryCardData,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onDelete: (Long?) -> Unit = {},
+    onRename: (Long?) -> Unit = {}
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
@@ -124,6 +126,7 @@ fun CategoryCard(
                     text = { Text("Rename") },
                     onClick = {
                         showMenu = false
+                        onRename(data.id)
                     },
                     leadingIcon = {
                         Icon(
@@ -136,6 +139,7 @@ fun CategoryCard(
                     text = { Text("Delete") },
                     onClick = {
                         showMenu = false
+                        onDelete(data.id)
                     },
                     leadingIcon = {
                         Icon(

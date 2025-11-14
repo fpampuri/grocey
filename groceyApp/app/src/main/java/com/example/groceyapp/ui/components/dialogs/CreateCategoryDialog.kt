@@ -1,4 +1,4 @@
-package com.example.groceyapp.ui.products
+package com.example.groceyapp.ui.components.dialogs
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Store
@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import com.example.groceyapp.R
-import com.example.groceyapp.ui.components.GenericInputDialog
+import com.example.groceyapp.ui.components.general.GenericInputDialog
 
 /**
  * Dialog for creating a new category

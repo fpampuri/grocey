@@ -1,4 +1,4 @@
-package com.example.groceyapp.ui.products
+package com.example.groceyapp.ui.components.dialogs
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -29,8 +29,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.groceyapp.R
 import com.example.groceyapp.data.model.Category
-import com.example.groceyapp.ui.components.ButtonVariant
-import com.example.groceyapp.ui.components.StandardButton
+import com.example.groceyapp.ui.components.general.ButtonVariant
+import com.example.groceyapp.ui.components.general.StandardButton
 
 /**
  * Dialog for creating a new product
@@ -42,8 +42,14 @@ fun CreateProductDialog(
     onCreate: (name: String, categoryId: Int?) -> Unit
 ) {
     var productName by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf<Category?>(null) }
+    var selectedCategory by remember { mutableStateOf<Category?>(categories.firstOrNull()) }
     var expanded by remember { mutableStateOf(false) }
+
+    // Don't show dialog if no categories exist
+    if (categories.isEmpty()) {
+        onDismiss()
+        return
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -64,7 +70,7 @@ fun CreateProductDialog(
 
                 // Category selector
                 OutlinedTextField(
-                    value = selectedCategory?.name ?: stringResource(id = R.string.no_category),
+                    value = selectedCategory?.name ?: "",
                     onValueChange = {},
                     label = { Text(stringResource(id = R.string.select_category)) },
                     modifier = Modifier
@@ -85,13 +91,6 @@ fun CreateProductDialog(
                     onDismissRequest = { expanded = false },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(id = R.string.no_category)) },
-                        onClick = {
-                            selectedCategory = null
-                            expanded = false
-                        }
-                    )
                     categories.forEach { category ->
                         DropdownMenuItem(
                             text = { Text(category.name) },
@@ -122,7 +121,7 @@ fun CreateProductDialog(
                         onCreate(productName.trim(), selectedCategory?.id)
                     },
                     icon = Icons.Filled.Add,
-                    enabled = productName.isNotBlank()
+                    enabled = productName.isNotBlank() && selectedCategory != null
                 )
             }
         },

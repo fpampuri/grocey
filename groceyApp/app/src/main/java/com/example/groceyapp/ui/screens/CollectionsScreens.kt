@@ -1,4 +1,4 @@
-package com.example.groceyapp.ui.lists
+package com.example.groceyapp.ui.screens
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
@@ -50,11 +50,11 @@ import androidx.compose.ui.unit.dp
 import com.example.groceyapp.R
 import com.example.groceyapp.ui.components.CategoryCard
 import com.example.groceyapp.ui.components.CategoryCardData
-import com.example.groceyapp.ui.components.GenericCollectionScreen
+import com.example.groceyapp.ui.components.general.GenericCollectionScreen
 import com.example.groceyapp.ui.components.ListCard
 import com.example.groceyapp.ui.components.ListCardData
 import com.example.groceyapp.ui.components.ProductItemData
-import com.example.groceyapp.ui.components.TopSearchBar
+import com.example.groceyapp.ui.components.general.TopSearchBar
 import com.example.groceyapp.ui.theme.BrandGreenLight
 import com.example.groceyapp.ui.theme.BrandGreenLightDarkTheme
 
@@ -136,7 +136,9 @@ fun ProductsScreen(
     modifier: Modifier = Modifier,
     items: List<CategoryCardData>? = null,
     onFilterClick: () -> Unit = {},
-    onMenuClick: () -> Unit = {}
+    onMenuClick: () -> Unit = {},
+    onCategoryDelete: (Long?) -> Unit = {},
+    onCategoryRename: (Long?) -> Unit = {}
 ) {
     val resolvedItems = items ?: emptyList()
 
@@ -152,7 +154,13 @@ fun ProductsScreen(
                 category.products.any { product -> product.contains(q, ignoreCase = true) }
         },
         itemKey = { it.title },
-        itemContent = { item -> CategoryCard(item) },
+        itemContent = { item -> 
+            CategoryCard(
+                item,
+                onDelete = onCategoryDelete,
+                onRename = onCategoryRename
+            )
+        },
         emptyIcon = Icons.Filled.Store,
         emptyMessageRes = R.string.empty_products_message,
         emptyHintRes = R.string.empty_products_hint

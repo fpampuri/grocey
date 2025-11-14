@@ -1,4 +1,4 @@
-package com.example.groceyapp.ui.lists
+package com.example.groceyapp.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -35,9 +35,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.groceyapp.R
-import com.example.groceyapp.ui.components.EmptyState
+import com.example.groceyapp.ui.components.general.EmptyState
 import com.example.groceyapp.ui.components.ListCardData
-import com.example.groceyapp.ui.components.PrimaryFab
+import com.example.groceyapp.ui.components.general.PrimaryFab
 import com.example.groceyapp.ui.components.ProductItemCard
 import com.example.groceyapp.ui.components.ProductItemData
 

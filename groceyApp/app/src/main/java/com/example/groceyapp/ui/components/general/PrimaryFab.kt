@@ -1,4 +1,4 @@
-package com.example.groceyapp.ui.components
+package com.example.groceyapp.ui.components.general
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
