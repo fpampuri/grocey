@@ -89,4 +89,20 @@
     <string name="list_name_hint">Nombre de Lista</string>
     <string name="select_icon">Seleccionar ícono</string>
     <string name="choose_action">Elige Acción</string>
+    <string name="empty_lists_message">No hay listas aún</string>
+    <string name="empty_lists_hint">Toca el botón + para crear tu primera lista</string>
+    <string name="empty_pantry_message">No hay artículos de despensa aún</string>
+    <string name="empty_pantry_hint">Agrega artículos para rastrear tu inventario de despensa</string>
+    <string name="empty_products_message">No hay categorías de productos aún</string>
+    <string name="empty_products_hint">Comienza a organizar tus productos</string>
+    <string name="empty_list_detail_message">Esta lista está vacía</string>
+    <string name="empty_list_detail_hint">Toca el botón + para agregar productos</string>
+    <string name="add_product_title">Agregar Producto</string>
+    <string name="product_name_label">Nombre del producto</string>
+    <string name="or_text">O</string>
+    <string name="type_product_name">Escribe el nombre del producto</string>
+    <string name="select_from_category">Seleccionar de categoría</string>
+    <string name="cancel">Cancelar</string>
+    <string name="add">Agregar</string>
+    <string name="miscellaneous">Varios</string>
 </resources>

@@ -89,4 +89,20 @@
     <string name="select_category">Select Category</string>
     <string name="no_category">No Category</string>
     <string name="choose_action">Choose Action</string>
+    <string name="empty_lists_message">No lists yet</string>
+    <string name="empty_lists_hint">Tap the + button to create your first list</string>
+    <string name="empty_pantry_message">No pantry items yet</string>
+    <string name="empty_pantry_hint">Add items to track your pantry inventory</string>
+    <string name="empty_products_message">No product categories yet</string>
+    <string name="empty_products_hint">Start organizing your products</string>
+    <string name="empty_list_detail_message">This list is empty</string>
+    <string name="empty_list_detail_hint">Tap the + button to add products</string>
+    <string name="add_product_title">Add Product</string>
+    <string name="product_name_label">Product name</string>
+    <string name="or_text">OR</string>
+    <string name="type_product_name">Type product name</string>
+    <string name="select_from_category">Select from category</string>
+    <string name="cancel">Cancel</string>
+    <string name="add">Add</string>
+    <string name="miscellaneous">Miscellaneous</string>
 </resources>

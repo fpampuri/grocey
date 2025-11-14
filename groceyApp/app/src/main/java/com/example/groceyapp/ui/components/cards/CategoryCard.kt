@@ -2,6 +2,7 @@ package com.example.groceyapp.ui.components
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
@@ -36,10 +37,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
+import com.example.groceyapp.Constants
 import com.example.groceyapp.ui.theme.BrandGreenLight
 import com.example.groceyapp.ui.theme.BrandGreenLightDarkTheme
 
 data class CategoryCardData(
+    val id: Long? = null,
     val title: String,
     val subtitle: String,
     val leadingIcon: androidx.compose.ui.graphics.vector.ImageVector,
@@ -59,6 +62,7 @@ fun CategoryCard(
         targetValue = if (isExpanded) 90f else 0f,
         label = "chevron rotation"
     )
+    val isMiscellaneous = data.id == Constants.MISCELLANEOUS_CATEGORY_ID
 
     CollectionCardShell(
         onClick = { isExpanded = !isExpanded },
@@ -115,30 +119,32 @@ fun CategoryCard(
             expanded = showMenu,
             onDismissRequest = { showMenu = false }
         ) {
-            DropdownMenuItem(
-                text = { Text("Rename") },
-                onClick = {
-                    showMenu = false
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = null
-                    )
-                }
-            )
-            DropdownMenuItem(
-                text = { Text("Delete") },
-                onClick = {
-                    showMenu = false
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = null
-                    )
-                }
-            )
+            if (!isMiscellaneous) {
+                DropdownMenuItem(
+                    text = { Text("Rename") },
+                    onClick = {
+                        showMenu = false
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = null
+                        )
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text("Delete") },
+                    onClick = {
+                        showMenu = false
+                    },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = null
+                        )
+                    }
+                )
+            }
         }
     }
 
@@ -153,7 +159,26 @@ fun CategoryCard(
         androidx.compose.foundation.layout.Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(lightGreenBg)
+                .padding(horizontal = 16.dp)
+                .border(
+                    width = 1.dp,
+                    color = borderColor,
+                    shape = RoundedCornerShape(
+                        topStart = 0.dp,
+                        topEnd = 0.dp,
+                        bottomStart = 12.dp,
+                        bottomEnd = 12.dp
+                    )
+                )
+                .background(
+                    color = lightGreenBg,
+                    shape = RoundedCornerShape(
+                        topStart = 0.dp,
+                        topEnd = 0.dp,
+                        bottomStart = 12.dp,
+                        bottomEnd = 12.dp
+                    )
+                )
                 .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp)
         ) {
             data.products.forEach { product ->

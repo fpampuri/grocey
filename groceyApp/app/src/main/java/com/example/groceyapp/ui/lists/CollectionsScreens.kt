@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Store
 import androidx.compose.material.icons.rounded.LocalGroceryStore
 import androidx.compose.material.icons.rounded.ShoppingCart
@@ -95,7 +96,10 @@ fun ListsScreen(
                 onDelete = onDelete,
                 onShare = onShare
             )
-        }
+        },
+        emptyIcon = Icons.AutoMirrored.Filled.List,
+        emptyMessageRes = R.string.empty_lists_message,
+        emptyHintRes = R.string.empty_lists_hint
     )
 }
 
@@ -120,7 +124,10 @@ fun PantryScreen(
                 category.products.any { product -> product.contains(q, ignoreCase = true) }
         },
         itemKey = { it.title },
-        itemContent = { item -> CategoryCard(item) }
+        itemContent = { item -> CategoryCard(item) },
+        emptyIcon = Icons.Filled.Inventory2,
+        emptyMessageRes = R.string.empty_pantry_message,
+        emptyHintRes = R.string.empty_pantry_hint
     )
 }
 
@@ -145,7 +152,10 @@ fun ProductsScreen(
                 category.products.any { product -> product.contains(q, ignoreCase = true) }
         },
         itemKey = { it.title },
-        itemContent = { item -> CategoryCard(item) }
+        itemContent = { item -> CategoryCard(item) },
+        emptyIcon = Icons.Filled.Store,
+        emptyMessageRes = R.string.empty_products_message,
+        emptyHintRes = R.string.empty_products_hint
     )
 }
 
