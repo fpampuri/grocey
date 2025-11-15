@@ -188,7 +188,10 @@ fun ListsApp() {
             title = category.name,
             subtitle = "${categoryProducts.size} products",
             leadingIcon = icon,
-            products = categoryProducts
+            products = categoryProducts,
+            isProtected = category.name.equals(Constants.MISCELLANEOUS_CATEGORY_NAME, ignoreCase = true) ||
+                ((category.metadata?.get(Constants.MISC_CATEGORY_META_KEY) as? String)
+                    ?.equals(Constants.MISC_CATEGORY_META_VALUE, ignoreCase = true) == true)
         )
     }
 

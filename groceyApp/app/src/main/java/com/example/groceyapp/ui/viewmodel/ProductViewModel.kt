@@ -71,6 +71,8 @@ class ProductViewModel : ViewModel() {
             when (result) {
                 is ApiResult.Success -> {
                     _categories.value = result.data
+                    // Ensure the protected default category exists
+                    ensureMiscCategoryExists(result.data)
                 }
                 is ApiResult.Error -> {
                     _errorMessage.value = result.message
@@ -79,6 +81,42 @@ class ProductViewModel : ViewModel() {
             }
             
             _isLoading.value = false
+        }
+    }
+
+    /**
+     * Ensures the default "Miscellaneous" category exists for the current user.
+     * If missing, creates it with a protected metadata marker and a generic icon.
+     */
+    private suspend fun ensureMiscCategoryExists(existing: List<Category>) {
+        val hasMisc = existing.any { category ->
+            category.name.equals(com.example.groceyapp.Constants.MISCELLANEOUS_CATEGORY_NAME, ignoreCase = true) ||
+                (category.metadata?.get(com.example.groceyapp.Constants.MISC_CATEGORY_META_KEY) as? String)
+                    ?.equals(com.example.groceyapp.Constants.MISC_CATEGORY_META_VALUE, ignoreCase = true) == true
+        }
+        if (!hasMisc) {
+            val meta = mapOf(
+                "icon" to com.example.groceyapp.Constants.MISC_CATEGORY_ICON_NAME,
+                com.example.groceyapp.Constants.MISC_CATEGORY_META_KEY to com.example.groceyapp.Constants.MISC_CATEGORY_META_VALUE
+            )
+            when (val created = categoryRepository.createCategory(CategoryCreate(
+                name = com.example.groceyapp.Constants.MISCELLANEOUS_CATEGORY_NAME,
+                metadata = meta
+            ))) {
+                is ApiResult.Success -> {
+                    // Refresh categories after creating the default
+                    when (val refreshed = categoryRepository.getAllCategories()) {
+                        is ApiResult.Success -> _categories.value = refreshed.data
+                        is ApiResult.Error -> _errorMessage.value = refreshed.message
+                        else -> {}
+                    }
+                }
+                is ApiResult.Error -> {
+                    // Non-fatal: keep working even if creation failed
+                    _errorMessage.value = created.message
+                }
+                else -> {}
+            }
         }
     }
     

@@ -10,4 +10,10 @@ object Constants {
      * It cannot be deleted or renamed.
      */
     const val MISCELLANEOUS_CATEGORY_ID = -1L
+
+    // Default category canonical name and metadata markers
+    const val MISCELLANEOUS_CATEGORY_NAME = "Miscellaneous"
+    const val MISC_CATEGORY_META_KEY = "builtin"
+    const val MISC_CATEGORY_META_VALUE = "misc"
+    const val MISC_CATEGORY_ICON_NAME = "category"
 }

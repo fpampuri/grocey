@@ -24,7 +24,8 @@ data class CategoryCardData(
     val subtitle: String,
     val leadingIcon: androidx.compose.ui.graphics.vector.ImageVector,
     val badgeText: String? = null,
-    val products: List<String> = emptyList()
+    val products: List<String> = emptyList(),
+    val isProtected: Boolean = false
 )
 
 @Composable
@@ -75,11 +76,11 @@ fun CategoryCard(
         // Three-dot menu using shared component
         com.example.groceyapp.ui.components.general.CategoryOptionsMenu(
             categoryId = data.id,
+            isProtected = data.isProtected,
             onRename = onRename,
             onDelete = onDelete,
             modifier = Modifier.size(24.dp)
         )
     }
 }
-
 

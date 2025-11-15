@@ -26,12 +26,13 @@ import com.example.groceyapp.Constants
 @Composable
 fun CategoryOptionsMenu(
     categoryId: Long?,
+    isProtected: Boolean = false,
     modifier: Modifier = Modifier,
     onRename: (Long?) -> Unit = {},
     onDelete: (Long?) -> Unit = {}
 ) {
     var showMenu by remember { mutableStateOf(false) }
-    val isMiscellaneous = categoryId == Constants.MISCELLANEOUS_CATEGORY_ID
+    val isMiscellaneous = isProtected || categoryId == Constants.MISCELLANEOUS_CATEGORY_ID
 
     // Don't show menu at all for Miscellaneous category
     if (isMiscellaneous) {

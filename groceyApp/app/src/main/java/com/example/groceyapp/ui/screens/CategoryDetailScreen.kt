@@ -95,6 +95,7 @@ fun CategoryDetailScreen(
                 actions = {
                     com.example.groceyapp.ui.components.general.CategoryOptionsMenu(
                         categoryId = categoryData.id,
+                        isProtected = categoryData.isProtected,
                         onRename = onCategoryRename,
                         onDelete = onCategoryDelete
                     )
