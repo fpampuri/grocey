@@ -342,6 +342,15 @@ class ShoppingListViewModel : ViewModel() {
             when (result) {
                 is ApiResult.Success -> {
                     loadListItems(listId)
+                    // Refresh count for this list after deletion
+                    when (val countRes = repository.getListItemCount(listId)) {
+                        is ApiResult.Success -> {
+                            _listItemCounts.value = _listItemCounts.value.toMutableMap().apply {
+                                this[listId] = countRes.data
+                            }
+                        }
+                        else -> {}
+                    }
                     onSuccess()
                 }
                 is ApiResult.Error -> {

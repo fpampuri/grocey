@@ -41,6 +41,7 @@ import com.example.groceyapp.ui.components.ListCardData
 import com.example.groceyapp.ui.components.general.PrimaryFab
 import com.example.groceyapp.ui.components.ProductItemCard
 import com.example.groceyapp.ui.components.ProductItemData
+import com.example.groceyapp.ui.components.dialogs.ConfirmDeleteDialog
 import com.example.groceyapp.data.model.Category
 import com.example.groceyapp.data.model.ListItem
 import com.example.groceyapp.ui.components.dialogs.AddProductDialog
@@ -58,6 +59,7 @@ fun ListDetailScreen(
     onBackClick: () -> Unit = {},
     onItemTogglePurchased: (Int) -> Unit = {},
     onItemQuantityChange: (Int, Int) -> Unit = { _, _ -> },
+    onItemDelete: (Int) -> Unit = {},
     currentDestination: HomeDestination,
     onDestinationSelected: (HomeDestination) -> Unit = {},
     onRename: (String) -> Unit = {},
@@ -67,6 +69,7 @@ fun ListDetailScreen(
     modifier: Modifier = Modifier
 ) {
     var showAddProductDialog by remember { mutableStateOf(false) }
+    var itemToDelete by remember { mutableStateOf<ProductItemData?>(null) }
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -168,7 +171,8 @@ fun ListDetailScreen(
                     ProductItemCard(
                         data = product,
                         onToggleBought = { onItemTogglePurchased(itemId) },
-                        onQuantityChange = { newQuantity -> onItemQuantityChange(itemId, newQuantity) }
+                        onQuantityChange = { newQuantity -> onItemQuantityChange(itemId, newQuantity) },
+                        onDeleteItem = { itemToDelete = product }
                     )
                 }
                 
@@ -189,6 +193,20 @@ fun ListDetailScreen(
                 showAddProductDialog = false
             },
             categories = categories
+        )
+    }
+
+    // Delete item dialog
+    if (itemToDelete != null) {
+        ConfirmDeleteDialog(
+            title = stringResource(id = R.string.delete),
+            message = stringResource(id = R.string.delete_list_item_message, itemToDelete!!.name),
+            onDismiss = { itemToDelete = null },
+            onConfirm = {
+                val itemId = itemToDelete!!.id.toIntOrNull() ?: return@ConfirmDeleteDialog
+                onItemDelete(itemId)
+                itemToDelete = null
+            }
         )
     }
 }

@@ -114,6 +114,7 @@
     <string name="edit_category">Editar Categoría</string>
     <string name="delete_product">Eliminar Producto</string>
     <string name="delete_product_message">¿Estás seguro de que quieres eliminar "%1$s"?</string>
+    <string name="delete_list_item_message">¿Quitar "%1$s" de esta lista?</string>
     <string name="delete_list_message">¿Estás seguro de que quieres eliminar "%1$s"? Esta acción no se puede deshacer.</string>
     <string name="category_name_hint">Nombre de categoría</string>
     <string name="list_name_hint">Nombre de lista</string>

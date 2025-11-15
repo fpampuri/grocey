@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -73,6 +74,7 @@ fun ProductItemCard(
     onAddToList: () -> Unit = {},
     onAddToPantry: () -> Unit = {},
     onDeleteProduct: () -> Unit = {},
+    onDeleteItem: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -194,6 +196,18 @@ fun ProductItemCard(
                             contentDescription = androidx.compose.ui.res.stringResource(R.string.increase_quantity),
                             tint = MaterialTheme.colorScheme.primary
                         )
+                    }
+
+                    // Trash button (optional) to remove from list
+                    if (onDeleteItem != null) {
+                        Spacer(modifier = Modifier.width(4.dp))
+                        IconButton(onClick = onDeleteItem, modifier = Modifier.size(32.dp)) {
+                            Icon(
+                                imageVector = Icons.Filled.Delete,
+                                contentDescription = androidx.compose.ui.res.stringResource(R.string.delete),
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
                     }
                 }
             } else {

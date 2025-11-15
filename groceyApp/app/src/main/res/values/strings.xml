@@ -114,6 +114,7 @@
     <string name="edit_category">Edit Category</string>
     <string name="delete_product">Delete Product</string>
     <string name="delete_product_message">Are you sure you want to delete "%1$s"?</string>
+    <string name="delete_list_item_message">Remove "%1$s" from this list?</string>
     <string name="delete_list_message">Are you sure you want to delete "%1$s"? This action cannot be undone.</string>
     <string name="category_name_hint">Category name</string>
     <string name="list_name_hint">List name</string>
@@ -133,4 +134,3 @@
     <string name="move_to_category_title">Select Category</string>
     <string name="move_product_to_category">Move "%1$s" to:</string>
 </resources>
-

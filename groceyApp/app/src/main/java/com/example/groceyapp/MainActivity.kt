@@ -246,6 +246,21 @@ fun ListsApp() {
                             shoppingListViewModel.updateItemQuantity(listIdInt, itemId, newQty.toDouble())
                         }
                     },
+                    onItemDelete = { itemId ->
+                        val listIdInt = selectedList.id.toIntOrNull()
+                        if (listIdInt != null) {
+                            shoppingListViewModel.removeItemFromList(listIdInt, itemId) {
+                                // Optional: show snackbar
+                                coroutineScope.launch {
+                                    lastSnackbarIsSuccess = false
+                                    snackbarHostState.showSnackbar(
+                                        message = "Item removed",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
+                            }
+                        }
+                    },
                     currentDestination = currentDestination,
                     onDestinationSelected = { destination ->
                         currentDestination = destination
