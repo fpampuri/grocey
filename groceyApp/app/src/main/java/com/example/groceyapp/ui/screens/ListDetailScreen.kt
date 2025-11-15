@@ -26,6 +26,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -40,6 +41,9 @@ import com.example.groceyapp.ui.components.ListCardData
 import com.example.groceyapp.ui.components.general.PrimaryFab
 import com.example.groceyapp.ui.components.ProductItemCard
 import com.example.groceyapp.ui.components.ProductItemData
+import com.example.groceyapp.data.model.Category
+import com.example.groceyapp.data.model.ListItem
+import com.example.groceyapp.ui.components.dialogs.AddProductDialog
 
 /**
  * Detail screen for a shopping list
@@ -49,16 +53,20 @@ import com.example.groceyapp.ui.components.ProductItemData
 @Composable
 fun ListDetailScreen(
     listData: ListCardData,
+    categories: List<Category> = emptyList(),
+    listItems: List<ListItem> = emptyList(),
     onBackClick: () -> Unit = {},
-    onProductToggle: (String) -> Unit = {},
-    onQuantityChange: (String, Int) -> Unit = { _, _ -> },
+    onItemTogglePurchased: (Int) -> Unit = {},
+    onItemQuantityChange: (Int, Int) -> Unit = { _, _ -> },
     currentDestination: HomeDestination,
     onDestinationSelected: (HomeDestination) -> Unit = {},
     onRename: (String) -> Unit = {},
     onShare: (String) -> Unit = {},
     onDelete: (String) -> Unit = {},
+    onAddProduct: (name: String, categoryId: Int?) -> Unit = { _, _ -> },
     modifier: Modifier = Modifier
 ) {
+    var showAddProductDialog by remember { mutableStateOf(false) }
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -97,7 +105,7 @@ fun ListDetailScreen(
         floatingActionButton = {
             PrimaryFab(
                 contentDescriptionRes = R.string.add_product,
-                onClick = { /* TODO: Add product action */ }
+                onClick = { showAddProductDialog = true }
             )
         },
         bottomBar = {
@@ -107,12 +115,18 @@ fun ListDetailScreen(
             )
         }
     ) { paddingValues ->
-        // Use a local, mutable list state initialized from the passed-in model so
-        // the UI is immediately interactive. This is intentionally simple so it
-        // can be replaced later by a ViewModel/Repository without changing the UI.
-        val productsState = remember { mutableStateListOf<ProductItemData>().apply { addAll(listData.products) } }
+        // Map API list items to UI card data
+        val productsUi = listItems.map { item ->
+            ProductItemData(
+                id = (item.id ?: 0).toString(),
+                name = item.product.name,
+                category = item.product.category?.name ?: "",
+                quantity = item.quantity.toInt(),
+                isBought = item.purchased == true
+            )
+        }
 
-        if (productsState.isEmpty()) {
+        if (productsUi.isEmpty()) {
             // Empty state
             Box(
                 modifier = Modifier
@@ -149,33 +163,12 @@ fun ListDetailScreen(
                 }
                 
                 // Product items
-                // API CHANGE: Persistence for product state (bought flag, quantity) should be
-                // handled by a ViewModel/Repository. Wire `onToggleBought` and `onQuantityChange`
-                // to the ListDetailViewModel (e.g. `viewModel.toggleBought(productId)`,
-                // `viewModel.setQuantity(productId, q)`) so changes persist in the DB/API.
-                items(productsState, key = { it.id }) { product ->
+                items(productsUi, key = { it.id }) { product ->
+                    val itemId = product.id.toIntOrNull() ?: 0
                     ProductItemCard(
                         data = product,
-                        onToggleBought = {
-                            // Update local UI state immediately
-                            val idx = productsState.indexOfFirst { it.id == product.id }
-                            if (idx >= 0) {
-                                productsState[idx] = productsState[idx].copy(isBought = !productsState[idx].isBought)
-                            }
-                            // API CHANGE: Persist this change via ViewModel/Repository. Example:
-                            // `listDetailViewModel.toggleBought(product.id)`
-                            onProductToggle(product.id)
-                        },
-                        onQuantityChange = { newQuantity ->
-                            // Update local UI state immediately
-                            val idx = productsState.indexOfFirst { it.id == product.id }
-                            if (idx >= 0) {
-                                productsState[idx] = productsState[idx].copy(quantity = newQuantity)
-                            }
-                            // API CHANGE: Persist this change via ViewModel/Repository. Example:
-                            // `listDetailViewModel.setQuantity(product.id, newQuantity)`
-                            onQuantityChange(product.id, newQuantity)
-                        }
+                        onToggleBought = { onItemTogglePurchased(itemId) },
+                        onQuantityChange = { newQuantity -> onItemQuantityChange(itemId, newQuantity) }
                     )
                 }
                 
@@ -185,5 +178,17 @@ fun ListDetailScreen(
                 }
             }
         }
+    }
+
+    // Add Product Dialog (outside Scaffold)
+    if (showAddProductDialog) {
+        AddProductDialog(
+            onDismiss = { showAddProductDialog = false },
+            onProductSelected = { productName, categoryId ->
+                onAddProduct(productName, categoryId)
+                showAddProductDialog = false
+            },
+            categories = categories
+        )
     }
 }

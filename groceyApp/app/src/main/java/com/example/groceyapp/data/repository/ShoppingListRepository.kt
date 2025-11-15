@@ -72,14 +72,26 @@ class ShoppingListRepository {
     // List item operations
     
     suspend fun createListItem(listId: Int, listItem: ListItemCreate): ApiResult<ListItem> {
-        return ApiHelper.safeApiCall {
-            listItemApi.createListItem(listId, listItem)
+        return when (val result = ApiHelper.safeApiCall { listItemApi.createListItem(listId, listItem) }) {
+            is ApiResult.Success -> ApiResult.Success(result.data.item)
+            is ApiResult.Error -> result
+            is ApiResult.Loading -> result
         }
     }
     
     suspend fun getAllListItems(listId: Int): ApiResult<List<ListItem>> {
-        return ApiHelper.safeApiCall {
-            listItemApi.getAllListItems(listId)
+        return when (val result = ApiHelper.safeApiCall { listItemApi.getAllListItems(listId, null, null) }) {
+            is ApiResult.Success -> ApiResult.Success(result.data.data)
+            is ApiResult.Error -> result
+            is ApiResult.Loading -> result
+        }
+    }
+
+    suspend fun getListItemCount(listId: Int): ApiResult<Int> {
+        return when (val result = ApiHelper.safeApiCall { listItemApi.getAllListItems(listId, page = 1, perPage = 1) }) {
+            is ApiResult.Success -> ApiResult.Success(result.data.pagination.total)
+            is ApiResult.Error -> result.copy()
+            is ApiResult.Loading -> result
         }
     }
     
@@ -101,9 +113,9 @@ class ShoppingListRepository {
         }
     }
     
-    suspend fun markItemAsPurchased(listId: Int, itemId: Int): ApiResult<ListItem> {
+    suspend fun markItemAsPurchased(listId: Int, itemId: Int, purchased: Boolean): ApiResult<ListItem> {
         return ApiHelper.safeApiCall {
-            listItemApi.markAsPurchased(listId, itemId)
+            listItemApi.togglePurchased(listId, itemId, com.example.groceyapp.data.api.PurchasedToggle(purchased))
         }
     }
 }

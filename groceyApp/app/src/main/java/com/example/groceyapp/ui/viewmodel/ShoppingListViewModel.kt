@@ -27,6 +27,9 @@ class ShoppingListViewModel : ViewModel() {
     // List items state
     private val _listItems = MutableStateFlow<List<ListItem>>(emptyList())
     val listItems: StateFlow<List<ListItem>> = _listItems.asStateFlow()
+
+    private val _listItemCounts = MutableStateFlow<Map<Int, Int>>(emptyMap())
+    val listItemCounts: StateFlow<Map<Int, Int>> = _listItemCounts.asStateFlow()
     
     // Loading & error states
     private val _isLoading = MutableStateFlow(false)
@@ -48,6 +51,24 @@ class ShoppingListViewModel : ViewModel() {
             when (result) {
                 is ApiResult.Success -> {
                     _lists.value = result.data
+                    // Warm up item counts in background
+                    result.data.forEach { list ->
+                        list.id?.let { id ->
+                            viewModelScope.launch {
+                                when (val countRes = repository.getListItemCount(id)) {
+                                    is ApiResult.Success -> {
+                                        _listItemCounts.value = _listItemCounts.value.toMutableMap().apply {
+                                            this[id] = countRes.data
+                                        }
+                                    }
+                                    is ApiResult.Error -> {
+                                        // Non-fatal: ignore count errors
+                                    }
+                                    else -> {}
+                                }
+                            }
+                        }
+                    }
                 }
                 is ApiResult.Error -> {
                     _errorMessage.value = result.message
@@ -234,6 +255,15 @@ class ShoppingListViewModel : ViewModel() {
             when (result) {
                 is ApiResult.Success -> {
                     loadListItems(listId)
+                    // Refresh count for this list
+                    when (val countRes = repository.getListItemCount(listId)) {
+                        is ApiResult.Success -> {
+                            _listItemCounts.value = _listItemCounts.value.toMutableMap().apply {
+                                this[listId] = countRes.data
+                            }
+                        }
+                        else -> {}
+                    }
                     onSuccess()
                 }
                 is ApiResult.Error -> {
@@ -279,10 +309,11 @@ class ShoppingListViewModel : ViewModel() {
     fun markItemAsPurchased(
         listId: Int,
         itemId: Int,
+        purchased: Boolean,
         onSuccess: () -> Unit = {}
     ) {
         viewModelScope.launch {
-            val result = repository.markItemAsPurchased(listId, itemId)
+            val result = repository.markItemAsPurchased(listId, itemId, purchased)
             
             when (result) {
                 is ApiResult.Success -> {

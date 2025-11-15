@@ -104,6 +104,7 @@ fun ListsApp() {
     
     // Shopping lists from API
     val apiLists by shoppingListViewModel.lists.collectAsState()
+    val itemCounts by shoppingListViewModel.listItemCounts.collectAsState()
     var showCreateListDialog by remember { mutableStateOf(false) }
     var showDeleteListDialog by remember { mutableStateOf(false) }
     var showRenameListDialog by remember { mutableStateOf(false) }
@@ -130,6 +131,7 @@ fun ListsApp() {
     val coroutineScope = rememberCoroutineScope()
     var lastSnackbarIsSuccess by remember { mutableStateOf(false) }
     val errorMessage by shoppingListViewModel.errorMessage.collectAsState()
+    val listItems by shoppingListViewModel.listItems.collectAsState()
 
     // Show error messages from ViewModel in a Snackbar
     LaunchedEffect(errorMessage) {
@@ -164,7 +166,7 @@ fun ListsApp() {
         ListCardData(
             id = apiList.id?.toString() ?: "",
             title = apiList.name,
-            itemCount = 0, // Will be populated when we load items
+            itemCount = apiList.id?.let { itemCounts[it] } ?: 0,
             leadingIcon = icon,
             isFavorite = false,
             isShared = apiList.sharedWith?.isNotEmpty() == true,
@@ -215,17 +217,34 @@ fun ListsApp() {
         lists.find { list -> list.id == id }
     }
 
+    // When a list is selected, load its items from API
+    LaunchedEffect(selectedList?.id) {
+        val listIdInt = selectedList?.id?.toIntOrNull()
+        if (listIdInt != null) {
+            shoppingListViewModel.loadListItems(listIdInt)
+        }
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
         if (selectedList != null) {
             // Show list detail screen
                 ListDetailScreen(
                     listData = selectedList,
+                    categories = categories,
+                    listItems = listItems,
                     onBackClick = { selectedListId = null },
-                    onProductToggle = { _ ->
-                        // TODO: Handle product toggle
+                    onItemTogglePurchased = { itemId ->
+                        val listIdInt = selectedList.id.toIntOrNull()
+                        if (listIdInt != null) {
+                            val currentPurchased = listItems.find { it.id == itemId }?.purchased ?: false
+                            shoppingListViewModel.markItemAsPurchased(listIdInt, itemId, !currentPurchased)
+                        }
                     },
-                    onQuantityChange = { _, _ ->
-                        // TODO: Handle quantity change
+                    onItemQuantityChange = { itemId, newQty ->
+                        val listIdInt = selectedList.id.toIntOrNull()
+                        if (listIdInt != null) {
+                            shoppingListViewModel.updateItemQuantity(listIdInt, itemId, newQty.toDouble())
+                        }
                     },
                     currentDestination = currentDestination,
                     onDestinationSelected = { destination ->
@@ -247,7 +266,45 @@ fun ListsApp() {
                             showDeleteListDialog = true
                         }
                     },
-                    onShare = { _ -> /* share intentionally disabled until specified */ }
+                    onShare = { _ -> /* share intentionally disabled until specified */ },
+                    onAddProduct = { productName, maybeCategoryId ->
+                        // Resolve target category: use provided, else fallback to default Miscellaneous
+                        val resolvedCategoryId: Int? = maybeCategoryId ?: run {
+                            val misc = categories.find { cat ->
+                                cat.name.equals(Constants.MISCELLANEOUS_CATEGORY_NAME, ignoreCase = true) ||
+                                    ((cat.metadata?.get(Constants.MISC_CATEGORY_META_KEY) as? String)
+                                        ?.equals(Constants.MISC_CATEGORY_META_VALUE, ignoreCase = true) == true)
+                            }
+                            misc?.id
+                        }
+
+                        // Create product, then add as list item
+                        productViewModel.createProduct(
+                            name = productName,
+                            categoryId = resolvedCategoryId,
+                            onSuccess = { createdProduct ->
+                                val listIdInt = selectedList.id.toIntOrNull()
+                                if (listIdInt != null && createdProduct.id != null) {
+                                    shoppingListViewModel.addItemToList(
+                                        listId = listIdInt,
+                                        productId = createdProduct.id,
+                                        onSuccess = {
+                                            // Show success feedback
+                                            coroutineScope.launch {
+                                                lastSnackbarIsSuccess = true
+                                                val msg = context.getString(R.string.product_created, createdProduct.name)
+                                                snackbarHostState.showSnackbar(
+                                                    message = msg,
+                                                    duration = SnackbarDuration.Short
+                                                )
+                                                lastSnackbarIsSuccess = false
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+                        )
+                    }
                 )
         } else if (selectedCategory != null) {
             // Show category detail screen
