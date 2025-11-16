@@ -72,8 +72,10 @@ fun MenuDrawer(
     onDismiss: () -> Unit,
     onLogoutClick: () -> Unit,
     userEmail: String = "user@gmail.com",
-    userName: String = "John Doe",
+    userName: String = "John",
+    userSurname: String = "Doe",
     onNameChange: (String) -> Unit = {},
+    onSurnameChange: (String) -> Unit = {},
     onPasswordChangeClick: () -> Unit = {},
     isDarkMode: Boolean = false,
     onDarkModeToggle: (Boolean) -> Unit = {},
@@ -83,6 +85,7 @@ fun MenuDrawer(
     modifier: Modifier = Modifier
 ) {
     var editableName by remember { mutableStateOf(userName) }
+    var editableSurname by remember { mutableStateOf(userSurname) }
     // Scrim (dark overlay)
     AnimatedVisibility(
         visible = isOpen,
@@ -129,9 +132,14 @@ fun MenuDrawer(
                 ProfileSection(
                     email = userEmail,
                     name = editableName,
+                    surname = editableSurname,
                     onNameChange = { newName ->
                         editableName = newName
                         onNameChange(newName)
+                    },
+                    onSurnameChange = { newSurname ->
+                        editableSurname = newSurname
+                        onSurnameChange(newSurname)
                     },
                     onPasswordChangeClick = onPasswordChangeClick
                 )
@@ -190,13 +198,16 @@ fun MenuDrawer(
 private fun ProfileSection(
     email: String,
     name: String,
+    surname: String,
     onNameChange: (String) -> Unit,
+    onSurnameChange: (String) -> Unit,
     onPasswordChangeClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val borderColor = MaterialTheme.colorScheme.primary
     
     var isEditingName by remember { mutableStateOf(false) }
+    var isEditingSurname by remember { mutableStateOf(false) }
     
     Column(
         modifier = modifier
@@ -291,6 +302,58 @@ private fun ProfileSection(
                 }
             }
             IconButton(onClick = { isEditingName = !isEditingName }) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = stringResource(R.string.profile_change_password),
+                    tint = borderColor
+                )
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        // Surname field (editable) with green border and edit icon
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(
+                    width = 2.dp,
+                    color = borderColor,
+                    shape = RoundedCornerShape(12.dp)
+                )
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (isEditingSurname) {
+                OutlinedTextField(
+                    value = surname,
+                    onValueChange = onSurnameChange,
+                    modifier = Modifier.weight(1f),
+                    singleLine = true,
+                    colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = borderColor,
+                        unfocusedBorderColor = borderColor,
+                        cursorColor = borderColor
+                    ),
+                    textStyle = MaterialTheme.typography.bodyLarge
+                )
+            } else {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.profile_surname_label),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = surname,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+            IconButton(onClick = { isEditingSurname = !isEditingSurname }) {
                 Icon(
                     imageVector = Icons.Default.Edit,
                     contentDescription = stringResource(R.string.profile_change_password),

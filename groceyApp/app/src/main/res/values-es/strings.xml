@@ -34,6 +34,7 @@
     <!-- Profile strings -->
     <string name="profile_email_label">Correo electrónico</string>
     <string name="profile_name_label">Nombre</string>
+    <string name="profile_surname_label">Apellido</string>
     <string name="profile_password_label">Contraseña</string>
     <string name="profile_change_password">Cambiar contraseña</string>
     

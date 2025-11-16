@@ -864,15 +864,18 @@ fun ListsApp() {
                 authViewModel.logout()
             },
             userEmail = userEmail,
-            userName = userName,
+            userName = currentUser?.name ?: "",
+            userSurname = currentUser?.surname ?: "",
             onNameChange = { newName ->
-                // Parse name into first and last name
-                val nameParts = newName.trim().split(" ", limit = 2)
-                val firstName = nameParts.getOrNull(0) ?: ""
-                val lastName = nameParts.getOrNull(1) ?: ""
-                
-                if (firstName.isNotBlank()) {
-                    authViewModel.updateProfile(firstName, lastName)
+                val currentSurname = currentUser?.surname ?: ""
+                if (newName.isNotBlank()) {
+                    authViewModel.updateProfile(newName, currentSurname)
+                }
+            },
+            onSurnameChange = { newSurname ->
+                val currentName = currentUser?.name ?: ""
+                if (currentName.isNotBlank()) {
+                    authViewModel.updateProfile(currentName, newSurname)
                 }
             },
             onPasswordChangeClick = {
