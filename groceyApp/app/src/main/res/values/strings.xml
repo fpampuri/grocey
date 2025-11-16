@@ -125,6 +125,11 @@
     <string name="category_deleted">Category deleted: %1$s</string>
     <string name="product_created">Product created: %1$s</string>
     <string name="add_product_to_category">Add product to %1$s</string>
+    <string name="item_removed">Item removed</string>
+    <string name="product_moved">Product moved successfully</string>
+    <string name="product_deleted">Product deleted</string>
+    <string name="product_created_success">Product created successfully</string>
+    <string name="back">Back</string>
     
     <!-- Product options menu strings -->
     <string name="move_to_category">Move to Category</string>

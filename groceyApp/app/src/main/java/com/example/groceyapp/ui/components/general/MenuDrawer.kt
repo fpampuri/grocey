@@ -76,6 +76,7 @@ fun MenuDrawer(
     onDarkModeToggle: (Boolean) -> Unit = {},
     currentLanguage: String = "en",
     onLanguageChange: (String) -> Unit = {},
+    isSettingsExpanded: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     var showPasswordDialog by remember { mutableStateOf(false) }
@@ -157,7 +158,8 @@ fun MenuDrawer(
                     isDarkMode = isDarkMode,
                     onDarkModeToggle = onDarkModeToggle,
                     currentLanguage = currentLanguage,
-                    onLanguageChange = onLanguageChange
+                    onLanguageChange = onLanguageChange,
+                    isSettingsExpanded = isSettingsExpanded
                 )
                 
                 Spacer(modifier = Modifier.weight(1f))
@@ -354,9 +356,10 @@ private fun SettingsSection(
     onDarkModeToggle: (Boolean) -> Unit,
     currentLanguage: String,
     onLanguageChange: (String) -> Unit,
+    isSettingsExpanded: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    var showLanguageMenu by remember { mutableStateOf(false) }
+    var showLanguageMenu by remember { mutableStateOf(isSettingsExpanded) }
     
     val borderColor = MaterialTheme.colorScheme.primary
     

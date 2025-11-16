@@ -119,4 +119,22 @@
     <string name="list_name_hint">Nombre de lista</string>
     <string name="list_created">Lista creada: %1$s</string>
     <string name="list_deleted">Lista eliminada: %1$s</string>
+    <string name="list_updated">Lista actualizada: %1$s</string>
+    <string name="category_created">Categoría creada: %1$s</string>
+    <string name="category_updated">Categoría actualizada: %1$s</string>
+    <string name="category_deleted">Categoría eliminada: %1$s</string>
+    <string name="product_created">Producto creado: %1$s</string>
+    <string name="add_product_to_category">Agregar producto a %1$s</string>
+    <string name="item_removed">Artículo eliminado</string>
+    <string name="product_moved">Producto movido exitosamente</string>
+    <string name="product_deleted">Producto eliminado</string>
+    <string name="product_created_success">Producto creado exitosamente</string>
+    <string name="back">Atrás</string>
+    
+    <!-- Product options menu strings -->
+    <string name="move_to_category">Mover a Categoría</string>
+    <string name="add_to_list">Agregar a Lista</string>
+    <string name="add_to_pantry">Agregar a Despensa</string>
+    <string name="move_to_category_title">Seleccionar Categoría</string>
+    <string name="move_product_to_category">Mover "%1$s" a:</string>
 </resources>

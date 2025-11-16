@@ -1,5 +1,6 @@
 package com.example.groceyapp
 
+import android.app.Activity
 import android.os.Bundle
 import androidx.compose.material3.SnackbarDuration
 import androidx.activity.ComponentActivity
@@ -55,6 +56,7 @@ import com.example.groceyapp.ui.viewmodel.ProductViewModel
 import com.example.groceyapp.ui.viewmodel.ShoppingListViewModel
 import com.example.groceyapp.ui.utils.mapIconToString
 import com.example.groceyapp.ui.utils.mapStringToIcon
+import com.example.groceyapp.utils.LocaleHelper
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
@@ -68,6 +70,10 @@ import androidx.compose.ui.platform.LocalContext
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Apply saved locale
+        LocaleHelper.onActivityCreated(this)
+        
         enableEdgeToEdge()
         setContent {
             GroceyAppTheme {
@@ -79,6 +85,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ListsApp() {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    
     // Get ViewModels
     val authViewModel: AuthViewModel = viewModel()
     val shoppingListViewModel: ShoppingListViewModel = viewModel()
@@ -96,11 +104,11 @@ fun ListsApp() {
     var currentDestination by remember { mutableStateOf(HomeDestination.Lists) }
     var selectedListId by remember { mutableStateOf<String?>(null) }
     var selectedCategory by remember { mutableStateOf<CategoryCardData?>(null) }
-    var isMenuOpen by remember { mutableStateOf(false) }
+    var isMenuOpen by remember { mutableStateOf(LocaleHelper.shouldOpenMenuOnStart(context)) }
     
     // Settings state
     var isDarkMode by remember { mutableStateOf(false) }
-    var currentLanguage by remember { mutableStateOf("en") }
+    var currentLanguage by remember { mutableStateOf(LocaleHelper.getCurrentLocale(context)) }
     
     // Shopping lists from API
     val apiLists by shoppingListViewModel.lists.collectAsState()
@@ -123,8 +131,6 @@ fun ListsApp() {
     // Products and categories from API
     val products by productViewModel.products.collectAsState()
     val categories by productViewModel.categories.collectAsState()
-
-    val context = LocalContext.current
 
     // Snackbar + coroutine scope for showing feedback
     val snackbarHostState = remember { SnackbarHostState() }
@@ -367,7 +373,7 @@ fun ListsApp() {
                             coroutineScope.launch {
                                 lastSnackbarIsSuccess = false
                                 snackbarHostState.showSnackbar(
-                                    message = "Product deleted",
+                                    message = context.getString(R.string.item_removed),
                                     duration = SnackbarDuration.Short
                                 )
                             }
@@ -384,7 +390,7 @@ fun ListsApp() {
                             coroutineScope.launch {
                                 lastSnackbarIsSuccess = true
                                 snackbarHostState.showSnackbar(
-                                    message = "Product created successfully",
+                                    message = context.getString(R.string.product_moved),
                                     duration = SnackbarDuration.Short
                                 )
                                 lastSnackbarIsSuccess = false
@@ -559,9 +565,9 @@ fun ListsApp() {
             currentLanguage = currentLanguage,
             onLanguageChange = { newLanguage ->
                 currentLanguage = newLanguage
-                // TODO: Implement actual language change logic
-                // This would typically involve changing the app's locale
-            }
+                LocaleHelper.setLocale(context as Activity, newLanguage)
+            },
+            isSettingsExpanded = LocaleHelper.shouldExpandSettingsOnStart(context)
         )
 
         // Create List dialog - creates via API
