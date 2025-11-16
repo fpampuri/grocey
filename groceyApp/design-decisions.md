@@ -37,6 +37,12 @@ Aim to link each justification to the specific theories covered in class (e.g., 
 - **Justification**: Providing explicit control aligns with Nielsen’s “User control” heuristic and Android accessibility guidance that allows users to choose a comfortable contrast level.
 - **Impact**: The entire UI now re-themes instantly when the toggle flips, giving users reliable control without waiting for a system-wide change.
 
+### Tablet Navigation Re-layout — 2024-11-19
+- **Change**: Tablets skip the bottom/rail navigation and instead show a floating pill with the three primary destinations stacked under the existing FAB; the same layout is used in portrait and landscape so posture changes don’t shuffle controls.
+- **User Problem / Goal**: On large screens the old rail/bottom bar felt redundant, stole horizontal space, and forced long thumb stretches; the floating palette keeps navigation near the FAB cluster where tablet thumbs already rest.
+- **Justification**: Material responsive guidance encourages consolidating primary actions near the bottom-right “reach zone” on tablets, and keeping orientation changes from shuffling controls respects Fitts/Nielsen consistency heuristics.
+- **Impact**: Tablet users get a calmer canvas (no persistent bars), a predictable entry point regardless of rotation, and can swap between Pantry/Products/Lists without trekking across the screen.
+
 ### Theme & Color System — 2024-11-12
 - **Change**: Replaced the default Compose palette with the same primary/secondary colors used by the Vue frontend (brand greens, gold accents, neutral light/dark surfaces).
 - **User Problem / Goal**: Maintain cross-platform visual consistency so users instantly recognize the brand regardless of channel.

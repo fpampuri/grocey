@@ -37,10 +37,12 @@ import com.example.groceyapp.R
 import com.example.groceyapp.ui.components.general.EmptyState
 import com.example.groceyapp.ui.components.CategoryCardData
 import com.example.groceyapp.ui.components.general.PrimaryFab
+import com.example.groceyapp.ui.components.general.FabWithFloatingNav
 import com.example.groceyapp.ui.components.ProductItemCard
 import com.example.groceyapp.ui.components.ProductItemData
 import com.example.groceyapp.ui.components.ProductCardMode
 import com.example.groceyapp.ui.components.general.AdaptiveNavigationContainer
+import com.example.groceyapp.ui.screens.HomeFloatingNav
 
 /**
  * Detail screen for a category
@@ -64,7 +66,8 @@ fun CategoryDetailScreen(
     onCategoryDelete: (Long?) -> Unit = {},
     currentDestination: HomeDestination,
     onDestinationSelected: (HomeDestination) -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isTablet: Boolean = false
 ) {
     // State for dialogs
     var showMoveCategoryDialog by remember { mutableStateOf(false) }
@@ -75,6 +78,9 @@ fun CategoryDetailScreen(
     var selectedProduct by remember { mutableStateOf<com.example.groceyapp.data.model.Product?>(null) }
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val useRailNavigation = isLandscape && !isTablet
+    val showBottomNav = !isTablet && !isLandscape
+    val showFloatingNav = isTablet
     
     // Filter products for this category
     val categoryProducts = products.filter { product ->
@@ -117,13 +123,28 @@ fun CategoryDetailScreen(
             )
         },
         floatingActionButton = {
-            PrimaryFab(
-                contentDescriptionRes = R.string.add_product,
-                onClick = { showAddProductDialog = true }
-            )
+            val fabContent: @Composable () -> Unit = {
+                PrimaryFab(
+                    contentDescriptionRes = R.string.add_product,
+                    onClick = { showAddProductDialog = true }
+                )
+            }
+            if (showFloatingNav) {
+                FabWithFloatingNav(
+                    fab = fabContent,
+                    nav = {
+                        HomeFloatingNav(
+                            currentDestination = currentDestination,
+                            onDestinationSelected = onDestinationSelected
+                        )
+                    }
+                )
+            } else {
+                fabContent()
+            }
         },
         bottomBar = {
-            if (!isLandscape) {
+            if (showBottomNav) {
                 HomeBottomBar(
                     currentDestination = currentDestination,
                     onDestinationSelected = onDestinationSelected
@@ -203,15 +224,17 @@ fun CategoryDetailScreen(
         }
 
         AdaptiveNavigationContainer(
-            isLandscape = isLandscape,
+            isLandscape = useRailNavigation,
             paddingValues = paddingValues,
-            navigationRail = {
-                HomeBottomBar(
-                    currentDestination = currentDestination,
-                    onDestinationSelected = onDestinationSelected,
-                    isVertical = true
-                )
-            },
+            navigationRail = if (useRailNavigation) {
+                {
+                    HomeBottomBar(
+                        currentDestination = currentDestination,
+                        onDestinationSelected = onDestinationSelected,
+                        isVertical = true
+                    )
+                }
+            } else null,
             content = contentArea
         )
     }

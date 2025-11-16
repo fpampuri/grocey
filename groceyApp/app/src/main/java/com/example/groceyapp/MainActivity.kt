@@ -42,8 +42,10 @@ import com.example.groceyapp.ui.components.ListCardData
 import com.example.groceyapp.ui.components.CategoryCardData
 import com.example.groceyapp.ui.components.general.MenuDrawer
 import com.example.groceyapp.ui.components.general.PrimaryFab
+import com.example.groceyapp.ui.components.general.FabWithFloatingNav
 import com.example.groceyapp.ui.components.dialogs.CreateListDialog
 import com.example.groceyapp.ui.screens.HomeBottomBar
+import com.example.groceyapp.ui.screens.HomeFloatingNav
 import com.example.groceyapp.ui.screens.HomeDestination
 import com.example.groceyapp.ui.screens.ListDetailScreen
 import com.example.groceyapp.ui.screens.CategoryDetailScreen
@@ -98,6 +100,10 @@ fun ListsApp() {
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val isTablet = configuration.smallestScreenWidthDp >= 600
+    val showFloatingNav = isTablet
+    val showRailNav = !isTablet && isLandscape
+    val showBottomNav = !isTablet && !isLandscape
     
     // Get ViewModels
     val authViewModel: AuthViewModel = viewModel()
@@ -315,6 +321,7 @@ fun ListsApp() {
                     listData = selectedList,
                     categories = categories,
                     listItems = listItems,
+                    isTablet = isTablet,
                     onBackClick = { selectedListId = null },
                     onItemTogglePurchased = { itemId ->
                         val listIdInt = selectedList.id.toIntOrNull()
@@ -413,6 +420,7 @@ fun ListsApp() {
                 categories = categories,
                 lists = apiLists,
                 pantries = pantries,
+                isTablet = isTablet,
                 onBackClick = { selectedCategoryId = null },
                 onProductMoveToCategory = { productId, newCategoryId ->
                     // Find the product to get its current name
@@ -539,6 +547,7 @@ fun ListsApp() {
                 pantries = pantries,
                 categories = categories,
                 pantryItems = pantryItems,
+                isTablet = isTablet,
                 onBackClick = { selectedPantryId = null },
                 onItemQuantityChange = { itemId, newQty ->
                     val pantryIdInt = pantry.id?.toInt()
@@ -663,53 +672,72 @@ fun ListsApp() {
                 },
                 modifier = Modifier.fillMaxSize(),
                 floatingActionButton = {
-                    when (currentDestination) {
-                        HomeDestination.Pantry -> {
-                            PrimaryFab(
-                                contentDescriptionRes = R.string.add_pantry,
-                                onClick = { showCreatePantryDialog = true }
-                            )
-                        }
-                        HomeDestination.Products -> {
-                            Box {
+                    val fabContent: @Composable () -> Unit = {
+                        when (currentDestination) {
+                            HomeDestination.Pantry -> {
                                 PrimaryFab(
-                                    contentDescriptionRes = R.string.add_product,
-                                    onClick = { showProductFabMenu = true }
+                                    contentDescriptionRes = R.string.add_pantry,
+                                    onClick = { showCreatePantryDialog = true }
                                 )
-                                DropdownMenu(
-                                    expanded = showProductFabMenu,
-                                    onDismissRequest = { showProductFabMenu = false }
-                                ) {
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(id = R.string.add_product)) },
-                                        onClick = {
-                                            showProductFabMenu = false
-                                            showCreateProductDialog = true
-                                        }
+                            }
+                            HomeDestination.Products -> {
+                                Box {
+                                    PrimaryFab(
+                                        contentDescriptionRes = R.string.add_product,
+                                        onClick = { showProductFabMenu = true }
                                     )
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(id = R.string.add_category)) },
-                                        onClick = {
-                                            showProductFabMenu = false
-                                            showCreateCategoryDialog = true
-                                        }
-                                    )
+                                    DropdownMenu(
+                                        expanded = showProductFabMenu,
+                                        onDismissRequest = { showProductFabMenu = false }
+                                    ) {
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(id = R.string.add_product)) },
+                                            onClick = {
+                                                showProductFabMenu = false
+                                                showCreateProductDialog = true
+                                            }
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(id = R.string.add_category)) },
+                                            onClick = {
+                                                showProductFabMenu = false
+                                                showCreateCategoryDialog = true
+                                            }
+                                        )
+                                    }
                                 }
                             }
+                            HomeDestination.Lists -> {
+                                PrimaryFab(
+                                    contentDescriptionRes = R.string.add_list,
+                                    onClick = { showCreateListDialog = true }
+                                )
+                            }
                         }
-                        HomeDestination.Lists -> {
-                            PrimaryFab(
-                                contentDescriptionRes = R.string.add_list,
-                                onClick = { showCreateListDialog = true }
-                            )
-                        }
+                    }
+                    if (showFloatingNav) {
+                        FabWithFloatingNav(
+                            fab = fabContent,
+                            nav = {
+                                HomeFloatingNav(
+                                    currentDestination = currentDestination,
+                                    onDestinationSelected = { destination ->
+                                        currentDestination = destination
+                                    }
+                                )
+                            }
+                        )
+                    } else {
+                        fabContent()
                     }
                 },
                 bottomBar = {
-                    if (!isLandscape) {
+                    if (showBottomNav) {
                         HomeBottomBar(
                             currentDestination = currentDestination,
-                            onDestinationSelected = { currentDestination = it }
+                            onDestinationSelected = { destination ->
+                                currentDestination = destination
+                            }
                         )
                     }
                 }
@@ -794,15 +822,17 @@ fun ListsApp() {
                 }
 
                 AdaptiveNavigationContainer(
-                    isLandscape = isLandscape,
+                    isLandscape = showRailNav,
                     paddingValues = innerPadding,
-                    navigationRail = {
-                        HomeBottomBar(
-                            currentDestination = currentDestination,
-                            onDestinationSelected = { currentDestination = it },
-                            isVertical = true
-                        )
-                    },
+                    navigationRail = if (showRailNav) {
+                        {
+                            HomeBottomBar(
+                                currentDestination = currentDestination,
+                                onDestinationSelected = { currentDestination = it },
+                                isVertical = true
+                            )
+                        }
+                    } else null,
                     content = renderDestination
                 )
             }
