@@ -19,6 +19,12 @@ Aim to link each justification to the specific theories covered in class (e.g., 
 
 ## Logged Decisions
 
+### Adaptive Navigation Bar — 2024-11-18
+- **Change**: Refactored the Pantry/Products/Lists navigation to automatically switch between a horizontal bottom bar in portrait and a vertical rail pinned to the right edge in landscape, reversing the order to keep Lists at the top when the device rotates counter-clockwise.
+- **User Problem / Goal**: In landscape the old bottom bar wasted vertical space and forced users to stretch across the long edge, so the main actions were harder to hit and obscured content; the new rail keeps navigation reachable and frees space for data.
+- **Justification**: Material Design’s adaptive navigation guidance recommends switching between bottom bars and navigation rails across posture changes, and Fitts’s Law plus Nielsen’s “Flexibility and efficiency” heuristic support keeping high-frequency targets near the user’s active edge.
+- **Impact**: Users gain a consistent mental model (same destinations, predictable order) while getting more usable canvas in landscape and quicker thumb access to important sections.
+
 ### Theme & Color System — 2024-11-12
 - **Change**: Replaced the default Compose palette with the same primary/secondary colors used by the Vue frontend (brand greens, gold accents, neutral light/dark surfaces).
 - **User Problem / Goal**: Maintain cross-platform visual consistency so users instantly recognize the brand regardless of channel.
@@ -208,4 +214,3 @@ Add future decisions in chronological order so the report can reference this sin
 
 Add future decisions in chronological order so the report can reference this single source of truth.
 ```
-

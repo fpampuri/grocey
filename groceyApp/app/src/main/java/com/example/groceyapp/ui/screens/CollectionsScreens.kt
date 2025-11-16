@@ -30,6 +30,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -61,6 +64,8 @@ enum class HomeDestination(@StringRes val labelRes: Int, val icon: ImageVector) 
     Products(R.string.products_tab, Icons.Filled.Store),
     Lists(R.string.lists_tab, Icons.AutoMirrored.Filled.List)
 }
+
+val HomeNavigationRailWidth = 88.dp
 
 @Composable
 fun ListsScreen(
@@ -158,7 +163,9 @@ fun ProductsScreen(
 @Composable
 fun HomeBottomBar(
     currentDestination: HomeDestination,
-    onDestinationSelected: (HomeDestination) -> Unit
+    onDestinationSelected: (HomeDestination) -> Unit,
+    modifier: Modifier = Modifier,
+    isVertical: Boolean = false
 ) {
     val containerColor = MaterialTheme.colorScheme.primary
 
@@ -166,21 +173,51 @@ fun HomeBottomBar(
     val unselectedColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
     val indicatorColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)
 
-    NavigationBar(containerColor = containerColor) {
-        HomeDestination.entries.forEach { destination ->
-            NavigationBarItem(
-                selected = destination == currentDestination,
-                onClick = { onDestinationSelected(destination) },
-                icon = { Icon(imageVector = destination.icon, contentDescription = null) },
-                label = { Text(text = stringResource(id = destination.labelRes)) },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = selectedColor,
-                    selectedTextColor = selectedColor,
-                    indicatorColor = indicatorColor,
-                    unselectedIconColor = unselectedColor,
-                    unselectedTextColor = unselectedColor
+    val destinations = if (isVertical) {
+        listOf(HomeDestination.Lists, HomeDestination.Products, HomeDestination.Pantry)
+    } else {
+        HomeDestination.entries
+    }
+
+    if (isVertical) {
+        NavigationRail(
+            modifier = modifier,
+            containerColor = containerColor,
+            contentColor = selectedColor
+        ) {
+            destinations.forEach { destination ->
+                NavigationRailItem(
+                    selected = destination == currentDestination,
+                    onClick = { onDestinationSelected(destination) },
+                    icon = { Icon(imageVector = destination.icon, contentDescription = null) },
+                    label = { Text(text = stringResource(id = destination.labelRes)) },
+                    colors = NavigationRailItemDefaults.colors(
+                        selectedIconColor = selectedColor,
+                        selectedTextColor = selectedColor,
+                        indicatorColor = indicatorColor,
+                        unselectedIconColor = unselectedColor,
+                        unselectedTextColor = unselectedColor
+                    )
                 )
-            )
+            }
+        }
+    } else {
+        NavigationBar(containerColor = containerColor, modifier = modifier) {
+            destinations.forEach { destination ->
+                NavigationBarItem(
+                    selected = destination == currentDestination,
+                    onClick = { onDestinationSelected(destination) },
+                    icon = { Icon(imageVector = destination.icon, contentDescription = null) },
+                    label = { Text(text = stringResource(id = destination.labelRes)) },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = selectedColor,
+                        selectedTextColor = selectedColor,
+                        indicatorColor = indicatorColor,
+                        unselectedIconColor = unselectedColor,
+                        unselectedTextColor = unselectedColor
+                    )
+                )
+            }
         }
     }
 }

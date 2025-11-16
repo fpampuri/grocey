@@ -1,12 +1,16 @@
 package com.example.groceyapp.ui.screens
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -29,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.groceyapp.R
@@ -38,6 +43,7 @@ import com.example.groceyapp.ui.components.general.PrimaryFab
 import com.example.groceyapp.ui.components.ProductItemCard
 import com.example.groceyapp.ui.components.ProductItemData
 import com.example.groceyapp.ui.components.ProductCardMode
+import com.example.groceyapp.ui.screens.HomeNavigationRailWidth
 
 /**
  * Detail screen for a category
@@ -66,6 +72,8 @@ fun CategoryDetailScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showAddProductDialog by remember { mutableStateOf(false) }
     var selectedProduct by remember { mutableStateOf<com.example.groceyapp.data.model.Product?>(null) }
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     
     // Filter products for this category
     val categoryProducts = products.filter { product ->
@@ -114,76 +122,109 @@ fun CategoryDetailScreen(
             )
         },
         bottomBar = {
-            HomeBottomBar(
-                currentDestination = currentDestination,
-                onDestinationSelected = onDestinationSelected
-            )
+            if (!isLandscape) {
+                HomeBottomBar(
+                    currentDestination = currentDestination,
+                    onDestinationSelected = onDestinationSelected
+                )
+            }
         }
     ) { paddingValues ->
-        if (categoryProducts.isEmpty()) {
-            // Empty state
-            Box(
+        val contentArea: @Composable (Modifier) -> Unit = { contentModifier ->
+            if (categoryProducts.isEmpty()) {
+                // Empty state
+                Box(
+                    modifier = contentModifier,
+                    contentAlignment = Alignment.Center
+                ) {
+                    EmptyState(
+                        icon = Icons.Filled.Store,
+                        messageRes = R.string.empty_category_message,
+                        hintRes = R.string.empty_category_hint
+                    )
+                }
+            } else {
+                // Products list
+                LazyColumn(
+                    modifier = contentModifier,
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Section header
+                    item {
+                        Text(
+                            text = "Products",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 18.sp
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
+
+                    // Product items in CATEGORY mode (no checkbox, no quantity, with menu)
+                    items(categoryProducts, key = { it.id ?: 0 }) { product ->
+                        ProductItemCard(
+                            data = ProductItemData(
+                                id = product.id?.toString() ?: "",
+                                name = product.name,
+                                category = product.category?.name ?: "",
+                                quantity = 1,
+                                isBought = false
+                            ),
+                            mode = ProductCardMode.CATEGORY,
+                            onMoveToCategory = {
+                                selectedProduct = product
+                                showMoveCategoryDialog = true
+                            },
+                            onAddToList = { onProductAddToList(product.id?.toString() ?: "") },
+                            onAddToPantry = { onProductAddToPantry(product.id?.toString() ?: "") },
+                            onDeleteProduct = {
+                                selectedProduct = product
+                                showDeleteDialog = true
+                            }
+                        )
+                    }
+
+                    // Bottom padding for FAB
+                    item {
+                        Spacer(modifier = Modifier.height(80.dp))
+                    }
+                }
+            }
+        }
+
+        if (isLandscape) {
+            Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center
+                    .padding(paddingValues)
             ) {
-                EmptyState(
-                    icon = Icons.Filled.Store,
-                    messageRes = R.string.empty_category_message,
-                    hintRes = R.string.empty_category_hint
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                ) {
+                    contentArea(Modifier.fillMaxSize())
+                }
+
+                HomeBottomBar(
+                    currentDestination = currentDestination,
+                    onDestinationSelected = onDestinationSelected,
+                    isVertical = true,
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .width(HomeNavigationRailWidth)
                 )
             }
         } else {
-            // Products list
-            LazyColumn(
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                    .padding(paddingValues)
             ) {
-                // Section header
-                item {
-                    Text(
-                        text = "Products",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 18.sp
-                        ),
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(bottom = 4.dp)
-                    )
-                }
-
-                // Product items in CATEGORY mode (no checkbox, no quantity, with menu)
-                items(categoryProducts, key = { it.id ?: 0 }) { product ->
-                    ProductItemCard(
-                        data = ProductItemData(
-                            id = product.id?.toString() ?: "",
-                            name = product.name,
-                            category = product.category?.name ?: "",
-                            quantity = 1,
-                            isBought = false
-                        ),
-                        mode = ProductCardMode.CATEGORY,
-                        onMoveToCategory = {
-                            selectedProduct = product
-                            showMoveCategoryDialog = true
-                        },
-                        onAddToList = { onProductAddToList(product.id?.toString() ?: "") },
-                        onAddToPantry = { onProductAddToPantry(product.id?.toString() ?: "") },
-                        onDeleteProduct = {
-                            selectedProduct = product
-                            showDeleteDialog = true
-                        }
-                    )
-                }
-
-                // Bottom padding for FAB
-                item {
-                    Spacer(modifier = Modifier.height(80.dp))
-                }
+                contentArea(Modifier.fillMaxSize())
             }
         }
     }
