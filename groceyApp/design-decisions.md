@@ -25,6 +25,12 @@ Aim to link each justification to the specific theories covered in class (e.g., 
 - **Justification**: Material Design’s adaptive navigation guidance recommends switching between bottom bars and navigation rails across posture changes, and Fitts’s Law plus Nielsen’s “Flexibility and efficiency” heuristic support keeping high-frequency targets near the user’s active edge.
 - **Impact**: Users gain a consistent mental model (same destinations, predictable order) while getting more usable canvas in landscape and quicker thumb access to important sections.
 
+### Persistent Navigation State & Back Handling — 2024-11-19
+- **Change**: Stored the home destination and detail selections in saveable state plus a lightweight navigation path so rotating the phone keeps the user on the current screen; also wired the system back gesture to unwind one level (detail → collection) instead of snapping to the Lists home.
+- **User Problem / Goal**: Previously any rotation or back gesture dumped users at the Lists tab, forcing them to retrace steps—frustrating when reviewing a specific pantry or list.
+- **Justification**: Nielsen’s “User control and freedom” and Android posture guidelines stress preserving task context across configuration changes and making back affordances predictable.
+- **Impact**: Orientation changes feel seamless, the back button behaves like a breadcrumb, and users don’t lose work or mental context when rotating the device.
+
 ### Theme & Color System — 2024-11-12
 - **Change**: Replaced the default Compose palette with the same primary/secondary colors used by the Vue frontend (brand greens, gold accents, neutral light/dark surfaces).
 - **User Problem / Goal**: Maintain cross-platform visual consistency so users instantly recognize the brand regardless of channel.

@@ -5,6 +5,7 @@ import android.content.res.Configuration
 import android.os.Bundle
 import androidx.compose.material3.SnackbarDuration
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
@@ -20,6 +21,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -113,10 +115,10 @@ fun ListsApp() {
         authViewModel.restoreSession()
     }
     
-    var currentDestination by remember { mutableStateOf(HomeDestination.Lists) }
-    var selectedListId by remember { mutableStateOf<String?>(null) }
-    var selectedCategory by remember { mutableStateOf<CategoryCardData?>(null) }
-    var selectedPantry by remember { mutableStateOf<CategoryCardData?>(null) }
+    var currentDestination by rememberSaveable { mutableStateOf(HomeDestination.Lists) }
+    var selectedListId by rememberSaveable { mutableStateOf<String?>(null) }
+    var selectedCategoryId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var selectedPantryId by rememberSaveable { mutableStateOf<Long?>(null) }
     var isMenuOpen by remember { mutableStateOf(LocaleHelper.shouldOpenMenuOnStart(context)) }
     
     // Settings state
@@ -254,6 +256,14 @@ fun ListsApp() {
     
     Log.d("MainActivity", "Total pantries loaded: ${pantries.size}, pantryCards: ${pantryCards.size}")
 
+    val selectedCategoryCard = selectedCategoryId?.let { id ->
+        categoryCards.find { it.id == id }
+    }
+
+    val selectedPantryCard = selectedPantryId?.let { id ->
+        pantryCards.find { it.id == id }
+    }
+
     // Show authentication screen if not authenticated
     if (!isAuthenticated) {
         AuthenticationScreen(
@@ -274,6 +284,14 @@ fun ListsApp() {
         lists.find { list -> list.id == id }
     }
 
+    BackHandler(enabled = selectedList != null || selectedCategoryCard != null || selectedPantryCard != null) {
+        when {
+            selectedPantryCard != null -> selectedPantryId = null
+            selectedCategoryCard != null -> selectedCategoryId = null
+            selectedList != null -> selectedListId = null
+        }
+    }
+
     // When a list is selected, load its items from API
     LaunchedEffect(selectedList?.id) {
         val listIdInt = selectedList?.id?.toIntOrNull()
@@ -283,8 +301,8 @@ fun ListsApp() {
     }
     
     // When a pantry is selected, load its items from API
-    LaunchedEffect(selectedPantry?.id) {
-        val pantryIdInt = selectedPantry?.id?.toInt()
+    LaunchedEffect(selectedPantryId) {
+        val pantryIdInt = selectedPantryId?.toInt()
         if (pantryIdInt != null) {
             pantryViewModel.loadPantryItems(pantryIdInt)
         }
@@ -386,16 +404,16 @@ fun ListsApp() {
                         )
                     }
                 )
-        } else if (selectedCategory != null) {
+        } else if (selectedCategoryCard != null) {
             // Show category detail screen
-            val category = selectedCategory!!
+            val category = selectedCategoryCard!!
             CategoryDetailScreen(
                 categoryData = category,
                 products = products,
                 categories = categories,
                 lists = apiLists,
                 pantries = pantries,
-                onBackClick = { selectedCategory = null },
+                onBackClick = { selectedCategoryId = null },
                 onProductMoveToCategory = { productId, newCategoryId ->
                     // Find the product to get its current name
                     val product = products.find { it.id == productId }
@@ -510,18 +528,18 @@ fun ListsApp() {
                 currentDestination = currentDestination,
                 onDestinationSelected = { destination ->
                     currentDestination = destination
-                    selectedCategory = null  // Go back to main view when switching tabs
+                    selectedCategoryId = null  // Go back to main view when switching tabs
                 }
             )
-        } else if (selectedPantry != null) {
+        } else if (selectedPantryCard != null) {
             // Show pantry detail screen
-            val pantry = selectedPantry!!
+            val pantry = selectedPantryCard!!
             PantryDetailScreen(
                 pantryData = pantry,
                 pantries = pantries,
                 categories = categories,
                 pantryItems = pantryItems,
-                onBackClick = { selectedPantry = null },
+                onBackClick = { selectedPantryId = null },
                 onItemQuantityChange = { itemId, newQty ->
                     val pantryIdInt = pantry.id?.toInt()
                     if (pantryIdInt != null) {
@@ -573,7 +591,7 @@ fun ListsApp() {
                 currentDestination = currentDestination,
                 onDestinationSelected = { destination ->
                     currentDestination = destination
-                    selectedPantry = null
+                    selectedPantryId = null
                 },
                 onRename = { pantryId ->
                     pantryId?.let { id ->
@@ -721,7 +739,7 @@ fun ListsApp() {
                                 }
                             },
                             onPantryClick = { pantryData ->
-                                selectedPantry = pantryData
+                            selectedPantryId = pantryData.id
                             }
                         )
                         HomeDestination.Products -> ProductsScreen(
@@ -747,7 +765,7 @@ fun ListsApp() {
                                 }
                             },
                             onCategoryClick = { categoryData ->
-                                selectedCategory = categoryData
+                                selectedCategoryId = categoryData.id
                             }
                         )
                         HomeDestination.Lists -> ListsScreen(
