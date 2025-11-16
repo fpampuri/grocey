@@ -340,17 +340,17 @@ class ShoppingListViewModel : ViewModel() {
     }
     
     /**
-     * Share list with users
+     * Share list with a user
      */
     fun shareList(
         listId: Int,
-        emails: List<String>,
+        email: String,
         onSuccess: () -> Unit = {}
     ) {
         viewModelScope.launch {
             _errorMessage.value = null
             
-            val result = repository.shareShoppingList(listId, emails)
+            val result = repository.shareShoppingList(listId, email)
             
             when (result) {
                 is ApiResult.Success -> {

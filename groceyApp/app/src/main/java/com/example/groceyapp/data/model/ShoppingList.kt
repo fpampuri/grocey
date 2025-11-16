@@ -75,6 +75,6 @@ data class ShoppingListUpdate(
  * Share list request
  */
 data class ShareListRequest(
-    @SerializedName("emails")
-    val emails: List<String>
+    @SerializedName("email")
+    val email: String
 )

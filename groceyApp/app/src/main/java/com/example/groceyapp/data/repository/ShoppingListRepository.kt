@@ -49,9 +49,9 @@ class ShoppingListRepository {
     
     // Sharing operations
     
-    suspend fun shareShoppingList(id: Int, emails: List<String>): ApiResult<Unit> {
+    suspend fun shareShoppingList(id: Int, email: String): ApiResult<Unit> {
         return ApiHelper.safeApiCallUnit {
-            shoppingListApi.shareShoppingList(id, ShareListRequest(emails))
+            shoppingListApi.shareShoppingList(id, ShareListRequest(email))
         }
     }
     

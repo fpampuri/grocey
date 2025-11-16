@@ -141,9 +141,11 @@ fun ListsApp() {
     var showCreateListDialog by remember { mutableStateOf(false) }
     var showDeleteListDialog by remember { mutableStateOf(false) }
     var showRenameListDialog by remember { mutableStateOf(false) }
+    var showShareListDialog by remember { mutableStateOf(false) }
     var showPasswordDialog by remember { mutableStateOf(false) }
     var listToDelete by remember { mutableStateOf<Int?>(null) }
     var listToRename by remember { mutableStateOf<Triple<Int, String, androidx.compose.ui.graphics.vector.ImageVector?>?>(null) }
+    var listToShare by remember { mutableStateOf<Pair<Int, String>?>(null) }
     
     // Products and categories dialog states
     var showCreateProductDialog by remember { mutableStateOf(false) }
@@ -389,7 +391,13 @@ fun ListsApp() {
                             showDeleteListDialog = true
                         }
                     },
-                    onShare = { _ -> /* share intentionally disabled until specified */ },
+                    onShare = { listId ->
+                        val list = apiLists.find { it.id.toString() == listId }
+                        list?.id?.let { id ->
+                            listToShare = Pair(id, list.name)
+                            showShareListDialog = true
+                        }
+                    },
                     onAddProduct = { productName, maybeCategoryId ->
                         // Resolve target category: use provided, else fallback to default Miscellaneous
                         val resolvedCategoryId: Int? = maybeCategoryId ?: run {
@@ -834,7 +842,13 @@ fun ListsApp() {
                                     showDeleteListDialog = true
                                 }
                             },
-                            onShare = { /* no-op */ }
+                            onShare = { listId ->
+                                val list = apiLists.find { it.id.toString() == listId }
+                                list?.id?.let { id ->
+                                    listToShare = Pair(id, list.name)
+                                    showShareListDialog = true
+                                }
+                            }
                         )
                     }
                 }
@@ -1139,6 +1153,44 @@ fun ListsApp() {
                             }
                         }
                     )
+                }
+            )
+        }
+        
+        // Share List dialog
+        if (showShareListDialog && listToShare != null) {
+            val (listId, listName) = listToShare!!
+            com.example.groceyapp.ui.components.dialogs.ShareListDialog(
+                listName = listName,
+                onDismiss = {
+                    showShareListDialog = false
+                    listToShare = null
+                },
+                onShare = { emailList ->
+                    // Share with each email in the list
+                    emailList.forEach { email ->
+                        shoppingListViewModel.shareList(
+                            listId = listId,
+                            email = email,
+                            onSuccess = {
+                                // Success handled after all shares
+                            }
+                        )
+                    }
+                    
+                    showShareListDialog = false
+                    listToShare = null
+                    
+                    // Show success message
+                    coroutineScope.launch {
+                        lastSnackbarIsSuccess = true
+                        val msg = context.getString(R.string.list_shared_success)
+                        snackbarHostState.showSnackbar(
+                            message = msg,
+                            duration = SnackbarDuration.Short
+                        )
+                        lastSnackbarIsSuccess = false
+                    }
                 }
             )
         }

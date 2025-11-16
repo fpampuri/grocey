@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">GroceyApp</string>
+    <string name="app_name">Grocey</string>
     <string name="prompt_name">What\'s your name?</string>
     <string name="name_label">Name</string>
     <string name="confirm_button">OK</string>
@@ -41,6 +41,16 @@
     <string name="profile_password_label">Password</string>
     <string name="profile_change_password">Change password</string>
     
+
+    <!-- Share list strings -->
+    <string name="share_list_title">Share "%1$s"</string>
+    <string name="share_list_description">Share your list with others by entering their email addresses. Click the + button to add each email to the list.</string>
+    <string name="add_email_address">Add Email Address</string>
+    <string name="enter_email_address">Enter email address...</string>
+    <string name="add_email">Add email</string>
+    <string name="remove_email">Remove email</string>
+    <string name="share_with_count">Share with %1$d people</string>
+    <string name="list_shared_success">List shared successfully</string>
     <!-- Settings strings -->
     <string name="settings_dark_mode">Dark Mode</string>
     <string name="settings_language">Language</string>
