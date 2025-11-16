@@ -5,8 +5,10 @@ import android.content.res.Configuration
 import android.os.Bundle
 import androidx.compose.material3.SnackbarDuration
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,6 +22,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -39,8 +42,10 @@ import com.example.groceyapp.ui.components.ListCardData
 import com.example.groceyapp.ui.components.CategoryCardData
 import com.example.groceyapp.ui.components.general.MenuDrawer
 import com.example.groceyapp.ui.components.general.PrimaryFab
+import com.example.groceyapp.ui.components.general.FabWithFloatingNav
 import com.example.groceyapp.ui.components.dialogs.CreateListDialog
 import com.example.groceyapp.ui.screens.HomeBottomBar
+import com.example.groceyapp.ui.screens.HomeFloatingNav
 import com.example.groceyapp.ui.screens.HomeDestination
 import com.example.groceyapp.ui.screens.ListDetailScreen
 import com.example.groceyapp.ui.screens.CategoryDetailScreen
@@ -51,7 +56,6 @@ import com.example.groceyapp.ui.components.dialogs.CreateCategoryDialog
 import com.example.groceyapp.ui.components.dialogs.CreateProductDialog
 import com.example.groceyapp.ui.components.dialogs.ConfirmDeleteDialog
 import com.example.groceyapp.ui.components.dialogs.RenameDialog
-import com.example.groceyapp.ui.theme.GroceyAppTheme
 import com.example.groceyapp.ui.viewmodel.AuthViewModel
 import com.example.groceyapp.ui.viewmodel.ProductViewModel
 import com.example.groceyapp.ui.viewmodel.ShoppingListViewModel
@@ -77,6 +81,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.groceyapp.ui.components.general.AdaptiveNavigationContainer
 import com.example.groceyapp.ui.components.general.PasswordChangeDialog
+import com.example.groceyapp.ui.theme.GroceyAppTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -87,9 +92,7 @@ class MainActivity : ComponentActivity() {
         
         enableEdgeToEdge()
         setContent {
-            GroceyAppTheme {
-                ListsApp()
-            }
+            ListsApp()
         }
     }
 }
@@ -99,6 +102,10 @@ fun ListsApp() {
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val isTablet = configuration.smallestScreenWidthDp >= 600
+    val showFloatingNav = isTablet
+    val showRailNav = !isTablet && isLandscape
+    val showBottomNav = !isTablet && !isLandscape
     
     // Get ViewModels
     val authViewModel: AuthViewModel = viewModel()
@@ -116,14 +123,15 @@ fun ListsApp() {
         authViewModel.restoreSession()
     }
     
-    var currentDestination by remember { mutableStateOf(HomeDestination.Lists) }
-    var selectedListId by remember { mutableStateOf<String?>(null) }
-    var selectedCategory by remember { mutableStateOf<CategoryCardData?>(null) }
-    var selectedPantry by remember { mutableStateOf<CategoryCardData?>(null) }
+    var currentDestination by rememberSaveable { mutableStateOf(HomeDestination.Lists) }
+    var selectedListId by rememberSaveable { mutableStateOf<String?>(null) }
+    var selectedCategoryId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var selectedPantryId by rememberSaveable { mutableStateOf<Long?>(null) }
     var isMenuOpen by remember { mutableStateOf(LocaleHelper.shouldOpenMenuOnStart(context)) }
     
     // Settings state
-    var isDarkMode by remember { mutableStateOf(false) }
+    val systemDark = isSystemInDarkTheme()
+    var isDarkMode by rememberSaveable { mutableStateOf(systemDark) }
     var currentLanguage by remember { mutableStateOf(LocaleHelper.getCurrentLocale(context)) }
     
     // Shopping lists from API
@@ -161,67 +169,68 @@ fun ListsApp() {
     val pantries by pantryViewModel.pantries.collectAsState()
     val pantryItems by pantryViewModel.pantryItems.collectAsState()
 
-    // Snackbar + coroutine scope for showing feedback
-    val snackbarHostState = remember { SnackbarHostState() }
-    val coroutineScope = rememberCoroutineScope()
-    var lastSnackbarIsSuccess by remember { mutableStateOf(false) }
-    val errorMessage by shoppingListViewModel.errorMessage.collectAsState()
-    val listItems by shoppingListViewModel.listItems.collectAsState()
+    GroceyAppTheme(darkTheme = isDarkMode) {
+        // Snackbar + coroutine scope for showing feedback
+        val snackbarHostState = remember { SnackbarHostState() }
+        val coroutineScope = rememberCoroutineScope()
+        var lastSnackbarIsSuccess by remember { mutableStateOf(false) }
+        val errorMessage by shoppingListViewModel.errorMessage.collectAsState()
+        val listItems by shoppingListViewModel.listItems.collectAsState()
 
-    // Show error messages from ViewModel in a Snackbar
-    LaunchedEffect(errorMessage) {
-        errorMessage?.let { msg ->
-            // mark as error
-            lastSnackbarIsSuccess = false
-            coroutineScope.launch {
-                snackbarHostState.showSnackbar(
-                    message = msg,
-                    duration = SnackbarDuration.Short)
+        // Show error messages from ViewModel in a Snackbar
+        LaunchedEffect(errorMessage) {
+            errorMessage?.let { msg ->
+                // mark as error
+                lastSnackbarIsSuccess = false
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = msg,
+                        duration = SnackbarDuration.Short)
+                }
+                shoppingListViewModel.clearError()
             }
-            shoppingListViewModel.clearError()
         }
-    }
     
-    // Load shopping lists when authenticated
-    LaunchedEffect(isAuthenticated) {
-        if (isAuthenticated) {
-            shoppingListViewModel.loadShoppingLists()
-            productViewModel.loadProducts()
-            productViewModel.loadCategories()
-            pantryViewModel.loadPantries()
+        // Load shopping lists when authenticated
+        LaunchedEffect(isAuthenticated) {
+            if (isAuthenticated) {
+                shoppingListViewModel.loadShoppingLists()
+                productViewModel.loadProducts()
+                productViewModel.loadCategories()
+                pantryViewModel.loadPantries()
+            }
         }
-    }
     
-    LaunchedEffect(passwordChangeState, showPasswordDialog) {
-        if (showPasswordDialog && passwordChangeState is PasswordChangeState.Success) {
-            showPasswordDialog = false
-            authViewModel.resetPasswordChangeState()
-            lastSnackbarIsSuccess = true
-            snackbarHostState.showSnackbar(
-                message = context.getString(R.string.password_change_success),
-                duration = SnackbarDuration.Short
+        LaunchedEffect(passwordChangeState, showPasswordDialog) {
+            if (showPasswordDialog && passwordChangeState is PasswordChangeState.Success) {
+                showPasswordDialog = false
+                authViewModel.resetPasswordChangeState()
+                lastSnackbarIsSuccess = true
+                snackbarHostState.showSnackbar(
+                    message = context.getString(R.string.password_change_success),
+                    duration = SnackbarDuration.Short
+                )
+                lastSnackbarIsSuccess = false
+            }
+        }
+    
+        // Convert API lists to UI format
+        val lists = apiLists.map { apiList ->
+            // Extract icon from metadata, default to shopping cart
+            val iconName = apiList.metadata?.get("icon") as? String
+            Log.d("MainActivity", "List ${apiList.name} has icon metadata: $iconName")
+            val icon = mapStringToIcon(iconName)
+            
+            ListCardData(
+                id = apiList.id?.toString() ?: "",
+                title = apiList.name,
+                itemCount = apiList.id?.let { itemCounts[it] } ?: 0,
+                leadingIcon = icon,
+                isFavorite = false,
+                isShared = apiList.sharedWith?.isNotEmpty() == true,
+                products = emptyList()
             )
-            lastSnackbarIsSuccess = false
         }
-    }
-    
-    // Convert API lists to UI format
-    val lists = apiLists.map { apiList ->
-        // Extract icon from metadata, default to shopping cart
-        val iconName = apiList.metadata?.get("icon") as? String
-        Log.d("MainActivity", "List ${apiList.name} has icon metadata: $iconName")
-        val icon = mapStringToIcon(iconName)
-        
-        ListCardData(
-            id = apiList.id?.toString() ?: "",
-            title = apiList.name,
-            itemCount = apiList.id?.let { itemCounts[it] } ?: 0,
-            leadingIcon = icon,
-            isFavorite = false,
-            isShared = apiList.sharedWith?.isNotEmpty() == true,
-            products = emptyList()
-        )
-    }
 
     // Convert API categories and products to UI format
     val categoryCards = categories.map { category ->
@@ -271,49 +280,65 @@ fun ListsApp() {
     
     Log.d("MainActivity", "Total pantries loaded: ${pantries.size}, pantryCards: ${pantryCards.size}")
 
-    // Show authentication screen if not authenticated
-    if (!isAuthenticated) {
-        AuthenticationScreen(
-            onLoginSuccess = {
-                // Authentication handled by viewModel
-                // User will be automatically authenticated when login succeeds
+    val selectedCategoryCard = selectedCategoryId?.let { id ->
+        categoryCards.find { it.id == id }
+    }
+
+    val selectedPantryCard = selectedPantryId?.let { id ->
+        pantryCards.find { it.id == id }
+    }
+
+        if (!isAuthenticated) {
+            AuthenticationScreen(
+                onLoginSuccess = {
+                    // Authentication handled by viewModel
+                    // User will be automatically authenticated when login succeeds
+                }
+            )
+            return@GroceyAppTheme
+        }
+
+        // Extract user info from currentUser
+        val userEmail = currentUser?.email ?: "user@gmail.com"
+        val userName = "${currentUser?.name ?: "User"} ${currentUser?.surname ?: ""}"
+
+        // Determine if we're showing list detail
+        val selectedList: ListCardData? = selectedListId?.let { id ->
+            lists.find { list -> list.id == id }
+        }
+
+        BackHandler(enabled = selectedList != null || selectedCategoryCard != null || selectedPantryCard != null) {
+            when {
+                selectedPantryCard != null -> selectedPantryId = null
+                selectedCategoryCard != null -> selectedCategoryId = null
+                selectedList != null -> selectedListId = null
             }
-        )
-        return
-    }
-    
-    // Extract user info from currentUser
-    val userEmail = currentUser?.email ?: "user@gmail.com"
-    val userName = "${currentUser?.name ?: "User"} ${currentUser?.surname ?: ""}"
-
-    // Determine if we're showing list detail
-    val selectedList: ListCardData? = selectedListId?.let { id ->
-        lists.find { list -> list.id == id }
-    }
-
-    // When a list is selected, load its items from API
-    LaunchedEffect(selectedList?.id) {
-        val listIdInt = selectedList?.id?.toIntOrNull()
-        if (listIdInt != null) {
-            shoppingListViewModel.loadListItems(listIdInt)
         }
-    }
-    
-    // When a pantry is selected, load its items from API
-    LaunchedEffect(selectedPantry?.id) {
-        val pantryIdInt = selectedPantry?.id?.toInt()
-        if (pantryIdInt != null) {
-            pantryViewModel.loadPantryItems(pantryIdInt)
-        }
-    }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        if (selectedList != null) {
-            // Show list detail screen
+        // When a list is selected, load its items from API
+        LaunchedEffect(selectedList?.id) {
+            val listIdInt = selectedList?.id?.toIntOrNull()
+            if (listIdInt != null) {
+                shoppingListViewModel.loadListItems(listIdInt)
+            }
+        }
+        
+        // When a pantry is selected, load its items from API
+        LaunchedEffect(selectedPantryId) {
+            val pantryIdInt = selectedPantryId?.toInt()
+            if (pantryIdInt != null) {
+                pantryViewModel.loadPantryItems(pantryIdInt)
+            }
+        }
+
+        Box(modifier = Modifier.fillMaxSize()) {
+            if (selectedList != null) {
+                // Show list detail screen
                 ListDetailScreen(
                     listData = selectedList,
                     categories = categories,
                     listItems = listItems,
+                    isTablet = isTablet,
                     onBackClick = { selectedListId = null },
                     onItemTogglePurchased = { itemId ->
                         val listIdInt = selectedList.id.toIntOrNull()
@@ -403,16 +428,17 @@ fun ListsApp() {
                         )
                     }
                 )
-        } else if (selectedCategory != null) {
+        } else if (selectedCategoryCard != null) {
             // Show category detail screen
-            val category = selectedCategory!!
+            val category = selectedCategoryCard!!
             CategoryDetailScreen(
                 categoryData = category,
                 products = products,
                 categories = categories,
                 lists = apiLists,
                 pantries = pantries,
-                onBackClick = { selectedCategory = null },
+                isTablet = isTablet,
+                onBackClick = { selectedCategoryId = null },
                 onProductMoveToCategory = { productId, newCategoryId ->
                     // Find the product to get its current name
                     val product = products.find { it.id == productId }
@@ -527,18 +553,19 @@ fun ListsApp() {
                 currentDestination = currentDestination,
                 onDestinationSelected = { destination ->
                     currentDestination = destination
-                    selectedCategory = null  // Go back to main view when switching tabs
+                    selectedCategoryId = null  // Go back to main view when switching tabs
                 }
             )
-        } else if (selectedPantry != null) {
+        } else if (selectedPantryCard != null) {
             // Show pantry detail screen
-            val pantry = selectedPantry!!
+            val pantry = selectedPantryCard!!
             PantryDetailScreen(
                 pantryData = pantry,
                 pantries = pantries,
                 categories = categories,
                 pantryItems = pantryItems,
-                onBackClick = { selectedPantry = null },
+                isTablet = isTablet,
+                onBackClick = { selectedPantryId = null },
                 onItemQuantityChange = { itemId, newQty ->
                     val pantryIdInt = pantry.id?.toInt()
                     if (pantryIdInt != null) {
@@ -590,7 +617,7 @@ fun ListsApp() {
                 currentDestination = currentDestination,
                 onDestinationSelected = { destination ->
                     currentDestination = destination
-                    selectedPantry = null
+                    selectedPantryId = null
                 },
                 onRename = { pantryId ->
                     pantryId?.let { id ->
@@ -662,53 +689,72 @@ fun ListsApp() {
                 },
                 modifier = Modifier.fillMaxSize(),
                 floatingActionButton = {
-                    when (currentDestination) {
-                        HomeDestination.Pantry -> {
-                            PrimaryFab(
-                                contentDescriptionRes = R.string.add_pantry,
-                                onClick = { showCreatePantryDialog = true }
-                            )
-                        }
-                        HomeDestination.Products -> {
-                            Box {
+                    val fabContent: @Composable () -> Unit = {
+                        when (currentDestination) {
+                            HomeDestination.Pantry -> {
                                 PrimaryFab(
-                                    contentDescriptionRes = R.string.add_product,
-                                    onClick = { showProductFabMenu = true }
+                                    contentDescriptionRes = R.string.add_pantry,
+                                    onClick = { showCreatePantryDialog = true }
                                 )
-                                DropdownMenu(
-                                    expanded = showProductFabMenu,
-                                    onDismissRequest = { showProductFabMenu = false }
-                                ) {
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(id = R.string.add_product)) },
-                                        onClick = {
-                                            showProductFabMenu = false
-                                            showCreateProductDialog = true
-                                        }
+                            }
+                            HomeDestination.Products -> {
+                                Box {
+                                    PrimaryFab(
+                                        contentDescriptionRes = R.string.add_product,
+                                        onClick = { showProductFabMenu = true }
                                     )
-                                    DropdownMenuItem(
-                                        text = { Text(stringResource(id = R.string.add_category)) },
-                                        onClick = {
-                                            showProductFabMenu = false
-                                            showCreateCategoryDialog = true
-                                        }
-                                    )
+                                    DropdownMenu(
+                                        expanded = showProductFabMenu,
+                                        onDismissRequest = { showProductFabMenu = false }
+                                    ) {
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(id = R.string.add_product)) },
+                                            onClick = {
+                                                showProductFabMenu = false
+                                                showCreateProductDialog = true
+                                            }
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(id = R.string.add_category)) },
+                                            onClick = {
+                                                showProductFabMenu = false
+                                                showCreateCategoryDialog = true
+                                            }
+                                        )
+                                    }
                                 }
                             }
+                            HomeDestination.Lists -> {
+                                PrimaryFab(
+                                    contentDescriptionRes = R.string.add_list,
+                                    onClick = { showCreateListDialog = true }
+                                )
+                            }
                         }
-                        HomeDestination.Lists -> {
-                            PrimaryFab(
-                                contentDescriptionRes = R.string.add_list,
-                                onClick = { showCreateListDialog = true }
-                            )
-                        }
+                    }
+                    if (showFloatingNav) {
+                        FabWithFloatingNav(
+                            fab = fabContent,
+                            nav = {
+                                HomeFloatingNav(
+                                    currentDestination = currentDestination,
+                                    onDestinationSelected = { destination ->
+                                        currentDestination = destination
+                                    }
+                                )
+                            }
+                        )
+                    } else {
+                        fabContent()
                     }
                 },
                 bottomBar = {
-                    if (!isLandscape) {
+                    if (showBottomNav) {
                         HomeBottomBar(
                             currentDestination = currentDestination,
-                            onDestinationSelected = { currentDestination = it }
+                            onDestinationSelected = { destination ->
+                                currentDestination = destination
+                            }
                         )
                     }
                 }
@@ -738,7 +784,7 @@ fun ListsApp() {
                                 }
                             },
                             onPantryClick = { pantryData ->
-                                selectedPantry = pantryData
+                            selectedPantryId = pantryData.id
                             }
                         )
                         HomeDestination.Products -> ProductsScreen(
@@ -764,7 +810,7 @@ fun ListsApp() {
                                 }
                             },
                             onCategoryClick = { categoryData ->
-                                selectedCategory = categoryData
+                                selectedCategoryId = categoryData.id
                             }
                         )
                         HomeDestination.Lists -> ListsScreen(
@@ -793,21 +839,23 @@ fun ListsApp() {
                 }
 
                 AdaptiveNavigationContainer(
-                    isLandscape = isLandscape,
+                    isLandscape = showRailNav,
                     paddingValues = innerPadding,
-                    navigationRail = {
-                        HomeBottomBar(
-                            currentDestination = currentDestination,
-                            onDestinationSelected = { currentDestination = it },
-                            isVertical = true
-                        )
-                    },
+                    navigationRail = if (showRailNav) {
+                        {
+                            HomeBottomBar(
+                                currentDestination = currentDestination,
+                                onDestinationSelected = { currentDestination = it },
+                                isVertical = true
+                            )
+                        }
+                    } else null,
                     content = renderDestination
                 )
             }
         }
         
-        // Menu drawer overlay
+    // Menu drawer overlay
         MenuDrawer(
             isOpen = isMenuOpen,
             onDismiss = { isMenuOpen = false },
@@ -1198,4 +1246,5 @@ fun ListsPreview() {
     GroceyAppTheme {
         ListsApp()
     }
+}
 }

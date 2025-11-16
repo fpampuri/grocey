@@ -37,6 +37,7 @@ import com.example.groceyapp.R
 import com.example.groceyapp.ui.components.general.EmptyState
 import com.example.groceyapp.ui.components.ListCardData
 import com.example.groceyapp.ui.components.general.PrimaryFab
+import com.example.groceyapp.ui.components.general.FabWithFloatingNav
 import com.example.groceyapp.ui.components.ProductItemCard
 import com.example.groceyapp.ui.components.ProductItemData
 import com.example.groceyapp.ui.components.dialogs.ConfirmDeleteDialog
@@ -44,6 +45,7 @@ import com.example.groceyapp.data.model.Category
 import com.example.groceyapp.data.model.ListItem
 import com.example.groceyapp.ui.components.dialogs.AddProductDialog
 import com.example.groceyapp.ui.components.general.AdaptiveNavigationContainer
+import com.example.groceyapp.ui.screens.HomeFloatingNav
 
 /**
  * Detail screen for a shopping list
@@ -65,12 +67,16 @@ fun ListDetailScreen(
     onShare: (String) -> Unit = {},
     onDelete: (String) -> Unit = {},
     onAddProduct: (name: String, categoryId: Int?) -> Unit = { _, _ -> },
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isTablet: Boolean = false
 ) {
     var showAddProductDialog by remember { mutableStateOf(false) }
     var itemToDelete by remember { mutableStateOf<ProductItemData?>(null) }
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val useRailNavigation = isLandscape && !isTablet
+    val showBottomNav = !isTablet && !isLandscape
+    val showFloatingNav = isTablet
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -107,13 +113,28 @@ fun ListDetailScreen(
             )
         },
         floatingActionButton = {
-            PrimaryFab(
-                contentDescriptionRes = R.string.add_product,
-                onClick = { showAddProductDialog = true }
-            )
+            val fabContent: @Composable () -> Unit = {
+                PrimaryFab(
+                    contentDescriptionRes = R.string.add_product,
+                    onClick = { showAddProductDialog = true }
+                )
+            }
+            if (showFloatingNav) {
+                FabWithFloatingNav(
+                    fab = fabContent,
+                    nav = {
+                        HomeFloatingNav(
+                            currentDestination = currentDestination,
+                            onDestinationSelected = onDestinationSelected
+                        )
+                    }
+                )
+            } else {
+                fabContent()
+            }
         },
         bottomBar = {
-            if (!isLandscape) {
+            if (showBottomNav) {
                 HomeBottomBar(
                     currentDestination = currentDestination,
                     onDestinationSelected = onDestinationSelected
@@ -185,15 +206,17 @@ fun ListDetailScreen(
         }
 
         AdaptiveNavigationContainer(
-            isLandscape = isLandscape,
+            isLandscape = useRailNavigation,
             paddingValues = paddingValues,
-            navigationRail = {
-                HomeBottomBar(
-                    currentDestination = currentDestination,
-                    onDestinationSelected = onDestinationSelected,
-                    isVertical = true
-                )
-            },
+            navigationRail = if (useRailNavigation) {
+                {
+                    HomeBottomBar(
+                        currentDestination = currentDestination,
+                        onDestinationSelected = onDestinationSelected,
+                        isVertical = true
+                    )
+                }
+            } else null,
             content = contentArea
         )
     }

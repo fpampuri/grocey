@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.groceyapp.data.model.*
 import com.example.groceyapp.data.repository.PantryRepository
+import com.example.groceyapp.ui.viewmodel.support.CollectionCountTracker
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,8 +30,8 @@ class PantryViewModel : ViewModel() {
     private val _pantryItems = MutableStateFlow<List<PantryItem>>(emptyList())
     val pantryItems: StateFlow<List<PantryItem>> = _pantryItems.asStateFlow()
     
-    private val _pantryItemCounts = MutableStateFlow<Map<Int, Int>>(emptyMap())
-    val pantryItemCounts: StateFlow<Map<Int, Int>> = _pantryItemCounts.asStateFlow()
+    private val countTracker = CollectionCountTracker(viewModelScope)
+    val pantryItemCounts: StateFlow<Map<Int, Int>> = countTracker.counts
     
     // Loading & error states
     private val _isLoading = MutableStateFlow(false)
@@ -57,26 +58,12 @@ class PantryViewModel : ViewModel() {
                         Log.d("PantryViewModel", "Pantry: ${pantry.name}, id: ${pantry.id}, metadata: ${pantry.metadata}")
                     }
                     _pantries.value = result.data
-                    // Load item counts for each pantry
-                    result.data.forEach { pantry ->
-                        pantry.id?.let { id ->
-                            viewModelScope.launch {
-                                Log.d("PantryViewModel", "Loading items for pantry $id")
-                                val itemsResult = repository.getAllPantryItems(id)
-                                when (itemsResult) {
-                                    is ApiResult.Success -> {
-                                        Log.d("PantryViewModel", "Pantry $id has ${itemsResult.data.size} items")
-                                        _pantryItemCounts.value = _pantryItemCounts.value.toMutableMap().apply {
-                                            this[id] = itemsResult.data.size
-                                        }
-                                        Log.d("PantryViewModel", "Updated pantryItemCounts: $_pantryItemCounts")
-                                    }
-                                    is ApiResult.Error -> {
-                                        Log.e("PantryViewModel", "Error loading items for pantry $id: ${itemsResult.message}")
-                                    }
-                                    else -> {}
-                                }
-                            }
+                    countTracker.warmUp(
+                        result.data.mapNotNull { it.id }
+                    ) { pantryId ->
+                        when (val itemsResult = repository.getPantryItemCount(pantryId)) {
+                            is ApiResult.Success -> itemsResult.data
+                            else -> 0
                         }
                     }
                 }
@@ -130,6 +117,7 @@ class PantryViewModel : ViewModel() {
                         Log.d("PantryViewModel", "  Item ${item.id}: ${item.product?.name}, quantity=${item.quantity}")
                     }
                     _pantryItems.value = result.data
+                    countTracker.set(pantryId, result.data.size)
                 }
                 is ApiResult.Error -> {
                     Log.e("PantryViewModel", "Error loading pantry items: ${result.message}")
@@ -268,18 +256,6 @@ class PantryViewModel : ViewModel() {
             when (result) {
                 is ApiResult.Success -> {
                     loadPantryItems(pantryId)
-                    // Update item count
-                    viewModelScope.launch {
-                        val itemsResult = repository.getAllPantryItems(pantryId)
-                        when (itemsResult) {
-                            is ApiResult.Success -> {
-                                _pantryItemCounts.value = _pantryItemCounts.value.toMutableMap().apply {
-                                    this[pantryId] = itemsResult.data.size
-                                }
-                            }
-                            else -> {}
-                        }
-                    }
                     onSuccess()
                 }
                 is ApiResult.Error -> {
@@ -343,18 +319,6 @@ class PantryViewModel : ViewModel() {
             when (result) {
                 is ApiResult.Success -> {
                     loadPantryItems(pantryId)
-                    // Update item count
-                    viewModelScope.launch {
-                        val itemsResult = repository.getAllPantryItems(pantryId)
-                        when (itemsResult) {
-                            is ApiResult.Success -> {
-                                _pantryItemCounts.value = _pantryItemCounts.value.toMutableMap().apply {
-                                    this[pantryId] = itemsResult.data.size
-                                }
-                            }
-                            else -> {}
-                        }
-                    }
                     onSuccess()
                 }
                 is ApiResult.Error -> {

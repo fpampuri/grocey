@@ -4,7 +4,13 @@ import com.example.groceyapp.data.model.PantryItem
 import com.example.groceyapp.data.model.PantryItemCreate
 import com.example.groceyapp.data.model.PantryItemUpdate
 import retrofit2.Response
-import retrofit2.http.*
+import retrofit2.http.Body
+import retrofit2.http.DELETE
+import retrofit2.http.GET
+import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Path
+import retrofit2.http.Query
 
 /**
  * Pantry Item API service interface
@@ -20,7 +26,9 @@ interface PantryItemApiService {
     
     @GET("pantries/{pantryId}/items")
     suspend fun getAllPantryItems(
-        @Path("pantryId") pantryId: Int
+        @Path("pantryId") pantryId: Int,
+        @Query("page") page: Int? = null,
+        @Query("per_page") perPage: Int? = null
     ): Response<Any>
     
     @GET("pantries/{pantryId}/items/{itemId}")

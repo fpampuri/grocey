@@ -19,6 +19,30 @@ Aim to link each justification to the specific theories covered in class (e.g., 
 
 ## Logged Decisions
 
+### Adaptive Navigation Bar — 2024-11-18
+- **Change**: Refactored the Pantry/Products/Lists navigation to automatically switch between a horizontal bottom bar in portrait and a vertical rail pinned to the right edge in landscape, reversing the order to keep Lists at the top when the device rotates counter-clockwise.
+- **User Problem / Goal**: In landscape the old bottom bar wasted vertical space and forced users to stretch across the long edge, so the main actions were harder to hit and obscured content; the new rail keeps navigation reachable and frees space for data.
+- **Justification**: Material Design’s adaptive navigation guidance recommends switching between bottom bars and navigation rails across posture changes, and Fitts’s Law plus Nielsen’s “Flexibility and efficiency” heuristic support keeping high-frequency targets near the user’s active edge.
+- **Impact**: Users gain a consistent mental model (same destinations, predictable order) while getting more usable canvas in landscape and quicker thumb access to important sections.
+
+### Persistent Navigation State & Back Handling — 2024-11-19
+- **Change**: Stored the home destination and detail selections in saveable state plus a lightweight navigation path so rotating the phone keeps the user on the current screen; also wired the system back gesture to unwind one level (detail → collection) instead of snapping to the Lists home.
+- **User Problem / Goal**: Previously any rotation or back gesture dumped users at the Lists tab, forcing them to retrace steps—frustrating when reviewing a specific pantry or list.
+- **Justification**: Nielsen’s “User control and freedom” and Android posture guidelines stress preserving task context across configuration changes and making back affordances predictable.
+- **Impact**: Orientation changes feel seamless, the back button behaves like a breadcrumb, and users don’t lose work or mental context when rotating the device.
+
+### Manual Dark Mode Toggle — 2024-11-19
+- **Change**: Blended the settings drawer toggle with the app’s Material theme so the user can override the system palette in real time, while still defaulting to the device preference on first launch.
+- **User Problem / Goal**: Some users want to force dark/light mode regardless of OS settings; the old toggle was purely cosmetic and didn’t affect the UI.
+- **Justification**: Providing explicit control aligns with Nielsen’s “User control” heuristic and Android accessibility guidance that allows users to choose a comfortable contrast level.
+- **Impact**: The entire UI now re-themes instantly when the toggle flips, giving users reliable control without waiting for a system-wide change.
+
+### Tablet Navigation Re-layout — 2024-11-19
+- **Change**: Tablets skip the bottom/rail navigation and instead show a floating pill with the three primary destinations stacked under the existing FAB; the same layout is used in portrait and landscape so posture changes don’t shuffle controls.
+- **User Problem / Goal**: On large screens the old rail/bottom bar felt redundant, stole horizontal space, and forced long thumb stretches; the floating palette keeps navigation near the FAB cluster where tablet thumbs already rest.
+- **Justification**: Material responsive guidance encourages consolidating primary actions near the bottom-right “reach zone” on tablets, and keeping orientation changes from shuffling controls respects Fitts/Nielsen consistency heuristics.
+- **Impact**: Tablet users get a calmer canvas (no persistent bars), a predictable entry point regardless of rotation, and can swap between Pantry/Products/Lists without trekking across the screen.
+
 ### Theme & Color System — 2024-11-12
 - **Change**: Replaced the default Compose palette with the same primary/secondary colors used by the Vue frontend (brand greens, gold accents, neutral light/dark surfaces).
 - **User Problem / Goal**: Maintain cross-platform visual consistency so users instantly recognize the brand regardless of channel.

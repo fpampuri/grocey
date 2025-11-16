@@ -33,9 +33,12 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.NavigationRailItemDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,8 +48,11 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.unit.dp
 // Use colors from the theme (defined in ui.theme.Color.kt)
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.example.groceyapp.R
 import com.example.groceyapp.ui.components.CategoryCard
@@ -228,6 +234,71 @@ fun HomeBottomBar(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun HomeFloatingNav(
+    currentDestination: HomeDestination,
+    onDestinationSelected: (HomeDestination) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val containerColor = MaterialTheme.colorScheme.primary
+    val selectedColor = MaterialTheme.colorScheme.onPrimary
+    val unselectedColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f)
+    val indicatorColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f)
+
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(50),
+        color = containerColor,
+        tonalElevation = 6.dp,
+        shadowElevation = 6.dp
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            HomeDestination.entries.forEach { destination ->
+                val selected = destination == currentDestination
+                TextButton(
+                    onClick = { onDestinationSelected(destination) },
+                    colors = ButtonDefaults.textButtonColors(
+                        containerColor = if (selected) indicatorColor else Color.Transparent,
+                        contentColor = if (selected) selectedColor else unselectedColor
+                    ),
+                    shape = RoundedCornerShape(32.dp)
+                ) {
+                    Icon(
+                        imageVector = destination.icon,
+                        contentDescription = null,
+                        tint = if (selected) selectedColor else unselectedColor
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = stringResource(id = destination.labelRes),
+                        color = if (selected) selectedColor else unselectedColor
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun FabWithFloatingNav(
+    fab: @Composable () -> Unit,
+    nav: @Composable () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.End,
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        fab()
+        nav()
     }
 }
 

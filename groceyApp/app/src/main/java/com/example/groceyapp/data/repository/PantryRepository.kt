@@ -86,18 +86,37 @@ class PantryRepository {
         }
     }
     
-    suspend fun getAllPantryItems(pantryId: Int): ApiResult<List<PantryItem>> {
+    suspend fun getAllPantryItems(
+        pantryId: Int,
+        page: Int? = null,
+        perPage: Int? = null
+    ): ApiResult<List<PantryItem>> {
         return try {
-            val response = pantryItemApi.getAllPantryItems(pantryId)
+            val response = pantryItemApi.getAllPantryItems(pantryId, page, perPage)
             if (response.isSuccessful) {
                 val body = response.body()
                 if (body != null) {
-                    // Parse the paginated response manually
-                    val gson = Gson()
-                    val json = gson.toJson(body)
-                    val typeToken = object : TypeToken<PaginatedResponse<PantryItem>>() {}.type
-                    val paginatedResponse: PaginatedResponse<PantryItem> = gson.fromJson(json, typeToken)
+                    val paginatedResponse = parsePantryItems(body)
                     ApiResult.Success(paginatedResponse.data)
+                } else {
+                    ApiResult.Error("Empty response body")
+                }
+            } else {
+                ApiResult.Error("Error: ${response.code()} ${response.message()}")
+            }
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Unknown error")
+        }
+    }
+
+    suspend fun getPantryItemCount(pantryId: Int): ApiResult<Int> {
+        return try {
+            val response = pantryItemApi.getAllPantryItems(pantryId, page = 1, perPage = 1)
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body != null) {
+                    val paginatedResponse = parsePantryItems(body)
+                    ApiResult.Success(paginatedResponse.pagination.total)
                 } else {
                     ApiResult.Error("Empty response body")
                 }
@@ -125,5 +144,12 @@ class PantryRepository {
         return ApiHelper.safeApiCallUnit {
             pantryItemApi.deletePantryItem(pantryId, itemId)
         }
+    }
+
+    private fun parsePantryItems(body: Any): PaginatedResponse<PantryItem> {
+        val gson = Gson()
+        val json = gson.toJson(body)
+        val typeToken = object : TypeToken<PaginatedResponse<PantryItem>>() {}.type
+        return gson.fromJson(json, typeToken)
     }
 }

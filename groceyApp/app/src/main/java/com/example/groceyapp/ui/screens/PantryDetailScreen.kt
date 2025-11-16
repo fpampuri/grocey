@@ -39,12 +39,14 @@ import com.example.groceyapp.ui.components.PantryItemCard
 import com.example.groceyapp.ui.components.PantryItemCardData
 import com.example.groceyapp.ui.components.general.EmptyState
 import com.example.groceyapp.ui.components.general.PrimaryFab
+import com.example.groceyapp.ui.components.general.FabWithFloatingNav
 import com.example.groceyapp.ui.components.dialogs.AddPantryItemDialog
 import com.example.groceyapp.ui.components.dialogs.ConfirmDeleteDialog
 import com.example.groceyapp.data.model.Category
 import com.example.groceyapp.data.model.PantryItem
 import com.example.groceyapp.data.model.Pantry
 import com.example.groceyapp.ui.components.general.AdaptiveNavigationContainer
+import com.example.groceyapp.ui.screens.HomeFloatingNav
 
 /**
  * Detail screen for a pantry
@@ -66,12 +68,16 @@ fun PantryDetailScreen(
     onRename: (Long?) -> Unit = {},
     onDelete: (Long?) -> Unit = {},
     onAddProduct: (productName: String, categoryId: Int?, quantity: Double) -> Unit = { _, _, _ -> },
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isTablet: Boolean = false
 ) {
     var showAddProductDialog by remember { mutableStateOf(false) }
     var itemToDelete by remember { mutableStateOf<PantryItemCardData?>(null) }
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val useRailNavigation = isLandscape && !isTablet
+    val showBottomNav = !isTablet && !isLandscape
+    val showFloatingNav = isTablet
     
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -109,13 +115,28 @@ fun PantryDetailScreen(
             )
         },
         floatingActionButton = {
-            PrimaryFab(
-                contentDescriptionRes = R.string.add_pantry_product,
-                onClick = { showAddProductDialog = true }
-            )
+            val fabContent: @Composable () -> Unit = {
+                PrimaryFab(
+                    contentDescriptionRes = R.string.add_pantry_product,
+                    onClick = { showAddProductDialog = true }
+                )
+            }
+            if (showFloatingNav) {
+                FabWithFloatingNav(
+                    fab = fabContent,
+                    nav = {
+                        HomeFloatingNav(
+                            currentDestination = currentDestination,
+                            onDestinationSelected = onDestinationSelected
+                        )
+                    }
+                )
+            } else {
+                fabContent()
+            }
         },
         bottomBar = {
-            if (!isLandscape) {
+            if (showBottomNav) {
                 HomeBottomBar(
                     currentDestination = currentDestination,
                     onDestinationSelected = onDestinationSelected
@@ -190,15 +211,17 @@ fun PantryDetailScreen(
         }
 
         AdaptiveNavigationContainer(
-            isLandscape = isLandscape,
+            isLandscape = useRailNavigation,
             paddingValues = paddingValues,
-            navigationRail = {
-                HomeBottomBar(
-                    currentDestination = currentDestination,
-                    onDestinationSelected = onDestinationSelected,
-                    isVertical = true
-                )
-            },
+            navigationRail = if (useRailNavigation) {
+                {
+                    HomeBottomBar(
+                        currentDestination = currentDestination,
+                        onDestinationSelected = onDestinationSelected,
+                        isVertical = true
+                    )
+                }
+            } else null,
             content = contentArea
         )
     }
