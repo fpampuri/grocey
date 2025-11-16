@@ -54,9 +54,13 @@ import com.example.groceyapp.ui.theme.GroceyAppTheme
 import com.example.groceyapp.ui.viewmodel.AuthViewModel
 import com.example.groceyapp.ui.viewmodel.ProductViewModel
 import com.example.groceyapp.ui.viewmodel.ShoppingListViewModel
+import com.example.groceyapp.ui.viewmodel.PantryViewModel
 import com.example.groceyapp.ui.utils.mapIconToString
 import com.example.groceyapp.ui.utils.mapStringToIcon
 import com.example.groceyapp.utils.LocaleHelper
+import com.example.groceyapp.ui.screens.PantryDetailScreen
+import com.example.groceyapp.ui.components.dialogs.CreatePantryDialog
+import com.example.groceyapp.ui.components.dialogs.EditPantryDialog
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
@@ -91,6 +95,7 @@ fun ListsApp() {
     val authViewModel: AuthViewModel = viewModel()
     val shoppingListViewModel: ShoppingListViewModel = viewModel()
     val productViewModel: ProductViewModel = viewModel()
+    val pantryViewModel: PantryViewModel = viewModel()
     
     // Collect authentication state
     val isAuthenticated by authViewModel.isAuthenticated.collectAsState()
@@ -104,6 +109,7 @@ fun ListsApp() {
     var currentDestination by remember { mutableStateOf(HomeDestination.Lists) }
     var selectedListId by remember { mutableStateOf<String?>(null) }
     var selectedCategory by remember { mutableStateOf<CategoryCardData?>(null) }
+    var selectedPantry by remember { mutableStateOf<CategoryCardData?>(null) }
     var isMenuOpen by remember { mutableStateOf(LocaleHelper.shouldOpenMenuOnStart(context)) }
     
     // Settings state
@@ -113,6 +119,7 @@ fun ListsApp() {
     // Shopping lists from API
     val apiLists by shoppingListViewModel.lists.collectAsState()
     val itemCounts by shoppingListViewModel.listItemCounts.collectAsState()
+    val pantryItemCounts by pantryViewModel.pantryItemCounts.collectAsState()
     var showCreateListDialog by remember { mutableStateOf(false) }
     var showDeleteListDialog by remember { mutableStateOf(false) }
     var showRenameListDialog by remember { mutableStateOf(false) }
@@ -128,9 +135,20 @@ fun ListsApp() {
     var categoryToDelete by remember { mutableStateOf<Int?>(null) }
     var categoryToEdit by remember { mutableStateOf<Triple<Int, String, androidx.compose.ui.graphics.vector.ImageVector?>?>(null) }
     
+    // Pantry dialog states
+    var showCreatePantryDialog by remember { mutableStateOf(false) }
+    var showDeletePantryDialog by remember { mutableStateOf(false) }
+    var showEditPantryDialog by remember { mutableStateOf(false) }
+    var pantryToDelete by remember { mutableStateOf<Int?>(null) }
+    var pantryToEdit by remember { mutableStateOf<Triple<Int, String, androidx.compose.ui.graphics.vector.ImageVector?>?>(null) }
+    
     // Products and categories from API
     val products by productViewModel.products.collectAsState()
     val categories by productViewModel.categories.collectAsState()
+    
+    // Pantries and pantry items from API
+    val pantries by pantryViewModel.pantries.collectAsState()
+    val pantryItems by pantryViewModel.pantryItems.collectAsState()
 
     // Snackbar + coroutine scope for showing feedback
     val snackbarHostState = remember { SnackbarHostState() }
@@ -159,6 +177,7 @@ fun ListsApp() {
             shoppingListViewModel.loadShoppingLists()
             productViewModel.loadProducts()
             productViewModel.loadCategories()
+            pantryViewModel.loadPantries()
         }
     }
     
@@ -202,6 +221,31 @@ fun ListsApp() {
                     ?.equals(Constants.MISC_CATEGORY_META_VALUE, ignoreCase = true) == true)
         )
     }
+    
+    // Convert API pantries to UI format
+    val pantryCards = pantries.map { pantry ->
+        // Extract icon from metadata
+        val iconName = pantry.metadata?.get("icon") as? String
+        Log.d("MainActivity", "Pantry ${pantry.name} has icon metadata: $iconName, id: ${pantry.id}")
+        val icon = mapStringToIcon(iconName)
+        
+        // Get item count for this pantry
+        val itemCount = pantry.id?.let { pantryItemCounts[it] } ?: 0
+        Log.d("MainActivity", "Pantry ${pantry.name} (id: ${pantry.id}) item count: $itemCount, pantryItemCounts: $pantryItemCounts")
+        val subtitle = if (itemCount == 1) "$itemCount product" else "$itemCount products"
+        
+        // For pantries, we show them as cards like categories
+        com.example.groceyapp.ui.components.CategoryCardData(
+            id = pantry.id?.toLong(),
+            title = pantry.name,
+            subtitle = subtitle,
+            leadingIcon = icon,
+            products = emptyList(),
+            isProtected = false
+        )
+    }
+    
+    Log.d("MainActivity", "Total pantries loaded: ${pantries.size}, pantryCards: ${pantryCards.size}")
 
     // Show authentication screen if not authenticated
     if (!isAuthenticated) {
@@ -228,6 +272,14 @@ fun ListsApp() {
         val listIdInt = selectedList?.id?.toIntOrNull()
         if (listIdInt != null) {
             shoppingListViewModel.loadListItems(listIdInt)
+        }
+    }
+    
+    // When a pantry is selected, load its items from API
+    LaunchedEffect(selectedPantry?.id) {
+        val pantryIdInt = selectedPantry?.id?.toInt()
+        if (pantryIdInt != null) {
+            pantryViewModel.loadPantryItems(pantryIdInt)
         }
     }
 
@@ -334,6 +386,8 @@ fun ListsApp() {
                 categoryData = category,
                 products = products,
                 categories = categories,
+                lists = apiLists,
+                pantries = pantries,
                 onBackClick = { selectedCategory = null },
                 onProductMoveToCategory = { productId, newCategoryId ->
                     // Find the product to get its current name
@@ -358,11 +412,41 @@ fun ListsApp() {
                         )
                     }
                 },
-                onProductAddToList = { productId ->
-                    // TODO: Handle add to list
+                onProductAddToList = { listId, productId, quantity ->
+                    shoppingListViewModel.addItemToList(
+                        listId = listId,
+                        productId = productId,
+                        quantity = quantity,
+                        onSuccess = {
+                            // Show success feedback
+                            coroutineScope.launch {
+                                lastSnackbarIsSuccess = true
+                                snackbarHostState.showSnackbar(
+                                    message = context.getString(R.string.pantry_item_added),
+                                    duration = SnackbarDuration.Short
+                                )
+                                lastSnackbarIsSuccess = false
+                            }
+                        }
+                    )
                 },
-                onProductAddToPantry = { productId ->
-                    // TODO: Handle add to pantry
+                onProductAddToPantry = { pantryId, productId, quantity ->
+                    pantryViewModel.addItemToPantry(
+                        pantryId = pantryId,
+                        productId = productId,
+                        quantity = quantity,
+                        onSuccess = {
+                            // Show success feedback
+                            coroutineScope.launch {
+                                lastSnackbarIsSuccess = true
+                                snackbarHostState.showSnackbar(
+                                    message = context.getString(R.string.pantry_item_added),
+                                    duration = SnackbarDuration.Short
+                                )
+                                lastSnackbarIsSuccess = false
+                            }
+                        }
+                    )
                 },
                 onProductDelete = { productId ->
                     productViewModel.deleteProduct(
@@ -422,6 +506,125 @@ fun ListsApp() {
                     selectedCategory = null  // Go back to main view when switching tabs
                 }
             )
+        } else if (selectedPantry != null) {
+            // Show pantry detail screen
+            val pantry = selectedPantry!!
+            PantryDetailScreen(
+                pantryData = pantry,
+                pantries = pantries,
+                categories = categories,
+                pantryItems = pantryItems,
+                onBackClick = { selectedPantry = null },
+                onItemQuantityChange = { itemId, newQty ->
+                    val pantryIdInt = pantry.id?.toInt()
+                    if (pantryIdInt != null) {
+                        pantryViewModel.updateItemQuantity(pantryIdInt, itemId, newQty)
+                    }
+                },
+                onItemMoveToPantry = { itemId, newPantryId ->
+                    val currentPantryId = pantry.id?.toInt()
+                    if (currentPantryId != null) {
+                        // Find the item to get its product ID and current quantity
+                        val item = pantryItems.find { it.id == itemId }
+                        item?.let {
+                            // Remove from current pantry
+                            pantryViewModel.removeItemFromPantry(currentPantryId, itemId) {
+                                // Add to new pantry
+                                pantryViewModel.addItemToPantry(
+                                    pantryId = newPantryId,
+                                    productId = it.product.id ?: return@removeItemFromPantry,
+                                    quantity = it.quantity,
+                                    onSuccess = {
+                                        coroutineScope.launch {
+                                            lastSnackbarIsSuccess = true
+                                            snackbarHostState.showSnackbar(
+                                                message = "Item moved to pantry",
+                                                duration = SnackbarDuration.Short
+                                            )
+                                            lastSnackbarIsSuccess = false
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    }
+                },
+                onItemDelete = { itemId ->
+                    val pantryIdInt = pantry.id?.toInt()
+                    if (pantryIdInt != null) {
+                        pantryViewModel.removeItemFromPantry(pantryIdInt, itemId) {
+                            coroutineScope.launch {
+                                lastSnackbarIsSuccess = false
+                                snackbarHostState.showSnackbar(
+                                    message = context.getString(R.string.item_removed),
+                                    duration = SnackbarDuration.Short
+                                )
+                            }
+                        }
+                    }
+                },
+                currentDestination = currentDestination,
+                onDestinationSelected = { destination ->
+                    currentDestination = destination
+                    selectedPantry = null
+                },
+                onRename = { pantryId ->
+                    pantryId?.let { id ->
+                        val apiPantry = pantries.find { p -> p.id == id.toInt() }
+                        val pantryCard = pantryCards.find { card -> card.id == id }
+                        apiPantry?.let { p ->
+                            p.id?.let { pId ->
+                                pantryToEdit = Triple(pId, p.name, pantryCard?.leadingIcon)
+                                showEditPantryDialog = true
+                            }
+                        }
+                    }
+                },
+                onDelete = { pantryId ->
+                    pantryId?.let {
+                        pantryToDelete = it.toInt()
+                        showDeletePantryDialog = true
+                    }
+                },
+                onAddProduct = { productName, maybeCategoryId, quantity ->
+                    // Resolve category
+                    val resolvedCategoryId: Int? = maybeCategoryId ?: run {
+                        val misc = categories.find { cat ->
+                            cat.name.equals(Constants.MISCELLANEOUS_CATEGORY_NAME, ignoreCase = true) ||
+                                ((cat.metadata?.get(Constants.MISC_CATEGORY_META_KEY) as? String)
+                                    ?.equals(Constants.MISC_CATEGORY_META_VALUE, ignoreCase = true) == true)
+                        }
+                        misc?.id
+                    }
+                    
+                    // Create product, then add as pantry item
+                    productViewModel.createProduct(
+                        name = productName,
+                        categoryId = resolvedCategoryId,
+                        onSuccess = { createdProduct ->
+                            val pantryIdInt = pantry.id?.toInt()
+                            if (pantryIdInt != null && createdProduct.id != null) {
+                                pantryViewModel.addItemToPantry(
+                                    pantryId = pantryIdInt,
+                                    productId = createdProduct.id,
+                                    quantity = quantity,
+                                    onSuccess = {
+                                        coroutineScope.launch {
+                                            lastSnackbarIsSuccess = true
+                                            val msg = context.getString(R.string.pantry_item_added, createdProduct.name)
+                                            snackbarHostState.showSnackbar(
+                                                message = msg,
+                                                duration = SnackbarDuration.Short
+                                            )
+                                            lastSnackbarIsSuccess = false
+                                        }
+                                    }
+                                )
+                            }
+                        }
+                    )
+                }
+            )
         } else {
             // Show main app with bottom navigation
             Scaffold(
@@ -438,8 +641,8 @@ fun ListsApp() {
                     when (currentDestination) {
                         HomeDestination.Pantry -> {
                             PrimaryFab(
-                                contentDescriptionRes = R.string.add_pantry_item,
-                                onClick = { /* TODO: pantry add action */ }
+                                contentDescriptionRes = R.string.add_pantry,
+                                onClick = { showCreatePantryDialog = true }
                             )
                         }
                         HomeDestination.Products -> {
@@ -488,7 +691,29 @@ fun ListsApp() {
                 when (currentDestination) {
                     HomeDestination.Pantry -> PantryScreen(
                         modifier = contentModifier,
-                        onMenuClick = { isMenuOpen = true }
+                        items = pantryCards,
+                        onMenuClick = { isMenuOpen = true },
+                        onPantryDelete = { pantryId ->
+                            pantryId?.let {
+                                pantryToDelete = it.toInt()
+                                showDeletePantryDialog = true
+                            }
+                        },
+                        onPantryRename = { pantryId ->
+                            pantryId?.let { id ->
+                                val pantry = pantries.find { p -> p.id == id.toInt() }
+                                val pantryCard = pantryCards.find { card -> card.id == id }
+                                pantry?.let { p ->
+                                    p.id?.let { pId ->
+                                        pantryToEdit = Triple(pId, p.name, pantryCard?.leadingIcon)
+                                        showEditPantryDialog = true
+                                    }
+                                }
+                            }
+                        },
+                        onPantryClick = { pantryData ->
+                            selectedPantry = pantryData
+                        }
                     )
                     HomeDestination.Products -> ProductsScreen(
                         modifier = contentModifier,
@@ -792,6 +1017,105 @@ fun ListsApp() {
                             coroutineScope.launch {
                                 lastSnackbarIsSuccess = true
                                 val msg = context.getString(R.string.list_updated, newName)
+                                snackbarHostState.showSnackbar(
+                                    message = msg,
+                                    duration = SnackbarDuration.Short
+                                )
+                                lastSnackbarIsSuccess = false
+                            }
+                        }
+                    )
+                }
+            )
+        }
+        
+        // Create Pantry dialog
+        if (showCreatePantryDialog && currentDestination == HomeDestination.Pantry) {
+            CreatePantryDialog(
+                onDismiss = { showCreatePantryDialog = false },
+                onCreate = { name, icon ->
+                    val iconName = mapIconToString(icon)
+                    pantryViewModel.createPantry(
+                        name = name,
+                        metadata = mapOf("icon" to iconName),
+                        onSuccess = { createdPantry ->
+                            showCreatePantryDialog = false
+                            pantryViewModel.loadPantries()
+                            coroutineScope.launch {
+                                lastSnackbarIsSuccess = true
+                                val msg = context.getString(R.string.pantry_created, createdPantry.name)
+                                snackbarHostState.showSnackbar(
+                                    message = msg,
+                                    duration = SnackbarDuration.Short
+                                )
+                                lastSnackbarIsSuccess = false
+                            }
+                        }
+                    )
+                }
+            )
+        }
+        
+        // Delete Pantry confirmation dialog
+        if (showDeletePantryDialog && pantryToDelete != null) {
+            val pantryName = pantries.find { it.id == pantryToDelete }?.name ?: "this pantry"
+            ConfirmDeleteDialog(
+                title = stringResource(id = R.string.delete_pantry),
+                message = stringResource(id = R.string.delete_pantry_message, pantryName),
+                onDismiss = {
+                    showDeletePantryDialog = false
+                    pantryToDelete = null
+                },
+                onConfirm = {
+                    val deletedName = pantries.find { it.id == pantryToDelete }?.name ?: "Pantry"
+                    pantryToDelete?.let { id ->
+                        pantryViewModel.deletePantry(
+                            id = id,
+                            onSuccess = {
+                                showDeletePantryDialog = false
+                                pantryToDelete = null
+                                coroutineScope.launch {
+                                    lastSnackbarIsSuccess = false
+                                    val msg = context.getString(R.string.pantry_deleted, deletedName)
+                                    snackbarHostState.showSnackbar(
+                                        message = msg,
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
+                            }
+                        )
+                    }
+                }
+            )
+        }
+        
+        // Edit Pantry dialog
+        if (showEditPantryDialog && pantryToEdit != null) {
+            val (pantryId, pantryName, pantryIcon) = pantryToEdit!!
+            EditPantryDialog(
+                currentName = pantryName,
+                currentIcon = pantryIcon,
+                onDismiss = {
+                    showEditPantryDialog = false
+                    pantryToEdit = null
+                },
+                onUpdate = { newName, newIcon ->
+                    val pantry = pantries.find { it.id == pantryId }
+                    val iconName = mapIconToString(newIcon)
+                    val updatedMetadata = (pantry?.metadata ?: emptyMap()).toMutableMap().apply {
+                        put("icon", iconName)
+                    }
+                    
+                    pantryViewModel.updatePantry(
+                        id = pantryId,
+                        name = newName,
+                        metadata = updatedMetadata,
+                        onSuccess = {
+                            showEditPantryDialog = false
+                            pantryToEdit = null
+                            coroutineScope.launch {
+                                lastSnackbarIsSuccess = true
+                                val msg = context.getString(R.string.pantry_updated, newName)
                                 snackbarHostState.showSnackbar(
                                     message = msg,
                                     duration = SnackbarDuration.Short

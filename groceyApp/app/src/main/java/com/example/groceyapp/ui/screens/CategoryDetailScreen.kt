@@ -49,10 +49,12 @@ fun CategoryDetailScreen(
     categoryData: CategoryCardData,
     products: List<com.example.groceyapp.data.model.Product>,
     categories: List<com.example.groceyapp.data.model.Category>,
+    lists: List<com.example.groceyapp.data.model.ShoppingList>,
+    pantries: List<com.example.groceyapp.data.model.Pantry>,
     onBackClick: () -> Unit = {},
     onProductMoveToCategory: (Int, Int) -> Unit = { _, _ -> },
-    onProductAddToList: (String) -> Unit = {},
-    onProductAddToPantry: (String) -> Unit = {},
+    onProductAddToList: (Int, Int, Double) -> Unit = { _, _, _ -> },
+    onProductAddToPantry: (Int, Int, Double) -> Unit = { _, _, _ -> },
     onProductDelete: (Int) -> Unit = {},
     onProductCreate: (String, Int) -> Unit = { _, _ -> },
     onCategoryRename: (Long?) -> Unit = {},
@@ -65,6 +67,8 @@ fun CategoryDetailScreen(
     var showMoveCategoryDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showAddProductDialog by remember { mutableStateOf(false) }
+    var showAddToListDialog by remember { mutableStateOf(false) }
+    var showAddToPantryDialog by remember { mutableStateOf(false) }
     var selectedProduct by remember { mutableStateOf<com.example.groceyapp.data.model.Product?>(null) }
     
     // Filter products for this category
@@ -171,8 +175,14 @@ fun CategoryDetailScreen(
                             selectedProduct = product
                             showMoveCategoryDialog = true
                         },
-                        onAddToList = { onProductAddToList(product.id?.toString() ?: "") },
-                        onAddToPantry = { onProductAddToPantry(product.id?.toString() ?: "") },
+                        onAddToList = { 
+                            selectedProduct = product
+                            showAddToListDialog = true
+                        },
+                        onAddToPantry = { 
+                            selectedProduct = product
+                            showAddToPantryDialog = true
+                        },
                         onDeleteProduct = {
                             selectedProduct = product
                             showDeleteDialog = true
@@ -237,6 +247,44 @@ fun CategoryDetailScreen(
                     onProductCreate(productName, categoryId)
                 }
                 showAddProductDialog = false
+            }
+        )
+    }
+    
+    // Add to List Dialog (outside Scaffold)
+    if (showAddToListDialog && selectedProduct != null) {
+        com.example.groceyapp.ui.components.dialogs.AddToListDialog(
+            lists = lists,
+            productName = selectedProduct!!.name,
+            onDismiss = {
+                showAddToListDialog = false
+                selectedProduct = null
+            },
+            onAdd = { listId, quantity ->
+                selectedProduct?.id?.let { productId ->
+                    onProductAddToList(listId, productId, quantity)
+                }
+                showAddToListDialog = false
+                selectedProduct = null
+            }
+        )
+    }
+    
+    // Add to Pantry Dialog (outside Scaffold)
+    if (showAddToPantryDialog && selectedProduct != null) {
+        com.example.groceyapp.ui.components.dialogs.AddToPantryDialog(
+            pantries = pantries,
+            productName = selectedProduct!!.name,
+            onDismiss = {
+                showAddToPantryDialog = false
+                selectedProduct = null
+            },
+            onAdd = { pantryId, quantity ->
+                selectedProduct?.id?.let { productId ->
+                    onProductAddToPantry(pantryId, productId, quantity)
+                }
+                showAddToPantryDialog = false
+                selectedProduct = null
             }
         )
     }

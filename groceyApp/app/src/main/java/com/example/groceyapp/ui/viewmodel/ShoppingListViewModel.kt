@@ -284,10 +284,14 @@ class ShoppingListViewModel : ViewModel() {
         onSuccess: () -> Unit = {}
     ) {
         viewModelScope.launch {
+            // Find the current item to get its unit
+            val currentItem = _listItems.value.find { it.id == itemId }
+            val unit = currentItem?.unit ?: "units"
+            
             val result = repository.updateListItem(
                 listId,
                 itemId,
-                ListItemUpdate(quantity = quantity)
+                ListItemUpdate(quantity = quantity, unit = unit)
             )
             
             when (result) {

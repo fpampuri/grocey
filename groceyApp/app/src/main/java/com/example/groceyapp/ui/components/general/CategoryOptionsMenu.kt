@@ -28,6 +28,8 @@ fun CategoryOptionsMenu(
     categoryId: Long?,
     isProtected: Boolean = false,
     modifier: Modifier = Modifier,
+    editTextRes: Int? = null,
+    deleteTextRes: Int? = null,
     onRename: (Long?) -> Unit = {},
     onDelete: (Long?) -> Unit = {}
 ) {
@@ -58,7 +60,7 @@ fun CategoryOptionsMenu(
             offset = DpOffset(x = 0.dp, y = 4.dp)
         ) {
             DropdownMenuItem(
-                text = { Text(stringResource(R.string.edit_category)) },
+                text = { Text(stringResource(editTextRes ?: R.string.edit_category)) },
                 onClick = {
                     showMenu = false
                     onRename(categoryId)
@@ -69,7 +71,7 @@ fun CategoryOptionsMenu(
             )
 
             DropdownMenuItem(
-                text = { Text(stringResource(R.string.delete_category)) },
+                text = { Text(stringResource(deleteTextRes ?: R.string.delete_category)) },
                 onClick = {
                     showMenu = false
                     onDelete(categoryId)

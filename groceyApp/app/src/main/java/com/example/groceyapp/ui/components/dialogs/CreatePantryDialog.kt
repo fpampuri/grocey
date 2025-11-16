@@ -1,0 +1,29 @@
+package com.example.groceyapp.ui.components.dialogs
+
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Inventory2
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import com.example.groceyapp.R
+import com.example.groceyapp.ui.components.general.GenericInputDialog
+
+/**
+ * Dialog for creating a new pantry
+ */
+@Composable
+fun CreatePantryDialog(
+    onDismiss: () -> Unit,
+    onCreate: (name: String, icon: ImageVector) -> Unit
+) {
+    GenericInputDialog(
+        title = stringResource(id = R.string.add_pantry),
+        inputLabel = stringResource(id = R.string.pantry_name_hint),
+        confirmButtonText = stringResource(id = R.string.create),
+        showIconPicker = true,
+        onDismiss = onDismiss,
+        onConfirm = { name, icon ->
+            onCreate(name, icon ?: Icons.Filled.Inventory2)
+        }
+    )
+}

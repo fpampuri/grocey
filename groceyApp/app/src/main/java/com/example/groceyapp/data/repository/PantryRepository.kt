@@ -3,6 +3,8 @@ package com.example.groceyapp.data.repository
 import com.example.groceyapp.data.api.ApiClient
 import com.example.groceyapp.data.api.ApiHelper
 import com.example.groceyapp.data.model.*
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 /**
  * Pantry repository
@@ -22,8 +24,25 @@ class PantryRepository {
     }
     
     suspend fun getAllPantries(): ApiResult<List<Pantry>> {
-        return ApiHelper.safeApiCall {
-            pantryApi.getAllPantries()
+        return try {
+            val response = pantryApi.getAllPantries()
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body != null) {
+                    // Parse the paginated response manually
+                    val gson = Gson()
+                    val json = gson.toJson(body)
+                    val typeToken = object : TypeToken<PaginatedResponse<Pantry>>() {}.type
+                    val paginatedResponse: PaginatedResponse<Pantry> = gson.fromJson(json, typeToken)
+                    ApiResult.Success(paginatedResponse.data)
+                } else {
+                    ApiResult.Error("Empty response body")
+                }
+            } else {
+                ApiResult.Error("Error: ${response.code()} ${response.message()}")
+            }
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Unknown error")
         }
     }
     
@@ -68,8 +87,25 @@ class PantryRepository {
     }
     
     suspend fun getAllPantryItems(pantryId: Int): ApiResult<List<PantryItem>> {
-        return ApiHelper.safeApiCall {
-            pantryItemApi.getAllPantryItems(pantryId)
+        return try {
+            val response = pantryItemApi.getAllPantryItems(pantryId)
+            if (response.isSuccessful) {
+                val body = response.body()
+                if (body != null) {
+                    // Parse the paginated response manually
+                    val gson = Gson()
+                    val json = gson.toJson(body)
+                    val typeToken = object : TypeToken<PaginatedResponse<PantryItem>>() {}.type
+                    val paginatedResponse: PaginatedResponse<PantryItem> = gson.fromJson(json, typeToken)
+                    ApiResult.Success(paginatedResponse.data)
+                } else {
+                    ApiResult.Error("Empty response body")
+                }
+            } else {
+                ApiResult.Error("Error: ${response.code()} ${response.message()}")
+            }
+        } catch (e: Exception) {
+            ApiResult.Error(e.message ?: "Unknown error")
         }
     }
     

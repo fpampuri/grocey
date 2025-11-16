@@ -29,10 +29,12 @@ data class CategoryCardData(
 @Composable
 fun CategoryCard(
     data: CategoryCardData,
-    modifier: Modifier = Modifier,
     onDelete: (Long?) -> Unit = {},
     onRename: (Long?) -> Unit = {},
-    onClick: (CategoryCardData) -> Unit = {}
+    onClick: (CategoryCardData) -> Unit = {},
+    editTextRes: Int? = null,
+    deleteTextRes: Int? = null,
+    modifier: Modifier = Modifier
 ) {
     CollectionCardShell(
         onClick = { onClick(data) },
@@ -66,6 +68,8 @@ fun CategoryCard(
         com.example.groceyapp.ui.components.general.CategoryOptionsMenu(
             categoryId = data.id,
             isProtected = data.isProtected,
+            editTextRes = editTextRes,
+            deleteTextRes = deleteTextRes,
             onRename = onRename,
             onDelete = onDelete,
             modifier = Modifier.size(24.dp)

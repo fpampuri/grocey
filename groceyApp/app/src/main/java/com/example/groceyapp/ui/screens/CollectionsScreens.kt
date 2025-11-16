@@ -101,7 +101,10 @@ fun ListsScreen(
 fun PantryScreen(
     modifier: Modifier = Modifier,
     items: List<CategoryCardData>? = null,
-    onMenuClick: () -> Unit = {}
+    onMenuClick: () -> Unit = {},
+    onPantryDelete: (Long?) -> Unit = {},
+    onPantryRename: (Long?) -> Unit = {},
+    onPantryClick: (CategoryCardData) -> Unit = {}
 ) {
     val resolvedItems = items ?: emptyList()
 
@@ -114,7 +117,16 @@ fun PantryScreen(
                 category.products.any { product -> product.contains(q, ignoreCase = true) }
         },
         itemKey = { it.title },
-        itemContent = { item -> CategoryCard(item) },
+        itemContent = { item -> 
+            CategoryCard(
+                item,
+                onDelete = onPantryDelete,
+                onRename = onPantryRename,
+                onClick = onPantryClick,
+                editTextRes = R.string.edit_pantry,
+                deleteTextRes = R.string.delete_pantry
+            )
+        },
         emptyIcon = Icons.Filled.Inventory2,
         emptyMessageRes = R.string.empty_pantry_message,
         emptyHintRes = R.string.empty_pantry_hint

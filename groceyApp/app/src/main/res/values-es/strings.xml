@@ -137,4 +137,23 @@
     <string name="add_to_pantry">Agregar a Despensa</string>
     <string name="move_to_category_title">Seleccionar Categoría</string>
     <string name="move_product_to_category">Mover "%1$s" a:</string>
+    
+    <!-- Pantry strings -->
+    <string name="add_pantry">Agregar Despensa</string>
+    <string name="pantry_name_hint">Nombre de despensa</string>
+    <string name="edit_pantry">Editar Despensa</string>
+    <string name="delete_pantry">Eliminar Despensa</string>
+    <string name="delete_pantry_message">¿Estás seguro de que quieres eliminar "%1$s"? Esta acción no se puede deshacer y todos los artículos en esta despensa también serán eliminados.</string>
+    <string name="pantry_created">Despensa creada: %1$s</string>
+    <string name="pantry_updated">Despensa actualizada: %1$s</string>
+    <string name="pantry_deleted">Despensa eliminada: %1$s</string>
+    <string name="add_pantry_product">Agregar Producto a Despensa</string>
+    <string name="quantity_label">Cantidad</string>
+    <string name="quantity_hint">Ingresa cantidad</string>
+    <string name="pantry_item_added">Agregado a despensa: %1$s</string>
+    <string name="move_to_pantry">Mover a Despensa</string>
+    <string name="select_pantry">Seleccionar Despensa</string>
+    <string name="move_product_to_pantry">Mover "%1$s" a despensa:</string>
+    <string name="empty_pantry_detail_message">Esta despensa está vacía</string>
+    <string name="empty_pantry_detail_hint">Toca el botón + para agregar productos</string>
 </resources>

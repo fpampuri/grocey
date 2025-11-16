@@ -137,4 +137,23 @@
     <string name="add_to_pantry">Add to Pantry</string>
     <string name="move_to_category_title">Select Category</string>
     <string name="move_product_to_category">Move "%1$s" to:</string>
+    
+    <!-- Pantry strings -->
+    <string name="add_pantry">Add Pantry</string>
+    <string name="pantry_name_hint">Pantry name</string>
+    <string name="edit_pantry">Edit Pantry</string>
+    <string name="delete_pantry">Delete Pantry</string>
+    <string name="delete_pantry_message">Are you sure you want to delete "%1$s"? This action cannot be undone and all items in this pantry will also be deleted.</string>
+    <string name="pantry_created">Pantry created: %1$s</string>
+    <string name="pantry_updated">Pantry updated: %1$s</string>
+    <string name="pantry_deleted">Pantry deleted: %1$s</string>
+    <string name="add_pantry_product">Add Product to Pantry</string>
+    <string name="quantity_label">Quantity</string>
+    <string name="quantity_hint">Enter quantity</string>
+    <string name="pantry_item_added">Added to pantry: %1$s</string>
+    <string name="move_to_pantry">Move to Pantry</string>
+    <string name="select_pantry">Select Pantry</string>
+    <string name="move_product_to_pantry">Move "%1$s" to pantry:</string>
+    <string name="empty_pantry_detail_message">This pantry is empty</string>
+    <string name="empty_pantry_detail_hint">Tap the + button to add products</string>
 </resources>

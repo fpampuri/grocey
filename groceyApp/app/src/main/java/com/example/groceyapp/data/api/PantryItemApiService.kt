@@ -21,7 +21,7 @@ interface PantryItemApiService {
     @GET("pantries/{pantryId}/items")
     suspend fun getAllPantryItems(
         @Path("pantryId") pantryId: Int
-    ): Response<List<PantryItem>>
+    ): Response<Any>
     
     @GET("pantries/{pantryId}/items/{itemId}")
     suspend fun getPantryItem(

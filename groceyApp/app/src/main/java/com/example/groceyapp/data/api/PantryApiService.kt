@@ -18,7 +18,7 @@ interface PantryApiService {
     ): Response<Pantry>
     
     @GET("pantries")
-    suspend fun getAllPantries(): Response<List<Pantry>>
+    suspend fun getAllPantries(): Response<Any>
     
     @GET("pantries/{id}")
     suspend fun getPantry(
