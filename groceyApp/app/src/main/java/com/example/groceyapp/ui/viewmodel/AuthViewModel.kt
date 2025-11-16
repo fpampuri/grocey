@@ -36,6 +36,9 @@ class AuthViewModel : ViewModel() {
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
     
+    private val _passwordChangeState = MutableStateFlow<PasswordChangeState>(PasswordChangeState.Idle)
+    val passwordChangeState: StateFlow<PasswordChangeState> = _passwordChangeState.asStateFlow()
+    
     /**
      * Login with email and password
      */
@@ -213,24 +216,24 @@ class AuthViewModel : ViewModel() {
         onSuccess: () -> Unit = {}
     ) {
         viewModelScope.launch {
-            _isLoading.value = true
-            _errorMessage.value = null
-            
+            _passwordChangeState.value = PasswordChangeState.Loading
+        
             val result = repository.changePassword(
                 PasswordChange(currentPassword, newPassword)
             )
-            
+
             when (result) {
                 is ApiResult.Success -> {
+                    _passwordChangeState.value = PasswordChangeState.Success
                     onSuccess()
                 }
                 is ApiResult.Error -> {
-                    _errorMessage.value = result.message
+                    _passwordChangeState.value = PasswordChangeState.Error(result.message)
                 }
-                is ApiResult.Loading -> {}
+                is ApiResult.Loading -> {
+                    _passwordChangeState.value = PasswordChangeState.Loading
+                }
             }
-            
-            _isLoading.value = false
         }
     }
     
@@ -261,4 +264,15 @@ class AuthViewModel : ViewModel() {
             setToken(savedToken)
         }
     }
+    
+    fun resetPasswordChangeState() {
+        _passwordChangeState.value = PasswordChangeState.Idle
+    }
+}
+
+sealed class PasswordChangeState {
+    object Idle : PasswordChangeState()
+    object Loading : PasswordChangeState()
+    object Success : PasswordChangeState()
+    data class Error(val message: String) : PasswordChangeState()
 }

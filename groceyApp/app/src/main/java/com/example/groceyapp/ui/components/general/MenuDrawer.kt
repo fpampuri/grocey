@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,6 +33,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -72,6 +74,7 @@ fun MenuDrawer(
     userEmail: String = "user@gmail.com",
     userName: String = "John Doe",
     onNameChange: (String) -> Unit = {},
+    onPasswordChangeClick: () -> Unit = {},
     isDarkMode: Boolean = false,
     onDarkModeToggle: (Boolean) -> Unit = {},
     currentLanguage: String = "en",
@@ -79,19 +82,7 @@ fun MenuDrawer(
     isSettingsExpanded: Boolean = false,
     modifier: Modifier = Modifier
 ) {
-    var showPasswordDialog by remember { mutableStateOf(false) }
     var editableName by remember { mutableStateOf(userName) }
-    
-    // Password change dialog
-    if (showPasswordDialog) {
-        PasswordChangeDialog(
-            onDismiss = { showPasswordDialog = false },
-            onConfirm = { oldPassword, newPassword ->
-                // TODO: Implement password change logic
-                showPasswordDialog = false
-            }
-        )
-    }
     // Scrim (dark overlay)
     AnimatedVisibility(
         visible = isOpen,
@@ -142,7 +133,7 @@ fun MenuDrawer(
                         editableName = newName
                         onNameChange(newName)
                     },
-                    onPasswordChangeClick = { showPasswordDialog = true }
+                    onPasswordChangeClick = onPasswordChangeClick
                 )
                 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -499,13 +490,20 @@ private fun SettingsSection(
  * Dialog for changing password
  */
 @Composable
-private fun PasswordChangeDialog(
+fun PasswordChangeDialog(
     onDismiss: () -> Unit,
-    onConfirm: (oldPassword: String, newPassword: String) -> Unit
+    onConfirm: (oldPassword: String, newPassword: String) -> Unit,
+    isProcessing: Boolean = false,
+    errorMessage: String? = null
 ) {
     var oldPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    val passwordsMatch = newPassword == confirmPassword
+    val canSubmit = !isProcessing &&
+        oldPassword.isNotBlank() &&
+        newPassword.isNotBlank() &&
+        passwordsMatch
     
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -519,7 +517,8 @@ private fun PasswordChangeDialog(
                     onValueChange = { oldPassword = it },
                     label = { Text(stringResource(R.string.dialog_old_password)) },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    enabled = !isProcessing
                 )
                 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -529,7 +528,8 @@ private fun PasswordChangeDialog(
                     onValueChange = { newPassword = it },
                     label = { Text(stringResource(R.string.dialog_new_password)) },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    enabled = !isProcessing
                 )
                 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -539,22 +539,49 @@ private fun PasswordChangeDialog(
                     onValueChange = { confirmPassword = it },
                     label = { Text(stringResource(R.string.dialog_confirm_password)) },
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    enabled = !isProcessing
                 )
+                
+                if (!passwordsMatch && confirmPassword.isNotBlank() && !isProcessing) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(R.string.dialog_password_mismatch_error),
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+                
+                if (!errorMessage.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = errorMessage,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
             }
         },
         confirmButton = {
             TextButton(
                 onClick = { onConfirm(oldPassword, newPassword) },
-                enabled = oldPassword.isNotBlank() && 
-                         newPassword.isNotBlank() && 
-                         newPassword == confirmPassword
+                enabled = canSubmit
             ) {
-                Text(stringResource(R.string.dialog_change))
+                if (isProcessing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(stringResource(R.string.dialog_change))
+                }
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            TextButton(
+                onClick = onDismiss,
+                enabled = !isProcessing
+            ) {
                 Text(stringResource(R.string.dialog_cancel))
             }
         }

@@ -56,6 +56,7 @@ import com.example.groceyapp.ui.viewmodel.AuthViewModel
 import com.example.groceyapp.ui.viewmodel.ProductViewModel
 import com.example.groceyapp.ui.viewmodel.ShoppingListViewModel
 import com.example.groceyapp.ui.viewmodel.PantryViewModel
+import com.example.groceyapp.ui.viewmodel.PasswordChangeState
 import com.example.groceyapp.ui.utils.mapIconToString
 import com.example.groceyapp.ui.utils.mapStringToIcon
 import com.example.groceyapp.utils.LocaleHelper
@@ -75,6 +76,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.groceyapp.ui.components.general.AdaptiveNavigationContainer
+import com.example.groceyapp.ui.components.general.PasswordChangeDialog
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -107,6 +109,7 @@ fun ListsApp() {
     // Collect authentication state
     val isAuthenticated by authViewModel.isAuthenticated.collectAsState()
     val currentUser by authViewModel.currentUser.collectAsState()
+    val passwordChangeState by authViewModel.passwordChangeState.collectAsState()
     
     // Restore session when app starts (only runs once)
     LaunchedEffect(Unit) {
@@ -130,6 +133,7 @@ fun ListsApp() {
     var showCreateListDialog by remember { mutableStateOf(false) }
     var showDeleteListDialog by remember { mutableStateOf(false) }
     var showRenameListDialog by remember { mutableStateOf(false) }
+    var showPasswordDialog by remember { mutableStateOf(false) }
     var listToDelete by remember { mutableStateOf<Int?>(null) }
     var listToRename by remember { mutableStateOf<Triple<Int, String, androidx.compose.ui.graphics.vector.ImageVector?>?>(null) }
     
@@ -185,6 +189,19 @@ fun ListsApp() {
             productViewModel.loadProducts()
             productViewModel.loadCategories()
             pantryViewModel.loadPantries()
+        }
+    }
+    
+    LaunchedEffect(passwordChangeState, showPasswordDialog) {
+        if (showPasswordDialog && passwordChangeState is PasswordChangeState.Success) {
+            showPasswordDialog = false
+            authViewModel.resetPasswordChangeState()
+            lastSnackbarIsSuccess = true
+            snackbarHostState.showSnackbar(
+                message = context.getString(R.string.password_change_success),
+                duration = SnackbarDuration.Short
+            )
+            lastSnackbarIsSuccess = false
         }
     }
     
@@ -809,6 +826,10 @@ fun ListsApp() {
                     authViewModel.updateProfile(firstName, lastName)
                 }
             },
+            onPasswordChangeClick = {
+                authViewModel.resetPasswordChangeState()
+                showPasswordDialog = true
+            },
             isDarkMode = isDarkMode,
             onDarkModeToggle = { isDarkMode = it },
             currentLanguage = currentLanguage,
@@ -818,6 +839,23 @@ fun ListsApp() {
             },
             isSettingsExpanded = LocaleHelper.shouldExpandSettingsOnStart(context)
         )
+        
+        if (showPasswordDialog) {
+            val inlineError = (passwordChangeState as? PasswordChangeState.Error)?.message
+            PasswordChangeDialog(
+                onDismiss = {
+                    if (passwordChangeState !is PasswordChangeState.Loading) {
+                        showPasswordDialog = false
+                        authViewModel.resetPasswordChangeState()
+                    }
+                },
+                onConfirm = { currentPassword, newPassword ->
+                    authViewModel.changePassword(currentPassword, newPassword)
+                },
+                isProcessing = passwordChangeState is PasswordChangeState.Loading,
+                errorMessage = inlineError
+            )
+        }
 
         // Create List dialog - creates via API
         if (showCreateListDialog && currentDestination == HomeDestination.Lists) {

@@ -1,5 +1,7 @@
 package com.example.groceyapp.data.api
 
+import android.os.Build
+import com.example.groceyapp.BuildConfig
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -13,10 +15,8 @@ import java.util.concurrent.TimeUnit
  */
 object ApiClient {
     
-    // Base URL for the API - update this for production
-    private const val BASE_URL = "http://10.0.2.2:8080/api/"  // Android emulator localhost
-    private const val BASE_URL_PHYSICAL_DEVICE = "http://192.168.1.22:8080/api/"
-    // For physical device, use: "http://<YOUR_IP>:8080/api/"
+    private const val EMULATOR_BASE_URL = "http://10.0.2.2:8080/api/"
+    private const val DEVICE_BASE_URL = "http://192.168.1.22:8080/api/"
     
     private const val TIMEOUT_SECONDS = 60L
     
@@ -67,10 +67,15 @@ object ApiClient {
         .build()
     
     /**
+     * Memoized base URL so every service shares the same resolved endpoint.
+     */
+    private val resolvedBaseUrl: String by lazy { determineBaseUrl() }
+    
+    /**
      * Retrofit instance
      */
     private val retrofit: Retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL)
+        .baseUrl(resolvedBaseUrl)
         .client(okHttpClient)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
@@ -104,5 +109,32 @@ object ApiClient {
     
     val pantryItemApi: PantryItemApiService by lazy {
         retrofit.create(PantryItemApiService::class.java)
+    }
+    
+    private fun determineBaseUrl(): String {
+        val configured = BuildConfig.API_BASE_URL.trim()
+        if (configured.isNotEmpty()) {
+            return configured.ensureTrailingSlash()
+        }
+        
+        return if (isRunningOnEmulator()) {
+            EMULATOR_BASE_URL
+        } else {
+            DEVICE_BASE_URL
+        }
+    }
+    
+    private fun isRunningOnEmulator(): Boolean {
+        val fingerprint = Build.FINGERPRINT.lowercase()
+        val product = Build.PRODUCT.lowercase()
+        val manufacturer = Build.MANUFACTURER.lowercase()
+        return fingerprint.contains("generic") ||
+            fingerprint.contains("emulator") ||
+            product.contains("sdk") ||
+            manufacturer.contains("genymotion")
+    }
+    
+    private fun String.ensureTrailingSlash(): String {
+        return if (endsWith("/")) this else "$this/"
     }
 }

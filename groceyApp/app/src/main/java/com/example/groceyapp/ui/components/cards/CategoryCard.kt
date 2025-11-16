@@ -1,20 +1,45 @@
 package com.example.groceyapp.ui.components
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import com.example.groceyapp.R
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Circle
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
-// Use semantic roles from MaterialTheme.colorScheme
+import com.example.groceyapp.Constants
+import com.example.groceyapp.ui.theme.BrandGreenLight
+import com.example.groceyapp.ui.theme.BrandGreenLightDarkTheme
 
 data class CategoryCardData(
     val id: Long? = null,
@@ -29,15 +54,26 @@ data class CategoryCardData(
 @Composable
 fun CategoryCard(
     data: CategoryCardData,
-    onDelete: (Long?) -> Unit = {},
-    onRename: (Long?) -> Unit = {},
-    onClick: (CategoryCardData) -> Unit = {},
+    modifier: Modifier = Modifier,
+    onDelete: ((Long?) -> Unit)? = null,
+    onRename: ((Long?) -> Unit)? = null,
+    onClick: ((CategoryCardData) -> Unit)? = null,
     editTextRes: Int? = null,
-    deleteTextRes: Int? = null,
-    modifier: Modifier = Modifier
+    deleteTextRes: Int? = null
 ) {
+    var isExpanded by remember { mutableStateOf(false) }
+    var showMenu by remember { mutableStateOf(false) }
+    val borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+    val rotationAngle by animateFloatAsState(
+        targetValue = if (isExpanded) 90f else 0f,
+        label = "chevron rotation"
+    )
+    val isMiscellaneous = data.id == Constants.MISCELLANEOUS_CATEGORY_ID
+
     CollectionCardShell(
-        onClick = { onClick(data) },
+        onClick = { 
+            onClick?.invoke(data) ?: run { isExpanded = !isExpanded }
+        },
         modifier = modifier
     ) {
         // Main card row (content placed directly into the Row provided by the shell)
@@ -64,16 +100,124 @@ fun CategoryCard(
         //     Spacer(modifier = Modifier.width(8.dp))
         // }
 
-        // Three-dot menu using shared component
-        com.example.groceyapp.ui.components.general.CategoryOptionsMenu(
-            categoryId = data.id,
-            isProtected = data.isProtected,
-            editTextRes = editTextRes,
-            deleteTextRes = deleteTextRes,
-            onRename = onRename,
-            onDelete = onDelete,
-            modifier = Modifier.size(24.dp)
+        // Chevron icon (rotates when expanded)
+        Icon(
+            imageVector = Icons.Default.ChevronRight,
+            contentDescription = if (isExpanded) "Collapse" else "Expand",
+            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+            modifier = Modifier.rotate(rotationAngle)
         )
+
+        Spacer(modifier = Modifier.width(4.dp))
+
+        // Three-dot menu
+        IconButton(
+            onClick = { showMenu = !showMenu },
+            modifier = Modifier.size(24.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.MoreVert,
+                contentDescription = "Options",
+                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+            )
+        }
+
+        // Dropdown menu
+        DropdownMenu(
+            expanded = showMenu,
+            onDismissRequest = { showMenu = false }
+        ) {
+            if (!isMiscellaneous && !data.isProtected) {
+                editTextRes?.let { resId ->
+                    DropdownMenuItem(
+                        text = { Text(androidx.compose.ui.res.stringResource(resId)) },
+                        onClick = {
+                            showMenu = false
+                            onRename?.invoke(data.id)
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = null
+                            )
+                        }
+                    )
+                }
+                deleteTextRes?.let { resId ->
+                    DropdownMenuItem(
+                        text = { Text(androidx.compose.ui.res.stringResource(resId)) },
+                        onClick = {
+                            showMenu = false
+                            onDelete?.invoke(data.id)
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = null
+                            )
+                        }
+                    )
+                }
+            }
+        }
     }
+
+    // Expanded content with products list
+    if (isExpanded && data.products.isNotEmpty()) {
+        val lightGreenBg = if (isSystemInDarkTheme()) {
+            BrandGreenLightDarkTheme.copy(alpha = 0.15f)
+        } else {
+            BrandGreenLight.copy(alpha = 0.15f)
+        }
+
+        androidx.compose.foundation.layout.Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .border(
+                    width = 1.dp,
+                    color = borderColor,
+                    shape = RoundedCornerShape(
+                        topStart = 0.dp,
+                        topEnd = 0.dp,
+                        bottomStart = 12.dp,
+                        bottomEnd = 12.dp
+                    )
+                )
+                .background(
+                    color = lightGreenBg,
+                    shape = RoundedCornerShape(
+                        topStart = 0.dp,
+                        topEnd = 0.dp,
+                        bottomStart = 12.dp,
+                        bottomEnd = 12.dp
+                    )
+                )
+                .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 16.dp)
+        ) {
+            data.products.forEach { product ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Circle,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(8.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = product,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+        }
+    }
+
 }
 

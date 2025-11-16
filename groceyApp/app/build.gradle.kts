@@ -1,8 +1,19 @@
+import java.io.File
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 }
+
+val localProperties = Properties().apply {
+    val propsFile = File(rootDir, "local.properties")
+    if (propsFile.exists()) {
+        propsFile.inputStream().use { load(it) }
+    }
+}
+val apiBaseUrl: String = localProperties.getProperty("API_BASE_URL") ?: ""
 
 android {
     namespace = "com.example.groceyapp"
@@ -26,6 +37,13 @@ android {
                 "proguard-rules.pro"
             )
         }
+        debug {
+            // Debug shares the same BuildConfig field setup; keep block for future flags.
+        }
+        all {
+            val formattedBaseUrl = if (apiBaseUrl.isBlank()) "\"\"" else "\"$apiBaseUrl\""
+            buildConfigField("String", "API_BASE_URL", formattedBaseUrl)
+        }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -36,6 +54,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
