@@ -25,7 +25,7 @@ interface UserApiService {
     @POST("users/verify-account")
     suspend fun verifyAccount(
         @Body verificationCode: VerificationCode
-    ): Response<AuthenticationToken>
+    ): Response<RegisteredUser>
     
     @POST("users/logout")
     suspend fun logout(): Response<Unit>

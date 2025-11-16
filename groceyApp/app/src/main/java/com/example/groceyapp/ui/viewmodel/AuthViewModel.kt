@@ -63,12 +63,31 @@ class AuthViewModel : ViewModel() {
             
             when (result) {
                 is ApiResult.Success -> {
-                    _authToken.value = result.data.token
-                    _isAuthenticated.value = true
-                    TokenStorage.saveToken(result.data.token)
+                    val token = result.data.token
+                    if (token.isNullOrBlank()) {
+                        _errorMessage.value = "Invalid token received from server"
+                        _isLoading.value = false
+                        return@launch
+                    }
+                    
+                    _authToken.value = token
+                    ApiClient.setAuthToken(token)
+                    TokenStorage.saveToken(token)
                     _pendingVerificationEmail.value = null
-                    loadUserProfile()
-                    onSuccess()
+                    
+                    // Load profile first, then set authenticated
+                    val profileResult = repository.getProfile()
+                    when (profileResult) {
+                        is ApiResult.Success -> {
+                            _currentUser.value = profileResult.data
+                            _isAuthenticated.value = true
+                            onSuccess()
+                        }
+                        is ApiResult.Error -> {
+                            _errorMessage.value = profileResult.message
+                        }
+                        is ApiResult.Loading -> {}
+                    }
                 }
                 is ApiResult.Error -> {
                     _errorMessage.value = result.message
@@ -125,6 +144,7 @@ class AuthViewModel : ViewModel() {
     
     /**
      * Verify account with code
+     * Note: Verification does not log the user in - they must login after verification
      */
     fun verifyAccount(code: String, onSuccess: () -> Unit = {}) {
         viewModelScope.launch {
@@ -135,14 +155,10 @@ class AuthViewModel : ViewModel() {
             
             when (result) {
                 is ApiResult.Success -> {
-                    val token = result.data.token
-                    _authToken.value = token
-                    ApiClient.setAuthToken(token)
-                    TokenStorage.saveToken(token)
-                    _isAuthenticated.value = true
+                    // Verification successful - account is now verified
+                    // Clear pending email and show success
                     _pendingVerificationEmail.value = null
-                    
-                    loadUserProfile()
+                    _errorMessage.value = "Account verified! Please log in."
                     onSuccess()
                 }
                 is ApiResult.Error -> {

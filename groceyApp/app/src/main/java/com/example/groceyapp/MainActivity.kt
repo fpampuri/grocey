@@ -288,7 +288,8 @@ fun ListsApp() {
         pantryCards.find { it.id == id }
     }
 
-        if (!isAuthenticated) {
+        // Show auth screen if not authenticated OR user profile not loaded yet
+        if (!isAuthenticated || currentUser == null) {
             AuthenticationScreen(
                 onLoginSuccess = {
                     // Authentication handled by viewModel
@@ -299,8 +300,8 @@ fun ListsApp() {
         }
 
         // Extract user info from currentUser
-        val userEmail = currentUser?.email ?: "user@gmail.com"
-        val userName = "${currentUser?.name ?: "User"} ${currentUser?.surname ?: ""}"
+        val userEmail = currentUser?.email ?: ""
+        val userName = "${currentUser?.name ?: ""} ${currentUser?.surname ?: ""}"
 
         // Determine if we're showing list detail
         val selectedList: ListCardData? = selectedListId?.let { id ->

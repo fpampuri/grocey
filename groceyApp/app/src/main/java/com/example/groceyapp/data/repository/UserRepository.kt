@@ -26,7 +26,7 @@ class UserRepository {
         }
     }
     
-    suspend fun verifyAccount(verificationCode: VerificationCode): ApiResult<AuthenticationToken> {
+    suspend fun verifyAccount(verificationCode: VerificationCode): ApiResult<RegisteredUser> {
         return ApiHelper.safeApiCall {
             userApi.verifyAccount(verificationCode)
         }

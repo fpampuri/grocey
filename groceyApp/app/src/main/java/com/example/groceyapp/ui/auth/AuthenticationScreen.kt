@@ -204,7 +204,11 @@ fun AuthenticationScreen(
                         greenColor = greenColor,
                         onCodeChange = { verificationCode = it },
                         onVerify = {
-                            viewModel.verifyAccount(verificationCode)
+                            viewModel.verifyAccount(verificationCode) {
+                                // After successful verification, go back to login
+                                authMode = AuthMode.LOGIN
+                                verificationCode = ""
+                            }
                         },
                         onResendCode = {
                             // Use email from local state or ViewModel's pending email
