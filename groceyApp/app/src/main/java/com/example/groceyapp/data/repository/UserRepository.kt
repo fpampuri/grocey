@@ -54,7 +54,7 @@ class UserRepository {
     
     suspend fun resendVerification(email: String): ApiResult<Unit> {
         return ApiHelper.safeApiCallUnit {
-            userApi.resendVerification(mapOf("email" to email))
+            userApi.resendVerification(email)
         }
     }
     

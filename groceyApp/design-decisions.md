@@ -210,4 +210,10 @@ Add future decisions in chronological order so the report can reference this sin
 - **Justification**: Gestalt’s Law of Similarity keeps the dialog visually consistent with the rest of the drawer, while Nielsen’s “Visibility of system status” and “Error prevention” inform the live validation, disabled buttons, and spinner so people always know what’s happening.
 - **Impact**: Password changes now feel trustworthy: inputs disable during submission, mismatched entries are flagged before hitting the network, and success is confirmed inline, which should cut abandonment and duplicate support requests.
 
+### Verification Resend Flow — 2025-11-16
+- **Change**: Cached the email captured during registration and wired the Verify screen’s “Resend code” button straight to the backend resend endpoint, so users no longer have to retype their address or trigger a duplicate registration to get a fresh token.
+- **User Problem / Goal**: People often request a verification email from another device; the previous flow silently failed because it retried registration without knowing the email, leaving them stuck.
+- **Justification**: Nielsen’s “Error prevention” and “Visibility of system status” heuristics back the decision to reuse the known email automatically and surface backend errors through the ViewModel, keeping the user in control without redundant steps.
+- **Impact**: Resend now works immediately after registration, reducing failed onboarding attempts and eliminating the confusing “email missing” error.
+
 Add future decisions in chronological order so the report can reference this single source of truth.

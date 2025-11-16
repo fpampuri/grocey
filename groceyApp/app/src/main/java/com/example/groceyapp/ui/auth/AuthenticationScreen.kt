@@ -91,6 +91,7 @@ fun AuthenticationScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     val isAuthenticated by viewModel.isAuthenticated.collectAsState()
+    val pendingEmail by viewModel.pendingVerificationEmail.collectAsState()
     
     val snackbarHostState = remember { SnackbarHostState() }
     
@@ -206,9 +207,9 @@ fun AuthenticationScreen(
                             viewModel.verifyAccount(verificationCode)
                         },
                         onResendCode = {
-                            viewModel.register(email, firstName, lastName, password) {
-                                // Verification code resent to email
-                            }
+                            // Use email from local state or ViewModel's pending email
+                            val emailToUse = email.takeIf { it.isNotBlank() } ?: pendingEmail
+                            viewModel.resendVerification(email = emailToUse)
                         },
                         focusManager = focusManager
                     )

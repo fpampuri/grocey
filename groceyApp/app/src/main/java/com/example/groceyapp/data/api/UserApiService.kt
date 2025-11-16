@@ -44,7 +44,7 @@ interface UserApiService {
     
     @POST("users/send-verification")
     suspend fun resendVerification(
-        @Body email: Map<String, String>  // { "email": "user@example.com" }
+        @Query("email") email: String  // Email as query parameter
     ): Response<Unit>
     
     // Profile management

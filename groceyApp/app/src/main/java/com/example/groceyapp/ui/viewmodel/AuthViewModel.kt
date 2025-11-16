@@ -19,6 +19,10 @@ class AuthViewModel : ViewModel() {
     
     private val repository = UserRepository()
     
+    // Pending verification email - exposed as StateFlow so UI can access it
+    private val _pendingVerificationEmail = MutableStateFlow<String?>(TokenStorage.getUserEmail())
+    val pendingVerificationEmail: StateFlow<String?> = _pendingVerificationEmail.asStateFlow()
+    
     // Authentication state
     private val _isAuthenticated = MutableStateFlow(false)
     val isAuthenticated: StateFlow<Boolean> = _isAuthenticated.asStateFlow()
@@ -47,26 +51,29 @@ class AuthViewModel : ViewModel() {
             _isLoading.value = true
             _errorMessage.value = null
             
-            val result = repository.login(Credentials(email, password))
+            val trimmedEmail = email.trim()
+            _pendingVerificationEmail.value = trimmedEmail
+            
+            val credentials = Credentials(
+                email = trimmedEmail,
+                password = password
+            )
+            
+            val result = repository.login(credentials)
             
             when (result) {
                 is ApiResult.Success -> {
-                    val token = result.data.token
-                    _authToken.value = token
-                    ApiClient.setAuthToken(token)
-                    TokenStorage.saveToken(token)
+                    _authToken.value = result.data.token
                     _isAuthenticated.value = true
-                    
-                    // Load user profile
+                    TokenStorage.saveToken(result.data.token)
+                    _pendingVerificationEmail.value = null
                     loadUserProfile()
                     onSuccess()
                 }
                 is ApiResult.Error -> {
                     _errorMessage.value = result.message
                 }
-                is ApiResult.Loading -> {
-                    // Already handled
-                }
+                is ApiResult.Loading -> {}
             }
             
             _isLoading.value = false
@@ -88,8 +95,12 @@ class AuthViewModel : ViewModel() {
             _isLoading.value = true
             _errorMessage.value = null
             
+            val trimmedEmail = email.trim()
+            _pendingVerificationEmail.value = trimmedEmail
+            TokenStorage.saveUserEmail(trimmedEmail)
+            
             val registrationData = RegistrationData(
-                email = email,
+                email = trimmedEmail,
                 name = name,
                 surname = surname,
                 password = password
@@ -129,6 +140,7 @@ class AuthViewModel : ViewModel() {
                     ApiClient.setAuthToken(token)
                     TokenStorage.saveToken(token)
                     _isAuthenticated.value = true
+                    _pendingVerificationEmail.value = null
                     
                     loadUserProfile()
                     onSuccess()
@@ -139,6 +151,41 @@ class AuthViewModel : ViewModel() {
                 is ApiResult.Loading -> {}
             }
             
+            _isLoading.value = false
+        }
+    }
+    
+    /**
+     * Resend verification code to user's email
+     */
+    fun resendVerification(email: String? = null, onSuccess: () -> Unit = {}) {
+        viewModelScope.launch {
+            // Try to get email from: 1) explicit parameter, 2) StateFlow, 3) TokenStorage
+            val targetEmail = email?.trim()?.takeIf { it.isNotBlank() }
+                ?: _pendingVerificationEmail.value?.takeIf { it.isNotBlank() }
+                ?: TokenStorage.getUserEmail()?.takeIf { it.isNotBlank() }
+            
+            if (targetEmail == null || targetEmail.isBlank()) {
+                _errorMessage.value = "Email required. Please register again."
+                return@launch
+            }
+
+            _isLoading.value = true
+            _errorMessage.value = null
+
+            val result = repository.resendVerification(targetEmail)
+
+            when (result) {
+                is ApiResult.Success -> {
+                    _errorMessage.value = "Verification code sent to $targetEmail"
+                    onSuccess()
+                }
+                is ApiResult.Error -> {
+                    _errorMessage.value = result.message
+                }
+                is ApiResult.Loading -> {}
+            }
+
             _isLoading.value = false
         }
     }
