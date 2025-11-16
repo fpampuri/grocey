@@ -1,14 +1,18 @@
 package com.example.groceyapp
 
 import android.app.Activity
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.compose.material3.SnackbarDuration
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Scaffold
@@ -17,7 +21,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -41,6 +44,7 @@ import com.example.groceyapp.ui.components.general.PrimaryFab
 import com.example.groceyapp.ui.components.dialogs.CreateListDialog
 import com.example.groceyapp.ui.screens.HomeBottomBar
 import com.example.groceyapp.ui.screens.HomeDestination
+import com.example.groceyapp.ui.screens.HomeNavigationRailWidth
 import com.example.groceyapp.ui.screens.ListDetailScreen
 import com.example.groceyapp.ui.screens.CategoryDetailScreen
 import com.example.groceyapp.ui.screens.ListsScreen
@@ -69,7 +73,10 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.MaterialTheme
 import android.util.Log
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -89,7 +96,9 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ListsApp() {
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     
     // Get ViewModels
     val authViewModel: AuthViewModel = viewModel()
@@ -681,87 +690,124 @@ fun ListsApp() {
                     }
                 },
                 bottomBar = {
-                    HomeBottomBar(
-                        currentDestination = currentDestination,
-                        onDestinationSelected = { currentDestination = it }
-                    )
+                    if (!isLandscape) {
+                        HomeBottomBar(
+                            currentDestination = currentDestination,
+                            onDestinationSelected = { currentDestination = it }
+                        )
+                    }
                 }
             ) { innerPadding ->
-                val contentModifier = Modifier.padding(innerPadding)
-                when (currentDestination) {
-                    HomeDestination.Pantry -> PantryScreen(
-                        modifier = contentModifier,
-                        items = pantryCards,
-                        onMenuClick = { isMenuOpen = true },
-                        onPantryDelete = { pantryId ->
-                            pantryId?.let {
-                                pantryToDelete = it.toInt()
-                                showDeletePantryDialog = true
-                            }
-                        },
-                        onPantryRename = { pantryId ->
-                            pantryId?.let { id ->
-                                val pantry = pantries.find { p -> p.id == id.toInt() }
-                                val pantryCard = pantryCards.find { card -> card.id == id }
-                                pantry?.let { p ->
-                                    p.id?.let { pId ->
-                                        pantryToEdit = Triple(pId, p.name, pantryCard?.leadingIcon)
-                                        showEditPantryDialog = true
+                val renderDestination: @Composable (Modifier) -> Unit = { contentModifier ->
+                    when (currentDestination) {
+                        HomeDestination.Pantry -> PantryScreen(
+                            modifier = contentModifier,
+                            items = pantryCards,
+                            onMenuClick = { isMenuOpen = true },
+                            onPantryDelete = { pantryId ->
+                                pantryId?.let {
+                                    pantryToDelete = it.toInt()
+                                    showDeletePantryDialog = true
+                                }
+                            },
+                            onPantryRename = { pantryId ->
+                                pantryId?.let { id ->
+                                    val pantry = pantries.find { p -> p.id == id.toInt() }
+                                    val pantryCard = pantryCards.find { card -> card.id == id }
+                                    pantry?.let { p ->
+                                        p.id?.let { pId ->
+                                            pantryToEdit = Triple(pId, p.name, pantryCard?.leadingIcon)
+                                            showEditPantryDialog = true
+                                        }
                                     }
                                 }
+                            },
+                            onPantryClick = { pantryData ->
+                                selectedPantry = pantryData
                             }
-                        },
-                        onPantryClick = { pantryData ->
-                            selectedPantry = pantryData
-                        }
-                    )
-                    HomeDestination.Products -> ProductsScreen(
-                        modifier = contentModifier,
-                        items = categoryCards,
-                        onMenuClick = { isMenuOpen = true },
-                        onCategoryDelete = { categoryId ->
-                            categoryId?.let {
-                                categoryToDelete = it.toInt()
-                                showDeleteCategoryDialog = true
-                            }
-                        },
-                        onCategoryRename = { categoryId ->
-                            categoryId?.let { catId ->
-                                val category = categories.find { cat -> cat.id == catId.toInt() }
-                                val categoryCard = categoryCards.find { card -> card.id == catId }
-                                category?.let { cat ->
-                                    cat.id?.let { id ->
-                                        categoryToEdit = Triple(id, cat.name, categoryCard?.leadingIcon)
-                                        showEditCategoryDialog = true
+                        )
+                        HomeDestination.Products -> ProductsScreen(
+                            modifier = contentModifier,
+                            items = categoryCards,
+                            onMenuClick = { isMenuOpen = true },
+                            onCategoryDelete = { categoryId ->
+                                categoryId?.let {
+                                    categoryToDelete = it.toInt()
+                                    showDeleteCategoryDialog = true
+                                }
+                            },
+                            onCategoryRename = { categoryId ->
+                                categoryId?.let { catId ->
+                                    val category = categories.find { cat -> cat.id == catId.toInt() }
+                                    val categoryCard = categoryCards.find { card -> card.id == catId }
+                                    category?.let { cat ->
+                                        cat.id?.let { id ->
+                                            categoryToEdit = Triple(id, cat.name, categoryCard?.leadingIcon)
+                                            showEditCategoryDialog = true
+                                        }
                                     }
                                 }
+                            },
+                            onCategoryClick = { categoryData ->
+                                selectedCategory = categoryData
                             }
-                        },
-                        onCategoryClick = { categoryData ->
-                            selectedCategory = categoryData
+                        )
+                        HomeDestination.Lists -> ListsScreen(
+                            modifier = contentModifier,
+                            items = lists,
+                            onListClick = { listId -> selectedListId = listId },
+                            onMenuClick = { isMenuOpen = true },
+                            onRename = { listId ->
+                                val list = apiLists.find { it.id.toString() == listId }
+                                val uiList = lists.find { it.id == listId }
+                                list?.id?.let { id ->
+                                    listToRename = Triple(id, list.name, uiList?.leadingIcon)
+                                    showRenameListDialog = true
+                                }
+                            },
+                            onDelete = { listId ->
+                                val list = apiLists.find { it.id.toString() == listId }
+                                list?.id?.let { id ->
+                                    listToDelete = id
+                                    showDeleteListDialog = true
+                                }
+                            },
+                            onShare = { /* no-op */ }
+                        )
+                    }
+                }
+
+                if (isLandscape) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                        ) {
+                            renderDestination(Modifier.fillMaxSize())
                         }
-                    )
-                    HomeDestination.Lists -> ListsScreen(
-                        modifier = contentModifier,
-                        items = lists,
-                        onListClick = { listId -> selectedListId = listId },
-                        onMenuClick = { isMenuOpen = true },
-                        onRename = { listId ->
-                            val list = apiLists.find { it.id.toString() == listId }
-                            val uiList = lists.find { it.id == listId }
-                            list?.id?.let { id ->
-                                listToRename = Triple(id, list.name, uiList?.leadingIcon)
-                                showRenameListDialog = true
-                            }
-                        },
-                        onDelete = { listId ->
-                            val list = apiLists.find { it.id.toString() == listId }
-                            list?.id?.let { id ->
-                                listToDelete = id
-                                showDeleteListDialog = true
-                            }
-                        }
-                    )
+
+                        HomeBottomBar(
+                            currentDestination = currentDestination,
+                            onDestinationSelected = { currentDestination = it },
+                            isVertical = true,
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .width(HomeNavigationRailWidth)
+                        )
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
+                    ) {
+                        renderDestination(Modifier.fillMaxSize())
+                    }
                 }
             }
         }

@@ -1,14 +1,18 @@
 package com.example.groceyapp.ui.screens
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -33,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.groceyapp.R
@@ -45,6 +50,7 @@ import com.example.groceyapp.ui.components.dialogs.ConfirmDeleteDialog
 import com.example.groceyapp.data.model.Category
 import com.example.groceyapp.data.model.ListItem
 import com.example.groceyapp.ui.components.dialogs.AddProductDialog
+import com.example.groceyapp.ui.screens.HomeNavigationRailWidth
 
 /**
  * Detail screen for a shopping list
@@ -70,6 +76,8 @@ fun ListDetailScreen(
 ) {
     var showAddProductDialog by remember { mutableStateOf(false) }
     var itemToDelete by remember { mutableStateOf<ProductItemData?>(null) }
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     Scaffold(
         modifier = modifier.fillMaxSize(),
         topBar = {
@@ -112,10 +120,12 @@ fun ListDetailScreen(
             )
         },
         bottomBar = {
-            HomeBottomBar(
-                currentDestination = currentDestination,
-                onDestinationSelected = onDestinationSelected
-            )
+            if (!isLandscape) {
+                HomeBottomBar(
+                    currentDestination = currentDestination,
+                    onDestinationSelected = onDestinationSelected
+                )
+            }
         }
     ) { paddingValues ->
         // Map API list items to UI card data
@@ -129,57 +139,88 @@ fun ListDetailScreen(
             )
         }
 
-        if (productsUi.isEmpty()) {
-            // Empty state
-            Box(
+        val contentArea: @Composable (Modifier) -> Unit = { contentModifier ->
+            if (productsUi.isEmpty()) {
+                // Empty state
+                Box(
+                    modifier = contentModifier,
+                    contentAlignment = Alignment.Center
+                ) {
+                    EmptyState(
+                        icon = Icons.Filled.ShoppingCart,
+                        messageRes = R.string.empty_list_detail_message,
+                        hintRes = R.string.empty_list_detail_hint
+                    )
+                }
+            } else {
+                // Products list
+                LazyColumn(
+                    modifier = contentModifier,
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Section header
+                    item {
+                        Text(
+                            text = "Products",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 18.sp
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
+                    
+                    // Product items
+                    items(productsUi, key = { it.id }) { product ->
+                        val itemId = product.id.toIntOrNull() ?: 0
+                        ProductItemCard(
+                            data = product,
+                            onToggleBought = { onItemTogglePurchased(itemId) },
+                            onQuantityChange = { newQuantity -> onItemQuantityChange(itemId, newQuantity) },
+                            onDeleteItem = { itemToDelete = product }
+                        )
+                    }
+                    
+                    // Bottom padding for FAB
+                    item {
+                        Spacer(modifier = Modifier.height(80.dp))
+                    }
+                }
+            }
+        }
+
+        if (isLandscape) {
+            Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center
+                    .padding(paddingValues)
             ) {
-                EmptyState(
-                    icon = Icons.Filled.ShoppingCart,
-                    messageRes = R.string.empty_list_detail_message,
-                    hintRes = R.string.empty_list_detail_hint
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                ) {
+                    contentArea(Modifier.fillMaxSize())
+                }
+
+                HomeBottomBar(
+                    currentDestination = currentDestination,
+                    onDestinationSelected = onDestinationSelected,
+                    isVertical = true,
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .width(HomeNavigationRailWidth)
                 )
             }
         } else {
-            // Products list
-            LazyColumn(
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                    .padding(paddingValues)
             ) {
-                // Section header
-                item {
-                    Text(
-                        text = "Products",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 18.sp
-                        ),
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(bottom = 4.dp)
-                    )
-                }
-                
-                // Product items
-                items(productsUi, key = { it.id }) { product ->
-                    val itemId = product.id.toIntOrNull() ?: 0
-                    ProductItemCard(
-                        data = product,
-                        onToggleBought = { onItemTogglePurchased(itemId) },
-                        onQuantityChange = { newQuantity -> onItemQuantityChange(itemId, newQuantity) },
-                        onDeleteItem = { itemToDelete = product }
-                    )
-                }
-                
-                // Bottom padding for FAB
-                item {
-                    Spacer(modifier = Modifier.height(80.dp))
-                }
+                contentArea(Modifier.fillMaxSize())
             }
         }
     }
