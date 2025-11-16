@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
@@ -35,12 +34,9 @@ import com.example.groceyapp.R
 @Composable
 fun TopSearchBar(
     placeholder: String,
-    filterDescription: String,
-    onFilterClick: () -> Unit,
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
-    onMenuClick: () -> Unit,
-    showFilterInside: Boolean = false
+    onMenuClick: () -> Unit
 ) {
     val lightGreenBg = MaterialTheme.colorScheme.tertiary.copy(alpha = 0.2f)
 
@@ -81,21 +77,6 @@ fun TopSearchBar(
                     tint = MaterialTheme.colorScheme.primary
                 )
             },
-            trailingIcon = if (showFilterInside) {
-                {
-                    IconButton(
-                        onClick = onFilterClick,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.FilterList,
-                            contentDescription = filterDescription,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-            } else null,
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = lightGreenBg,
                 unfocusedContainerColor = lightGreenBg,
@@ -106,19 +87,5 @@ fun TopSearchBar(
             ),
             shape = RoundedCornerShape(16.dp)
         )
-        if (!showFilterInside) {
-            IconButton(
-                onClick = onFilterClick,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-            ) {
-                Icon(
-                    imageVector = Icons.Default.FilterList,
-                    contentDescription = filterDescription,
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
     }
 }

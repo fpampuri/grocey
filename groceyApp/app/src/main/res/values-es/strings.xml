@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">GroceyApp</string>
+    <string name="app_name">Grocey</string>
     <string name="prompt_name">¿Cómo te llamas?</string>
     <string name="name_label">Nombre</string>
     <string name="confirm_button">OK</string>
@@ -9,7 +9,6 @@
     <string name="search_lists_placeholder">Buscar listas</string>
     <string name="search_pantry_placeholder">Buscar despensa</string>
     <string name="search_products_placeholder">Buscar productos</string>
-    <string name="filter_content_description">Filtrar resultados</string>
     <string name="lists_tab">Listas</string>
     <string name="pantry_tab">Despensa</string>
     <string name="products_tab">Productos</string>

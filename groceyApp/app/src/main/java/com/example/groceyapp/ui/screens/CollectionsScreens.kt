@@ -17,7 +17,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Search
@@ -67,7 +66,6 @@ enum class HomeDestination(@StringRes val labelRes: Int, val icon: ImageVector) 
 fun ListsScreen(
     modifier: Modifier = Modifier,
     items: List<ListCardData>? = null,
-    onFilterClick: () -> Unit = {},
     onListClick: (String) -> Unit = {},
     onFavoriteToggle: (String) -> Unit = {},
     onRename: (String) -> Unit = {},
@@ -80,9 +78,6 @@ fun ListsScreen(
     GenericCollectionScreen(
         items = resolvedItems,
         placeholder = stringResource(R.string.search_lists_placeholder),
-        filterDescription = stringResource(R.string.filter_content_description),
-        showFilterInside = true,
-        onFilterClick = onFilterClick,
         onMenuClick = onMenuClick,
         itemMatchesQuery = { list, q -> list.title.contains(q, ignoreCase = true) },
         itemKey = { it.id },
@@ -106,7 +101,6 @@ fun ListsScreen(
 fun PantryScreen(
     modifier: Modifier = Modifier,
     items: List<CategoryCardData>? = null,
-    onFilterClick: () -> Unit = {},
     onMenuClick: () -> Unit = {}
 ) {
     val resolvedItems = items ?: emptyList()
@@ -114,9 +108,6 @@ fun PantryScreen(
     GenericCollectionScreen(
         items = resolvedItems,
         placeholder = stringResource(R.string.search_pantry_placeholder),
-        filterDescription = stringResource(R.string.filter_content_description),
-        showFilterInside = true,
-        onFilterClick = onFilterClick,
         onMenuClick = onMenuClick,
         itemMatchesQuery = { category, q ->
             category.title.contains(q, ignoreCase = true) ||
@@ -134,7 +125,6 @@ fun PantryScreen(
 fun ProductsScreen(
     modifier: Modifier = Modifier,
     items: List<CategoryCardData>? = null,
-    onFilterClick: () -> Unit = {},
     onMenuClick: () -> Unit = {},
     onCategoryDelete: (Long?) -> Unit = {},
     onCategoryRename: (Long?) -> Unit = {},
@@ -145,9 +135,6 @@ fun ProductsScreen(
     GenericCollectionScreen(
         items = resolvedItems,
         placeholder = stringResource(R.string.search_products_placeholder),
-        filterDescription = stringResource(R.string.filter_content_description),
-        showFilterInside = true,
-        onFilterClick = onFilterClick,
         onMenuClick = onMenuClick,
         itemMatchesQuery = { category, q ->
             category.title.contains(q, ignoreCase = true) ||

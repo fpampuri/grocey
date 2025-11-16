@@ -35,9 +35,6 @@ fun <T> GenericCollectionScreen(
     modifier: Modifier = Modifier,
     items: List<T>,
     placeholder: String,
-    filterDescription: String,
-    showFilterInside: Boolean = false,
-    onFilterClick: () -> Unit = {},
     onMenuClick: () -> Unit = {},
     itemMatchesQuery: (T, String) -> Boolean,
     itemKey: ((T) -> Any)? = null,
@@ -57,12 +54,9 @@ fun <T> GenericCollectionScreen(
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
             TopSearchBar(
                 placeholder = placeholder,
-                filterDescription = filterDescription,
-                onFilterClick = onFilterClick,
                 searchQuery = searchQuery,
                 onSearchQueryChange = { searchQuery = it },
-                onMenuClick = onMenuClick,
-                showFilterInside = showFilterInside
+                onMenuClick = onMenuClick
             )
             Spacer(modifier = Modifier.height(16.dp))
             
