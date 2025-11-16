@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import com.example.groceyapp.R
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -63,15 +61,6 @@ fun CategoryCard(
         //     SharedBadge(badge)
         //     Spacer(modifier = Modifier.width(8.dp))
         // }
-
-        // Chevron icon
-        Icon(
-            imageVector = Icons.Default.ChevronRight,
-            contentDescription = "View details",
-            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-        )
-
-        Spacer(modifier = Modifier.width(4.dp))
 
         // Three-dot menu using shared component
         com.example.groceyapp.ui.components.general.CategoryOptionsMenu(
