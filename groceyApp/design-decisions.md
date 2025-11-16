@@ -31,6 +31,12 @@ Aim to link each justification to the specific theories covered in class (e.g., 
 - **Justification**: Nielsen’s “User control and freedom” and Android posture guidelines stress preserving task context across configuration changes and making back affordances predictable.
 - **Impact**: Orientation changes feel seamless, the back button behaves like a breadcrumb, and users don’t lose work or mental context when rotating the device.
 
+### Manual Dark Mode Toggle — 2024-11-19
+- **Change**: Blended the settings drawer toggle with the app’s Material theme so the user can override the system palette in real time, while still defaulting to the device preference on first launch.
+- **User Problem / Goal**: Some users want to force dark/light mode regardless of OS settings; the old toggle was purely cosmetic and didn’t affect the UI.
+- **Justification**: Providing explicit control aligns with Nielsen’s “User control” heuristic and Android accessibility guidance that allows users to choose a comfortable contrast level.
+- **Impact**: The entire UI now re-themes instantly when the toggle flips, giving users reliable control without waiting for a system-wide change.
+
 ### Theme & Color System — 2024-11-12
 - **Change**: Replaced the default Compose palette with the same primary/secondary colors used by the Vue frontend (brand greens, gold accents, neutral light/dark surfaces).
 - **User Problem / Goal**: Maintain cross-platform visual consistency so users instantly recognize the brand regardless of channel.

@@ -8,6 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -53,7 +54,6 @@ import com.example.groceyapp.ui.components.dialogs.CreateCategoryDialog
 import com.example.groceyapp.ui.components.dialogs.CreateProductDialog
 import com.example.groceyapp.ui.components.dialogs.ConfirmDeleteDialog
 import com.example.groceyapp.ui.components.dialogs.RenameDialog
-import com.example.groceyapp.ui.theme.GroceyAppTheme
 import com.example.groceyapp.ui.viewmodel.AuthViewModel
 import com.example.groceyapp.ui.viewmodel.ProductViewModel
 import com.example.groceyapp.ui.viewmodel.ShoppingListViewModel
@@ -77,6 +77,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.groceyapp.ui.components.general.AdaptiveNavigationContainer
+import com.example.groceyapp.ui.theme.GroceyAppTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -87,9 +88,7 @@ class MainActivity : ComponentActivity() {
         
         enableEdgeToEdge()
         setContent {
-            GroceyAppTheme {
-                ListsApp()
-            }
+            ListsApp()
         }
     }
 }
@@ -122,7 +121,8 @@ fun ListsApp() {
     var isMenuOpen by remember { mutableStateOf(LocaleHelper.shouldOpenMenuOnStart(context)) }
     
     // Settings state
-    var isDarkMode by remember { mutableStateOf(false) }
+    val systemDark = isSystemInDarkTheme()
+    var isDarkMode by rememberSaveable { mutableStateOf(systemDark) }
     var currentLanguage by remember { mutableStateOf(LocaleHelper.getCurrentLocale(context)) }
     
     // Shopping lists from API
@@ -159,54 +159,55 @@ fun ListsApp() {
     val pantries by pantryViewModel.pantries.collectAsState()
     val pantryItems by pantryViewModel.pantryItems.collectAsState()
 
-    // Snackbar + coroutine scope for showing feedback
-    val snackbarHostState = remember { SnackbarHostState() }
-    val coroutineScope = rememberCoroutineScope()
-    var lastSnackbarIsSuccess by remember { mutableStateOf(false) }
-    val errorMessage by shoppingListViewModel.errorMessage.collectAsState()
-    val listItems by shoppingListViewModel.listItems.collectAsState()
+    GroceyAppTheme(darkTheme = isDarkMode) {
+        // Snackbar + coroutine scope for showing feedback
+        val snackbarHostState = remember { SnackbarHostState() }
+        val coroutineScope = rememberCoroutineScope()
+        var lastSnackbarIsSuccess by remember { mutableStateOf(false) }
+        val errorMessage by shoppingListViewModel.errorMessage.collectAsState()
+        val listItems by shoppingListViewModel.listItems.collectAsState()
 
-    // Show error messages from ViewModel in a Snackbar
-    LaunchedEffect(errorMessage) {
-        errorMessage?.let { msg ->
-            // mark as error
-            lastSnackbarIsSuccess = false
-            coroutineScope.launch {
-                snackbarHostState.showSnackbar(
-                    message = msg,
-                    duration = SnackbarDuration.Short)
+        // Show error messages from ViewModel in a Snackbar
+        LaunchedEffect(errorMessage) {
+            errorMessage?.let { msg ->
+                // mark as error
+                lastSnackbarIsSuccess = false
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = msg,
+                        duration = SnackbarDuration.Short)
+                }
+                shoppingListViewModel.clearError()
             }
-            shoppingListViewModel.clearError()
         }
-    }
     
-    // Load shopping lists when authenticated
-    LaunchedEffect(isAuthenticated) {
-        if (isAuthenticated) {
-            shoppingListViewModel.loadShoppingLists()
-            productViewModel.loadProducts()
-            productViewModel.loadCategories()
-            pantryViewModel.loadPantries()
+        // Load shopping lists when authenticated
+        LaunchedEffect(isAuthenticated) {
+            if (isAuthenticated) {
+                shoppingListViewModel.loadShoppingLists()
+                productViewModel.loadProducts()
+                productViewModel.loadCategories()
+                pantryViewModel.loadPantries()
+            }
         }
-    }
     
-    // Convert API lists to UI format
-    val lists = apiLists.map { apiList ->
-        // Extract icon from metadata, default to shopping cart
-        val iconName = apiList.metadata?.get("icon") as? String
-        Log.d("MainActivity", "List ${apiList.name} has icon metadata: $iconName")
-        val icon = mapStringToIcon(iconName)
-        
-        ListCardData(
-            id = apiList.id?.toString() ?: "",
-            title = apiList.name,
-            itemCount = apiList.id?.let { itemCounts[it] } ?: 0,
-            leadingIcon = icon,
-            isFavorite = false,
-            isShared = apiList.sharedWith?.isNotEmpty() == true,
-            products = emptyList()
-        )
-    }
+        // Convert API lists to UI format
+        val lists = apiLists.map { apiList ->
+            // Extract icon from metadata, default to shopping cart
+            val iconName = apiList.metadata?.get("icon") as? String
+            Log.d("MainActivity", "List ${apiList.name} has icon metadata: $iconName")
+            val icon = mapStringToIcon(iconName)
+            
+            ListCardData(
+                id = apiList.id?.toString() ?: "",
+                title = apiList.name,
+                itemCount = apiList.id?.let { itemCounts[it] } ?: 0,
+                leadingIcon = icon,
+                isFavorite = false,
+                isShared = apiList.sharedWith?.isNotEmpty() == true,
+                products = emptyList()
+            )
+        }
 
     // Convert API categories and products to UI format
     val categoryCards = categories.map { category ->
@@ -264,53 +265,52 @@ fun ListsApp() {
         pantryCards.find { it.id == id }
     }
 
-    // Show authentication screen if not authenticated
-    if (!isAuthenticated) {
-        AuthenticationScreen(
-            onLoginSuccess = {
-                // Authentication handled by viewModel
-                // User will be automatically authenticated when login succeeds
+        if (!isAuthenticated) {
+            AuthenticationScreen(
+                onLoginSuccess = {
+                    // Authentication handled by viewModel
+                    // User will be automatically authenticated when login succeeds
+                }
+            )
+            return@GroceyAppTheme
+        }
+
+        // Extract user info from currentUser
+        val userEmail = currentUser?.email ?: "user@gmail.com"
+        val userName = "${currentUser?.name ?: "User"} ${currentUser?.surname ?: ""}"
+
+        // Determine if we're showing list detail
+        val selectedList: ListCardData? = selectedListId?.let { id ->
+            lists.find { list -> list.id == id }
+        }
+
+        BackHandler(enabled = selectedList != null || selectedCategoryCard != null || selectedPantryCard != null) {
+            when {
+                selectedPantryCard != null -> selectedPantryId = null
+                selectedCategoryCard != null -> selectedCategoryId = null
+                selectedList != null -> selectedListId = null
             }
-        )
-        return
-    }
-    
-    // Extract user info from currentUser
-    val userEmail = currentUser?.email ?: "user@gmail.com"
-    val userName = "${currentUser?.name ?: "User"} ${currentUser?.surname ?: ""}"
-
-    // Determine if we're showing list detail
-    val selectedList: ListCardData? = selectedListId?.let { id ->
-        lists.find { list -> list.id == id }
-    }
-
-    BackHandler(enabled = selectedList != null || selectedCategoryCard != null || selectedPantryCard != null) {
-        when {
-            selectedPantryCard != null -> selectedPantryId = null
-            selectedCategoryCard != null -> selectedCategoryId = null
-            selectedList != null -> selectedListId = null
         }
-    }
 
-    // When a list is selected, load its items from API
-    LaunchedEffect(selectedList?.id) {
-        val listIdInt = selectedList?.id?.toIntOrNull()
-        if (listIdInt != null) {
-            shoppingListViewModel.loadListItems(listIdInt)
+        // When a list is selected, load its items from API
+        LaunchedEffect(selectedList?.id) {
+            val listIdInt = selectedList?.id?.toIntOrNull()
+            if (listIdInt != null) {
+                shoppingListViewModel.loadListItems(listIdInt)
+            }
         }
-    }
-    
-    // When a pantry is selected, load its items from API
-    LaunchedEffect(selectedPantryId) {
-        val pantryIdInt = selectedPantryId?.toInt()
-        if (pantryIdInt != null) {
-            pantryViewModel.loadPantryItems(pantryIdInt)
+        
+        // When a pantry is selected, load its items from API
+        LaunchedEffect(selectedPantryId) {
+            val pantryIdInt = selectedPantryId?.toInt()
+            if (pantryIdInt != null) {
+                pantryViewModel.loadPantryItems(pantryIdInt)
+            }
         }
-    }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        if (selectedList != null) {
-            // Show list detail screen
+        Box(modifier = Modifier.fillMaxSize()) {
+            if (selectedList != null) {
+                // Show list detail screen
                 ListDetailScreen(
                     listData = selectedList,
                     categories = categories,
@@ -808,7 +808,7 @@ fun ListsApp() {
             }
         }
         
-        // Menu drawer overlay
+    // Menu drawer overlay
         MenuDrawer(
             isOpen = isMenuOpen,
             onDismiss = { isMenuOpen = false },
@@ -1178,4 +1178,5 @@ fun ListsPreview() {
     GroceyAppTheme {
         ListsApp()
     }
+}
 }
