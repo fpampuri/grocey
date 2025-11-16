@@ -3,21 +3,15 @@ package com.example.groceyapp.ui.screens
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -29,7 +23,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -50,7 +43,7 @@ import com.example.groceyapp.ui.components.dialogs.ConfirmDeleteDialog
 import com.example.groceyapp.data.model.Category
 import com.example.groceyapp.data.model.ListItem
 import com.example.groceyapp.ui.components.dialogs.AddProductDialog
-import com.example.groceyapp.ui.screens.HomeNavigationRailWidth
+import com.example.groceyapp.ui.components.general.AdaptiveNavigationContainer
 
 /**
  * Detail screen for a shopping list
@@ -191,38 +184,18 @@ fun ListDetailScreen(
             }
         }
 
-        if (isLandscape) {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                ) {
-                    contentArea(Modifier.fillMaxSize())
-                }
-
+        AdaptiveNavigationContainer(
+            isLandscape = isLandscape,
+            paddingValues = paddingValues,
+            navigationRail = {
                 HomeBottomBar(
                     currentDestination = currentDestination,
                     onDestinationSelected = onDestinationSelected,
-                    isVertical = true,
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .width(HomeNavigationRailWidth)
+                    isVertical = true
                 )
-            }
-        } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                contentArea(Modifier.fillMaxSize())
-            }
-        }
+            },
+            content = contentArea
+        )
     }
 
     // Add Product Dialog (outside Scaffold)

@@ -1,15 +1,34 @@
 package com.example.groceyapp.ui.screens
 
-import androidx.compose.foundation.layout.*
+import android.content.res.Configuration
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Inventory2
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -25,6 +44,7 @@ import com.example.groceyapp.ui.components.dialogs.ConfirmDeleteDialog
 import com.example.groceyapp.data.model.Category
 import com.example.groceyapp.data.model.PantryItem
 import com.example.groceyapp.data.model.Pantry
+import com.example.groceyapp.ui.components.general.AdaptiveNavigationContainer
 
 /**
  * Detail screen for a pantry
@@ -50,6 +70,8 @@ fun PantryDetailScreen(
 ) {
     var showAddProductDialog by remember { mutableStateOf(false) }
     var itemToDelete by remember { mutableStateOf<PantryItemCardData?>(null) }
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -93,10 +115,12 @@ fun PantryDetailScreen(
             )
         },
         bottomBar = {
-            HomeBottomBar(
-                currentDestination = currentDestination,
-                onDestinationSelected = onDestinationSelected
-            )
+            if (!isLandscape) {
+                HomeBottomBar(
+                    currentDestination = currentDestination,
+                    onDestinationSelected = onDestinationSelected
+                )
+            }
         }
     ) { paddingValues ->
         // Map API pantry items to UI card data
@@ -109,63 +133,74 @@ fun PantryDetailScreen(
             )
         }
 
-        if (itemsUi.isEmpty()) {
-            // Empty state
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center
-            ) {
-                EmptyState(
-                    icon = Icons.Filled.Inventory2,
-                    messageRes = R.string.empty_pantry_detail_message,
-                    hintRes = R.string.empty_pantry_detail_hint
-                )
-            }
-        } else {
-            // Pantry items list
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // Section header
-                item {
-                    Text(
-                        text = "Items",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 18.sp
-                        ),
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(bottom = 4.dp)
+        val contentArea: @Composable (Modifier) -> Unit = { contentModifier ->
+            if (itemsUi.isEmpty()) {
+                // Empty state
+                Box(
+                    modifier = contentModifier,
+                    contentAlignment = Alignment.Center
+                ) {
+                    EmptyState(
+                        icon = Icons.Filled.Inventory2,
+                        messageRes = R.string.empty_pantry_detail_message,
+                        hintRes = R.string.empty_pantry_detail_hint
                     )
                 }
-                
-                // Pantry items
-                items(itemsUi, key = { it.id }) { item ->
-                    PantryItemCard(
-                        data = item,
-                        pantries = pantries.filter { it.id?.toLong() != pantryData.id },
-                        onQuantityChange = { newQuantity -> 
-                            onItemQuantityChange(item.id, newQuantity) 
-                        },
-                        onMoveToPantry = { newPantryId ->
-                            onItemMoveToPantry(item.id, newPantryId)
-                        },
-                        onDeleteItem = { itemToDelete = item }
-                    )
-                }
-                
-                // Bottom padding for FAB
-                item {
-                    Spacer(modifier = Modifier.height(80.dp))
+            } else {
+                // Pantry items list
+                LazyColumn(
+                    modifier = contentModifier,
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Section header
+                    item {
+                        Text(
+                            text = "Items",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 18.sp
+                            ),
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                    }
+                    
+                    // Pantry items
+                    items(itemsUi, key = { it.id }) { item ->
+                        PantryItemCard(
+                            data = item,
+                            pantries = pantries.filter { it.id?.toLong() != pantryData.id },
+                            onQuantityChange = { newQuantity -> 
+                                onItemQuantityChange(item.id, newQuantity) 
+                            },
+                            onMoveToPantry = { newPantryId ->
+                                onItemMoveToPantry(item.id, newPantryId)
+                            },
+                            onDeleteItem = { itemToDelete = item }
+                        )
+                    }
+                    
+                    // Bottom padding for FAB
+                    item {
+                        Spacer(modifier = Modifier.height(80.dp))
+                    }
                 }
             }
         }
+
+        AdaptiveNavigationContainer(
+            isLandscape = isLandscape,
+            paddingValues = paddingValues,
+            navigationRail = {
+                HomeBottomBar(
+                    currentDestination = currentDestination,
+                    onDestinationSelected = onDestinationSelected,
+                    isVertical = true
+                )
+            },
+            content = contentArea
+        )
     }
 
     // Add Product Dialog

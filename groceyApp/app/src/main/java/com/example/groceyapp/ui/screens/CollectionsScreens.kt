@@ -48,7 +48,6 @@ import androidx.compose.ui.draw.clip
 // Use colors from the theme (defined in ui.theme.Color.kt)
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import com.example.groceyapp.R
 import com.example.groceyapp.ui.components.CategoryCard
 import com.example.groceyapp.ui.components.CategoryCardData
@@ -64,8 +63,6 @@ enum class HomeDestination(@StringRes val labelRes: Int, val icon: ImageVector) 
     Products(R.string.products_tab, Icons.Filled.Store),
     Lists(R.string.lists_tab, Icons.AutoMirrored.Filled.List)
 }
-
-val HomeNavigationRailWidth = 88.dp
 
 @Composable
 fun ListsScreen(

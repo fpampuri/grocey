@@ -8,11 +8,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Scaffold
@@ -44,7 +42,6 @@ import com.example.groceyapp.ui.components.general.PrimaryFab
 import com.example.groceyapp.ui.components.dialogs.CreateListDialog
 import com.example.groceyapp.ui.screens.HomeBottomBar
 import com.example.groceyapp.ui.screens.HomeDestination
-import com.example.groceyapp.ui.screens.HomeNavigationRailWidth
 import com.example.groceyapp.ui.screens.ListDetailScreen
 import com.example.groceyapp.ui.screens.CategoryDetailScreen
 import com.example.groceyapp.ui.screens.ListsScreen
@@ -77,6 +74,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.example.groceyapp.ui.components.general.AdaptiveNavigationContainer
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -777,38 +775,18 @@ fun ListsApp() {
                     }
                 }
 
-                if (isLandscape) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                        ) {
-                            renderDestination(Modifier.fillMaxSize())
-                        }
-
+                AdaptiveNavigationContainer(
+                    isLandscape = isLandscape,
+                    paddingValues = innerPadding,
+                    navigationRail = {
                         HomeBottomBar(
                             currentDestination = currentDestination,
                             onDestinationSelected = { currentDestination = it },
-                            isVertical = true,
-                            modifier = Modifier
-                                .fillMaxHeight()
-                                .width(HomeNavigationRailWidth)
+                            isVertical = true
                         )
-                    }
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding)
-                    ) {
-                        renderDestination(Modifier.fillMaxSize())
-                    }
-                }
+                    },
+                    content = renderDestination
+                )
             }
         }
         

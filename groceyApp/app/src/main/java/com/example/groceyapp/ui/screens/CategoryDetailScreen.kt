@@ -5,12 +5,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -43,7 +40,7 @@ import com.example.groceyapp.ui.components.general.PrimaryFab
 import com.example.groceyapp.ui.components.ProductItemCard
 import com.example.groceyapp.ui.components.ProductItemData
 import com.example.groceyapp.ui.components.ProductCardMode
-import com.example.groceyapp.ui.screens.HomeNavigationRailWidth
+import com.example.groceyapp.ui.components.general.AdaptiveNavigationContainer
 
 /**
  * Detail screen for a category
@@ -205,38 +202,18 @@ fun CategoryDetailScreen(
             }
         }
 
-        if (isLandscape) {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                ) {
-                    contentArea(Modifier.fillMaxSize())
-                }
-
+        AdaptiveNavigationContainer(
+            isLandscape = isLandscape,
+            paddingValues = paddingValues,
+            navigationRail = {
                 HomeBottomBar(
                     currentDestination = currentDestination,
                     onDestinationSelected = onDestinationSelected,
-                    isVertical = true,
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .width(HomeNavigationRailWidth)
+                    isVertical = true
                 )
-            }
-        } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                contentArea(Modifier.fillMaxSize())
-            }
-        }
+            },
+            content = contentArea
+        )
     }
     
     // Move to Category Dialog (outside Scaffold)
