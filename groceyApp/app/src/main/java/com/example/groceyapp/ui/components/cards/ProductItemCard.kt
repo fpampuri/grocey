@@ -117,15 +117,6 @@ fun ProductItemCard(
                     // Strike-through when bought (only in LIST mode)
                     textDecoration = if (mode == ProductCardMode.LIST && data.isBought) TextDecoration.LineThrough else TextDecoration.None
                 )
-                // Only show category in LIST mode
-                if (mode == ProductCardMode.LIST) {
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = data.category,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                    )
-                }
             }
 
             Spacer(modifier = Modifier.width(12.dp))
