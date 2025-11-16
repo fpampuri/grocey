@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.groceyapp.data.model.*
 import com.example.groceyapp.data.repository.ShoppingListRepository
+import com.example.groceyapp.ui.viewmodel.support.CollectionCountTracker
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,8 +29,8 @@ class ShoppingListViewModel : ViewModel() {
     private val _listItems = MutableStateFlow<List<ListItem>>(emptyList())
     val listItems: StateFlow<List<ListItem>> = _listItems.asStateFlow()
 
-    private val _listItemCounts = MutableStateFlow<Map<Int, Int>>(emptyMap())
-    val listItemCounts: StateFlow<Map<Int, Int>> = _listItemCounts.asStateFlow()
+    private val countTracker = CollectionCountTracker(viewModelScope)
+    val listItemCounts: StateFlow<Map<Int, Int>> = countTracker.counts
     
     // Loading & error states
     private val _isLoading = MutableStateFlow(false)
@@ -51,22 +52,12 @@ class ShoppingListViewModel : ViewModel() {
             when (result) {
                 is ApiResult.Success -> {
                     _lists.value = result.data
-                    // Warm up item counts in background
-                    result.data.forEach { list ->
-                        list.id?.let { id ->
-                            viewModelScope.launch {
-                                when (val countRes = repository.getListItemCount(id)) {
-                                    is ApiResult.Success -> {
-                                        _listItemCounts.value = _listItemCounts.value.toMutableMap().apply {
-                                            this[id] = countRes.data
-                                        }
-                                    }
-                                    is ApiResult.Error -> {
-                                        // Non-fatal: ignore count errors
-                                    }
-                                    else -> {}
-                                }
-                            }
+                    countTracker.warmUp(
+                        result.data.mapNotNull { it.id }
+                    ) { listId ->
+                        when (val countRes = repository.getListItemCount(listId)) {
+                            is ApiResult.Success -> countRes.data
+                            else -> 0
                         }
                     }
                 }
@@ -114,6 +105,7 @@ class ShoppingListViewModel : ViewModel() {
             when (result) {
                 is ApiResult.Success -> {
                     _listItems.value = result.data
+                    countTracker.set(listId, result.data.size)
                 }
                 is ApiResult.Error -> {
                     _errorMessage.value = result.message
@@ -255,15 +247,6 @@ class ShoppingListViewModel : ViewModel() {
             when (result) {
                 is ApiResult.Success -> {
                     loadListItems(listId)
-                    // Refresh count for this list
-                    when (val countRes = repository.getListItemCount(listId)) {
-                        is ApiResult.Success -> {
-                            _listItemCounts.value = _listItemCounts.value.toMutableMap().apply {
-                                this[listId] = countRes.data
-                            }
-                        }
-                        else -> {}
-                    }
                     onSuccess()
                 }
                 is ApiResult.Error -> {
@@ -346,15 +329,6 @@ class ShoppingListViewModel : ViewModel() {
             when (result) {
                 is ApiResult.Success -> {
                     loadListItems(listId)
-                    // Refresh count for this list after deletion
-                    when (val countRes = repository.getListItemCount(listId)) {
-                        is ApiResult.Success -> {
-                            _listItemCounts.value = _listItemCounts.value.toMutableMap().apply {
-                                this[listId] = countRes.data
-                            }
-                        }
-                        else -> {}
-                    }
                     onSuccess()
                 }
                 is ApiResult.Error -> {
