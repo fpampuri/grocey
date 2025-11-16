@@ -22,6 +22,9 @@ class ShoppingListViewModel : ViewModel() {
     private val _lists = MutableStateFlow<List<ShoppingList>>(emptyList())
     val lists: StateFlow<List<ShoppingList>> = _lists.asStateFlow()
     
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+    
     private val _selectedList = MutableStateFlow<ShoppingList?>(null)
     val selectedList: StateFlow<ShoppingList?> = _selectedList.asStateFlow()
     
@@ -42,12 +45,15 @@ class ShoppingListViewModel : ViewModel() {
     /**
      * Load all shopping lists
      */
-    fun loadShoppingLists() {
+    fun loadShoppingLists(searchQuery: String? = null) {
         viewModelScope.launch {
             _isLoading.value = true
             _errorMessage.value = null
             
-            val result = repository.getAllShoppingLists()
+            // Store the search query
+            _searchQuery.value = searchQuery ?: ""
+            
+            val result = repository.getAllShoppingLists(searchQuery)
             
             when (result) {
                 is ApiResult.Success -> {

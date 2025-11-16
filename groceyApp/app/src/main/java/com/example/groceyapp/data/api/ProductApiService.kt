@@ -18,7 +18,9 @@ interface ProductApiService {
     ): Response<Product>
     
     @GET("products")
-    suspend fun getAllProducts(): Response<PaginatedResponse<Product>>
+    suspend fun getAllProducts(
+        @Query("name") name: String? = null
+    ): Response<PaginatedResponse<Product>>
     
     @GET("products/{id}")
     suspend fun getProduct(

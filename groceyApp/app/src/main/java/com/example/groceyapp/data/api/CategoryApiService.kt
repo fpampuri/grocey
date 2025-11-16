@@ -18,7 +18,9 @@ interface CategoryApiService {
     ): Response<Category>
     
     @GET("categories")
-    suspend fun getAllCategories(): Response<PaginatedResponse<Category>>
+    suspend fun getAllCategories(
+        @Query("name") name: String? = null
+    ): Response<PaginatedResponse<Category>>
     
     @GET("categories/{id}")
     suspend fun getCategory(

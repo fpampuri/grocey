@@ -21,8 +21,8 @@ class ShoppingListRepository {
         }
     }
     
-    suspend fun getAllShoppingLists(): ApiResult<List<ShoppingList>> {
-        return when (val result = ApiHelper.safeApiCall { shoppingListApi.getAllShoppingLists() }) {
+    suspend fun getAllShoppingLists(name: String? = null): ApiResult<List<ShoppingList>> {
+        return when (val result = ApiHelper.safeApiCall { shoppingListApi.getAllShoppingLists(name) }) {
             is ApiResult.Success -> ApiResult.Success(result.data.data) // Extract data from pagination
             is ApiResult.Error -> result
             is ApiResult.Loading -> result

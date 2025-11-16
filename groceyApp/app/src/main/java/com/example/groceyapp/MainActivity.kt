@@ -166,10 +166,15 @@ fun ListsApp() {
     // Products and categories from API
     val products by productViewModel.products.collectAsState()
     val categories by productViewModel.categories.collectAsState()
+    val productSearchQuery by productViewModel.searchQuery.collectAsState()
     
     // Pantries and pantry items from API
     val pantries by pantryViewModel.pantries.collectAsState()
     val pantryItems by pantryViewModel.pantryItems.collectAsState()
+    val pantrySearchQuery by pantryViewModel.searchQuery.collectAsState()
+    
+    // Shopping list search query
+    val listSearchQuery by shoppingListViewModel.searchQuery.collectAsState()
 
     GroceyAppTheme(darkTheme = isDarkMode) {
         // Snackbar + coroutine scope for showing feedback
@@ -373,6 +378,12 @@ fun ListsApp() {
                     },
                     currentDestination = currentDestination,
                     onDestinationSelected = { destination ->
+                        // Clear search when switching tabs
+                        when (destination) {
+                            HomeDestination.Lists -> shoppingListViewModel.loadShoppingLists(null)
+                            HomeDestination.Products -> productViewModel.searchCategoriesAndProducts(null)
+                            HomeDestination.Pantry -> pantryViewModel.searchPantries("")
+                        }
                         currentDestination = destination
                         selectedListId = null  // Go back to main view when switching tabs
                     },
@@ -561,6 +572,12 @@ fun ListsApp() {
                 },
                 currentDestination = currentDestination,
                 onDestinationSelected = { destination ->
+                    // Clear search when switching tabs
+                    when (destination) {
+                        HomeDestination.Lists -> shoppingListViewModel.loadShoppingLists(null)
+                        HomeDestination.Products -> productViewModel.searchCategoriesAndProducts(null)
+                        HomeDestination.Pantry -> pantryViewModel.searchPantries("")
+                    }
                     currentDestination = destination
                     selectedCategoryId = null  // Go back to main view when switching tabs
                 }
@@ -625,6 +642,12 @@ fun ListsApp() {
                 },
                 currentDestination = currentDestination,
                 onDestinationSelected = { destination ->
+                    // Clear search when switching tabs
+                    when (destination) {
+                        HomeDestination.Lists -> shoppingListViewModel.loadShoppingLists(null)
+                        HomeDestination.Products -> productViewModel.searchCategoriesAndProducts(null)
+                        HomeDestination.Pantry -> pantryViewModel.searchPantries("")
+                    }
                     currentDestination = destination
                     selectedPantryId = null
                 },
@@ -748,6 +771,12 @@ fun ListsApp() {
                                 HomeFloatingNav(
                                     currentDestination = currentDestination,
                                     onDestinationSelected = { destination ->
+                                        // Clear search when switching tabs
+                                        when (destination) {
+                                            HomeDestination.Lists -> shoppingListViewModel.loadShoppingLists(null)
+                                            HomeDestination.Products -> productViewModel.searchCategoriesAndProducts(null)
+                                            HomeDestination.Pantry -> pantryViewModel.searchPantries("")
+                                        }
                                         currentDestination = destination
                                     }
                                 )
@@ -762,6 +791,12 @@ fun ListsApp() {
                         HomeBottomBar(
                             currentDestination = currentDestination,
                             onDestinationSelected = { destination ->
+                                // Clear search when switching tabs
+                                when (destination) {
+                                    HomeDestination.Lists -> shoppingListViewModel.loadShoppingLists(null)
+                                    HomeDestination.Products -> productViewModel.searchCategoriesAndProducts(null)
+                                    HomeDestination.Pantry -> pantryViewModel.searchPantries("")
+                                }
                                 currentDestination = destination
                             }
                         )
@@ -773,6 +808,7 @@ fun ListsApp() {
                         HomeDestination.Pantry -> PantryScreen(
                             modifier = contentModifier,
                             items = pantryCards,
+                            searchQuery = pantrySearchQuery,
                             onMenuClick = { isMenuOpen = true },
                             onPantryDelete = { pantryId ->
                                 pantryId?.let {
@@ -794,11 +830,15 @@ fun ListsApp() {
                             },
                             onPantryClick = { pantryData ->
                             selectedPantryId = pantryData.id
+                            },
+                            onSearchQueryChange = { query ->
+                                pantryViewModel.searchPantries(query)
                             }
                         )
                         HomeDestination.Products -> ProductsScreen(
                             modifier = contentModifier,
                             items = categoryCards,
+                            searchQuery = productSearchQuery,
                             onMenuClick = { isMenuOpen = true },
                             onCategoryDelete = { categoryId ->
                                 categoryId?.let {
@@ -820,11 +860,15 @@ fun ListsApp() {
                             },
                             onCategoryClick = { categoryData ->
                                 selectedCategoryId = categoryData.id
+                            },
+                            onSearchQueryChange = { query ->
+                                productViewModel.searchCategoriesAndProducts(query.ifBlank { null })
                             }
                         )
                         HomeDestination.Lists -> ListsScreen(
                             modifier = contentModifier,
                             items = lists,
+                            searchQuery = listSearchQuery,
                             onListClick = { listId -> selectedListId = listId },
                             onMenuClick = { isMenuOpen = true },
                             onRename = { listId ->
@@ -848,6 +892,9 @@ fun ListsApp() {
                                     listToShare = Pair(id, list.name)
                                     showShareListDialog = true
                                 }
+                            },
+                            onSearchQueryChange = { query ->
+                                shoppingListViewModel.loadShoppingLists(query.ifBlank { null })
                             }
                         )
                     }
@@ -860,7 +907,15 @@ fun ListsApp() {
                         {
                             HomeBottomBar(
                                 currentDestination = currentDestination,
-                                onDestinationSelected = { currentDestination = it },
+                                onDestinationSelected = { destination ->
+                                    // Clear search when switching tabs
+                                    when (destination) {
+                                        HomeDestination.Lists -> shoppingListViewModel.loadShoppingLists(null)
+                                        HomeDestination.Products -> productViewModel.searchCategoriesAndProducts(null)
+                                        HomeDestination.Pantry -> pantryViewModel.searchPantries("")
+                                    }
+                                    currentDestination = destination
+                                },
                                 isVertical = true
                             )
                         }

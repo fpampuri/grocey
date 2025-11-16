@@ -26,41 +26,35 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 
 /**
- * Generic collection screen that centralizes search bar, filtering and list layout.
- * T is the item type for the collection; callers provide itemContent to render each row
- * and itemMatchesQuery to define how an item matches the search query.
+ * Generic collection screen that centralizes search bar and list layout.
+ * T is the item type for the collection; callers provide itemContent to render each row.
+ * Search filtering is handled by the backend via onSearchQueryChange callback.
  */
 @Composable
 fun <T> GenericCollectionScreen(
     modifier: Modifier = Modifier,
     items: List<T>,
     placeholder: String,
+    searchQuery: String = "",
     onMenuClick: () -> Unit = {},
-    itemMatchesQuery: (T, String) -> Boolean,
+    onSearchQueryChange: (String) -> Unit = {},
     itemKey: ((T) -> Any)? = null,
     itemContent: @Composable (T) -> Unit,
     emptyIcon: ImageVector? = null,
     @StringRes emptyMessageRes: Int? = null,
     @StringRes emptyHintRes: Int? = null
 ) {
-    var searchQuery by remember { mutableStateOf("") }
-
-    val filteredItems = remember(searchQuery, items) {
-        if (searchQuery.isBlank()) items
-        else items.filter { item -> itemMatchesQuery(item, searchQuery) }
-    }
-
     Column(modifier = modifier.fillMaxSize()) {
         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
             TopSearchBar(
                 placeholder = placeholder,
                 searchQuery = searchQuery,
-                onSearchQueryChange = { searchQuery = it },
+                onSearchQueryChange = onSearchQueryChange,
                 onMenuClick = onMenuClick
             )
             Spacer(modifier = Modifier.height(16.dp))
             
-            if (filteredItems.isEmpty() && emptyIcon != null && emptyMessageRes != null) {
+            if (items.isEmpty() && emptyIcon != null && emptyMessageRes != null) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -78,9 +72,9 @@ fun <T> GenericCollectionScreen(
                     contentPadding = PaddingValues(bottom = 80.dp)
                 ) {
                     if (itemKey != null) {
-                        items(filteredItems, key = itemKey) { item -> itemContent(item) }
+                        items(items, key = itemKey) { item -> itemContent(item) }
                     } else {
-                        items(filteredItems) { item -> itemContent(item) }
+                        items(items) { item -> itemContent(item) }
                     }
                 }
             }

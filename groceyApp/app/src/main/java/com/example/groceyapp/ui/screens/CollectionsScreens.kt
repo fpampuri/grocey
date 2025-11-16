@@ -74,20 +74,23 @@ enum class HomeDestination(@StringRes val labelRes: Int, val icon: ImageVector) 
 fun ListsScreen(
     modifier: Modifier = Modifier,
     items: List<ListCardData>? = null,
+    searchQuery: String = "",
     onListClick: (String) -> Unit = {},
     onFavoriteToggle: (String) -> Unit = {},
     onRename: (String) -> Unit = {},
     onDelete: (String) -> Unit = {},
     onShare: (String) -> Unit = {},
-    onMenuClick: () -> Unit = {}
+    onMenuClick: () -> Unit = {},
+    onSearchQueryChange: (String) -> Unit = {}
 ) {
     val resolvedItems = items ?: emptyList()
 
     GenericCollectionScreen(
         items = resolvedItems,
         placeholder = stringResource(R.string.search_lists_placeholder),
+        searchQuery = searchQuery,
         onMenuClick = onMenuClick,
-        itemMatchesQuery = { list, q -> list.title.contains(q, ignoreCase = true) },
+        onSearchQueryChange = onSearchQueryChange,
         itemKey = { it.id },
         itemContent = { item ->
             ListCard(
@@ -109,21 +112,21 @@ fun ListsScreen(
 fun PantryScreen(
     modifier: Modifier = Modifier,
     items: List<CategoryCardData>? = null,
+    searchQuery: String = "",
     onMenuClick: () -> Unit = {},
     onPantryDelete: (Long?) -> Unit = {},
     onPantryRename: (Long?) -> Unit = {},
-    onPantryClick: (CategoryCardData) -> Unit = {}
+    onPantryClick: (CategoryCardData) -> Unit = {},
+    onSearchQueryChange: (String) -> Unit = {}
 ) {
     val resolvedItems = items ?: emptyList()
 
     GenericCollectionScreen(
         items = resolvedItems,
         placeholder = stringResource(R.string.search_pantry_placeholder),
+        searchQuery = searchQuery,
         onMenuClick = onMenuClick,
-        itemMatchesQuery = { category, q ->
-            category.title.contains(q, ignoreCase = true) ||
-                category.products.any { product -> product.contains(q, ignoreCase = true) }
-        },
+        onSearchQueryChange = onSearchQueryChange,
         itemKey = { it.title },
         itemContent = { item -> 
             CategoryCard(
@@ -145,21 +148,21 @@ fun PantryScreen(
 fun ProductsScreen(
     modifier: Modifier = Modifier,
     items: List<CategoryCardData>? = null,
+    searchQuery: String = "",
     onMenuClick: () -> Unit = {},
     onCategoryDelete: (Long?) -> Unit = {},
     onCategoryRename: (Long?) -> Unit = {},
-    onCategoryClick: (CategoryCardData) -> Unit = {}
+    onCategoryClick: (CategoryCardData) -> Unit = {},
+    onSearchQueryChange: (String) -> Unit = {}
 ) {
     val resolvedItems = items ?: emptyList()
 
     GenericCollectionScreen(
         items = resolvedItems,
         placeholder = stringResource(R.string.search_products_placeholder),
+        searchQuery = searchQuery,
         onMenuClick = onMenuClick,
-        itemMatchesQuery = { category, q ->
-            category.title.contains(q, ignoreCase = true) ||
-                category.products.any { product -> product.contains(q, ignoreCase = true) }
-        },
+        onSearchQueryChange = onSearchQueryChange,
         itemKey = { it.title },
         itemContent = { item -> 
             CategoryCard(

@@ -20,8 +20,12 @@ class PantryViewModel : ViewModel() {
     private val repository = PantryRepository()
     
     // Pantries state
+    private val _allPantries = MutableStateFlow<List<Pantry>>(emptyList())
     private val _pantries = MutableStateFlow<List<Pantry>>(emptyList())
     val pantries: StateFlow<List<Pantry>> = _pantries.asStateFlow()
+    
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
     
     private val _selectedPantry = MutableStateFlow<Pantry?>(null)
     val selectedPantry: StateFlow<Pantry?> = _selectedPantry.asStateFlow()
@@ -57,7 +61,8 @@ class PantryViewModel : ViewModel() {
                     result.data.forEach { pantry ->
                         Log.d("PantryViewModel", "Pantry: ${pantry.name}, id: ${pantry.id}, metadata: ${pantry.metadata}")
                     }
-                    _pantries.value = result.data
+                    _allPantries.value = result.data
+                    applySearchFilter()
                     countTracker.warmUp(
                         result.data.mapNotNull { it.id }
                     ) { pantryId ->
@@ -75,6 +80,28 @@ class PantryViewModel : ViewModel() {
             }
             
             _isLoading.value = false
+        }
+    }
+    
+    /**
+     * Search pantries by name (frontend filtering)
+     */
+    fun searchPantries(query: String) {
+        _searchQuery.value = query
+        applySearchFilter()
+    }
+    
+    /**
+     * Apply search filter to pantries
+     */
+    private fun applySearchFilter() {
+        val query = _searchQuery.value.trim()
+        _pantries.value = if (query.isEmpty()) {
+            _allPantries.value
+        } else {
+            _allPantries.value.filter { pantry ->
+                pantry.name.contains(query, ignoreCase = true)
+            }
         }
     }
     

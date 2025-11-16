@@ -27,6 +27,10 @@ class ProductViewModel : ViewModel() {
     private val _categories = MutableStateFlow<List<Category>>(emptyList())
     val categories: StateFlow<List<Category>> = _categories.asStateFlow()
     
+    // Search query state
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+    
     // Loading & error states
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -37,12 +41,12 @@ class ProductViewModel : ViewModel() {
     /**
      * Load all products
      */
-    fun loadProducts() {
+    fun loadProducts(searchQuery: String? = null) {
         viewModelScope.launch {
             _isLoading.value = true
             _errorMessage.value = null
             
-            val result = productRepository.getAllProducts()
+            val result = productRepository.getAllProducts(searchQuery)
             
             when (result) {
                 is ApiResult.Success -> {
@@ -61,12 +65,12 @@ class ProductViewModel : ViewModel() {
     /**
      * Load all categories
      */
-    fun loadCategories() {
+    fun loadCategories(searchQuery: String? = null) {
         viewModelScope.launch {
             _isLoading.value = true
             _errorMessage.value = null
             
-            val result = categoryRepository.getAllCategories()
+            val result = categoryRepository.getAllCategories(searchQuery)
             
             when (result) {
                 is ApiResult.Success -> {
@@ -78,6 +82,96 @@ class ProductViewModel : ViewModel() {
                     _errorMessage.value = result.message
                 }
                 is ApiResult.Loading -> {}
+            }
+            
+            _isLoading.value = false
+        }
+    }
+    
+    /**
+     * Smart search for categories and products
+     * Shows categories that match by name OR contain products matching the query
+     * For categories matched by name, shows ALL their products
+     */
+    fun searchCategoriesAndProducts(searchQuery: String?) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _errorMessage.value = null
+            
+            // Store the search query
+            _searchQuery.value = searchQuery ?: ""
+            
+            if (searchQuery.isNullOrBlank()) {
+                // No search query - load all categories and products
+                loadCategories(null)
+                loadProducts(null)
+                _isLoading.value = false
+                return@launch
+            }
+            
+            // Search categories by name
+            val categoriesResult = categoryRepository.getAllCategories(searchQuery)
+            
+            // Search products by name
+            val productsResult = productRepository.getAllProducts(searchQuery)
+            
+            // Get all products (to show complete categories when matched by name)
+            val allProductsResult = productRepository.getAllProducts(null)
+            
+            // Get all categories (without filter) to show categories with matching products
+            val allCategoriesResult = categoryRepository.getAllCategories(null)
+            
+            when {
+                categoriesResult is ApiResult.Success && 
+                productsResult is ApiResult.Success && 
+                allProductsResult is ApiResult.Success &&
+                allCategoriesResult is ApiResult.Success -> {
+                    
+                    val matchingProducts = productsResult.data
+                    val matchingCategories = categoriesResult.data
+                    val allProducts = allProductsResult.data
+                    val allCategories = allCategoriesResult.data
+                    
+                    // Get category IDs from matching products
+                    val categoryIdsFromProducts = matchingProducts
+                        .mapNotNull { it.category?.id }
+                        .toSet()
+                    
+                    // Get category IDs from matching categories
+                    val categoryIdsFromCategories = matchingCategories
+                        .mapNotNull { it.id }
+                        .toSet()
+                    
+                    // Combine both sets
+                    val allMatchingCategoryIds = categoryIdsFromProducts + categoryIdsFromCategories
+                    
+                    // Filter all categories to only show matching ones
+                    val filteredCategories = allCategories.filter { category ->
+                        category.id in allMatchingCategoryIds
+                    }
+                    
+                    // For products: show ALL products from matching categories
+                    // This ensures categories matched by name show all their products
+                    val filteredProducts = allProducts.filter { product ->
+                        product.category?.id in allMatchingCategoryIds
+                    }
+                    
+                    _categories.value = filteredCategories
+                    _products.value = filteredProducts
+                }
+                categoriesResult is ApiResult.Error -> {
+                    _errorMessage.value = categoriesResult.message
+                }
+                productsResult is ApiResult.Error -> {
+                    _errorMessage.value = productsResult.message
+                }
+                allProductsResult is ApiResult.Error -> {
+                    _errorMessage.value = allProductsResult.message
+                }
+                allCategoriesResult is ApiResult.Error -> {
+                    _errorMessage.value = allCategoriesResult.message
+                }
+                else -> {}
             }
             
             _isLoading.value = false

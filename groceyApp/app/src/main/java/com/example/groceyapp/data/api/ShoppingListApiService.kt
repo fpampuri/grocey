@@ -19,7 +19,9 @@ interface ShoppingListApiService {
     ): Response<ShoppingList>
     
     @GET("shopping-lists")
-    suspend fun getAllShoppingLists(): Response<PaginatedResponse<ShoppingList>>
+    suspend fun getAllShoppingLists(
+        @Query("name") name: String? = null
+    ): Response<PaginatedResponse<ShoppingList>>
     
     @GET("shopping-lists/{id}")
     suspend fun getShoppingList(
