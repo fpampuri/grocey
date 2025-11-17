@@ -169,7 +169,9 @@ fun ProductsScreen(
                 item,
                 onDelete = onCategoryDelete,
                 onRename = onCategoryRename,
-                onClick = onCategoryClick
+                onClick = onCategoryClick,
+                editTextRes = R.string.edit_category,
+                deleteTextRes = R.string.delete_category
             )
         },
         emptyIcon = Icons.Filled.Store,

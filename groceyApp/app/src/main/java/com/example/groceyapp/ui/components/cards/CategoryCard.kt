@@ -4,6 +4,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -110,53 +111,58 @@ fun CategoryCard(
 
         Spacer(modifier = Modifier.width(4.dp))
 
-        // Three-dot menu
-        IconButton(
-            onClick = { showMenu = !showMenu },
-            modifier = Modifier.size(24.dp)
+        // Three-dot menu - stop click propagation to parent card
+        androidx.compose.foundation.layout.Box(
+            modifier = Modifier.clickable(
+                onClick = { showMenu = !showMenu },
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            )
         ) {
             Icon(
                 imageVector = Icons.Default.MoreVert,
                 contentDescription = "Options",
-                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                modifier = Modifier.size(24.dp)
             )
-        }
 
-        // Dropdown menu
-        DropdownMenu(
-            expanded = showMenu,
-            onDismissRequest = { showMenu = false }
-        ) {
-            if (!isMiscellaneous && !data.isProtected) {
-                editTextRes?.let { resId ->
-                    DropdownMenuItem(
-                        text = { Text(androidx.compose.ui.res.stringResource(resId)) },
-                        onClick = {
-                            showMenu = false
-                            onRename?.invoke(data.id)
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = null
-                            )
-                        }
-                    )
-                }
-                deleteTextRes?.let { resId ->
-                    DropdownMenuItem(
-                        text = { Text(androidx.compose.ui.res.stringResource(resId)) },
-                        onClick = {
-                            showMenu = false
-                            onDelete?.invoke(data.id)
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = null
-                            )
-                        }
-                    )
+            // Dropdown menu
+            DropdownMenu(
+                expanded = showMenu,
+                onDismissRequest = { showMenu = false }
+            ) {
+                if (!isMiscellaneous && !data.isProtected) {
+                    editTextRes?.let { resId ->
+                        DropdownMenuItem(
+                            text = { Text(androidx.compose.ui.res.stringResource(resId)) },
+                            onClick = {
+                                showMenu = false
+                                onRename?.invoke(data.id)
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = null
+                                )
+                            }
+                        )
+                    }
+                    deleteTextRes?.let { resId ->
+                        DropdownMenuItem(
+                            text = { Text(androidx.compose.ui.res.stringResource(resId)) },
+                            onClick = {
+                                showMenu = false
+                                onDelete?.invoke(data.id)
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Delete,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        )
+                    }
                 }
             }
         }
