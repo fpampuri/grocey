@@ -32,7 +32,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material.icons.rounded.LocalGroceryStore
 import androidx.compose.material.icons.rounded.ShoppingCart
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -228,15 +227,14 @@ fun ListsApp() {
             Log.d("MainActivity", "List ${apiList.name} has icon metadata: $iconName")
             val icon = mapStringToIcon(iconName)
             
-            ListCardData(
-                id = apiList.id?.toString() ?: "",
-                title = apiList.name,
-                itemCount = apiList.id?.let { itemCounts[it] } ?: 0,
-                leadingIcon = icon,
-                isFavorite = false,
-                isShared = apiList.sharedWith?.isNotEmpty() == true,
-                products = emptyList()
-            )
+        ListCardData(
+            id = apiList.id?.toString() ?: "",
+            title = apiList.name,
+            itemCount = apiList.id?.let { itemCounts[it] } ?: 0,
+            leadingIcon = icon,
+            isShared = apiList.sharedWith?.isNotEmpty() == true,
+            products = emptyList()
+        )
         }
 
     // Convert API categories and products to UI format

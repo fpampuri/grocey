@@ -1,6 +1,5 @@
 package com.example.groceyapp.ui.components
 
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -35,7 +33,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
 import com.example.groceyapp.Constants
@@ -65,10 +62,6 @@ fun CategoryCard(
     var isExpanded by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
     val borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
-    val rotationAngle by animateFloatAsState(
-        targetValue = if (isExpanded) 90f else 0f,
-        label = "chevron rotation"
-    )
     val isMiscellaneous = data.id == Constants.MISCELLANEOUS_CATEGORY_ID
 
     CollectionCardShell(
@@ -101,15 +94,7 @@ fun CategoryCard(
         //     Spacer(modifier = Modifier.width(8.dp))
         // }
 
-        // Chevron icon (rotates when expanded)
-        Icon(
-            imageVector = Icons.Default.ChevronRight,
-            contentDescription = if (isExpanded) "Collapse" else "Expand",
-            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
-            modifier = Modifier.rotate(rotationAngle)
-        )
-
-        Spacer(modifier = Modifier.width(4.dp))
+        Spacer(modifier = Modifier.width(12.dp))
 
         // Three-dot menu - stop click propagation to parent card
         androidx.compose.foundation.layout.Box(
@@ -226,4 +211,3 @@ fun CategoryCard(
     }
 
 }
-

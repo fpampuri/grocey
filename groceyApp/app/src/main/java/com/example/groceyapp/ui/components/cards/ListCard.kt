@@ -16,8 +16,6 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -46,7 +44,6 @@ data class ListCardData(
     val title: String,
     val itemCount: Int,
     val leadingIcon: androidx.compose.ui.graphics.vector.ImageVector,
-    val isFavorite: Boolean = false,
     val isShared: Boolean = false,
     val products: List<ProductItemData> = emptyList()
 )
@@ -59,7 +56,6 @@ data class ListCardData(
 fun ListCard(
     data: ListCardData,
     onClick: (String) -> Unit = {},
-    onFavoriteToggle: (String) -> Unit = {},
     onRename: (String) -> Unit = {},
     onDelete: (String) -> Unit = {},
     onShare: (String) -> Unit = {},
@@ -98,31 +94,6 @@ fun ListCard(
                 SharedBadge(androidx.compose.ui.res.stringResource(R.string.shared_label))
                 Spacer(modifier = Modifier.width(8.dp))
             }
-
-            // Favorite star toggle (size aligned with CategoryCard)
-            // API CHANGE: The favorite toggle should persist via ViewModel/Repository.
-            // Callers should pass a ViewModel method (e.g. `collectionsViewModel.toggleFavorite(id)`) 
-            // that updates the backend/DB instead of mutating only in-memory state.
-            IconButton(
-                onClick = { 
-                    onFavoriteToggle(data.id)
-                },
-                modifier = Modifier.size(24.dp)
-            ) {
-                Icon(
-                    imageVector = if (data.isFavorite) Icons.Filled.Star else Icons.Outlined.StarBorder,
-                    contentDescription = if (data.isFavorite) 
-                        androidx.compose.ui.res.stringResource(R.string.remove_from_favorites) 
-                    else 
-                        androidx.compose.ui.res.stringResource(R.string.add_to_favorites),
-                    tint = if (data.isFavorite) 
-                        MaterialTheme.colorScheme.secondary 
-                    else 
-                        MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(4.dp))
 
             // Reuse shared options menu to avoid duplicate logic
             com.example.groceyapp.ui.components.general.ListOptionsMenu(

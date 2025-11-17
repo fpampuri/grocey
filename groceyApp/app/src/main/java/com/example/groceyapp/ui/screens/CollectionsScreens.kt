@@ -76,7 +76,6 @@ fun ListsScreen(
     items: List<ListCardData>? = null,
     searchQuery: String = "",
     onListClick: (String) -> Unit = {},
-    onFavoriteToggle: (String) -> Unit = {},
     onRename: (String) -> Unit = {},
     onDelete: (String) -> Unit = {},
     onShare: (String) -> Unit = {},
@@ -96,7 +95,6 @@ fun ListsScreen(
             ListCard(
                 data = item,
                 onClick = onListClick,
-                onFavoriteToggle = onFavoriteToggle,
                 onRename = onRename,
                 onDelete = onDelete,
                 onShare = onShare
