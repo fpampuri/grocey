@@ -144,8 +144,11 @@ fun PantryDetailScreen(
             }
         }
     ) { paddingValues ->
-        // Map API pantry items to UI card data
-        val itemsUi = pantryItems.map { item ->
+        // Map API pantry items to UI card data, filtering out items with deleted products
+        val itemsUi = pantryItems.mapNotNull { item ->
+            // Skip items where the product has been deleted
+            if (item.product == null) return@mapNotNull null
+            
             PantryItemCardData(
                 id = item.id ?: 0,
                 productName = item.product.name,

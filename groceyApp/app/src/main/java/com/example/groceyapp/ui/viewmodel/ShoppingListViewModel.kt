@@ -61,8 +61,9 @@ class ShoppingListViewModel : ViewModel() {
                     countTracker.warmUp(
                         result.data.mapNotNull { it.id }
                     ) { listId ->
-                        when (val countRes = repository.getListItemCount(listId)) {
-                            is ApiResult.Success -> countRes.data
+                        // Get actual items and count only those with valid products
+                        when (val itemsResult = repository.getAllListItems(listId)) {
+                            is ApiResult.Success -> itemsResult.data.count { it.product != null }
                             else -> 0
                         }
                     }
@@ -111,7 +112,9 @@ class ShoppingListViewModel : ViewModel() {
             when (result) {
                 is ApiResult.Success -> {
                     _listItems.value = result.data
-                    countTracker.set(listId, result.data.size)
+                    // Count only items with valid products (filter out deleted products)
+                    val validItemCount = result.data.count { it.product != null }
+                    countTracker.set(listId, validItemCount)
                 }
                 is ApiResult.Error -> {
                     _errorMessage.value = result.message
@@ -241,6 +244,12 @@ class ShoppingListViewModel : ViewModel() {
     ) {
         viewModelScope.launch {
             _errorMessage.value = null
+            
+            // Validate that productId is not 0 or negative
+            if (productId <= 0) {
+                _errorMessage.value = "Invalid product ID"
+                return@launch
+            }
             
             val itemCreate = ListItemCreate(
                 product = ProductReference(productId),

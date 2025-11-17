@@ -57,6 +57,7 @@ fun CategoryDetailScreen(
     lists: List<com.example.groceyapp.data.model.ShoppingList>,
     pantries: List<com.example.groceyapp.data.model.Pantry>,
     onBackClick: () -> Unit = {},
+    onProductUpdate: (Int, String) -> Unit = { _, _ -> },
     onProductMoveToCategory: (Int, Int) -> Unit = { _, _ -> },
     onProductAddToList: (Int, Int, Double) -> Unit = { _, _, _ -> },
     onProductAddToPantry: (Int, Int, Double) -> Unit = { _, _, _ -> },
@@ -75,6 +76,7 @@ fun CategoryDetailScreen(
     var showAddProductDialog by remember { mutableStateOf(false) }
     var showAddToListDialog by remember { mutableStateOf(false) }
     var showAddToPantryDialog by remember { mutableStateOf(false) }
+    var showEditProductDialog by remember { mutableStateOf(false) }
     var selectedProduct by remember { mutableStateOf<com.example.groceyapp.data.model.Product?>(null) }
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -196,6 +198,10 @@ fun CategoryDetailScreen(
                                 isBought = false
                             ),
                             mode = ProductCardMode.CATEGORY,
+                            onEdit = {
+                                selectedProduct = product
+                                showEditProductDialog = true
+                            },
                             onMoveToCategory = {
                                 selectedProduct = product
                                 showMoveCategoryDialog = true
@@ -325,6 +331,24 @@ fun CategoryDetailScreen(
                     onProductAddToPantry(pantryId, productId, quantity)
                 }
                 showAddToPantryDialog = false
+                selectedProduct = null
+            }
+        )
+    }
+    
+    // Edit Product Dialog (outside Scaffold)
+    if (showEditProductDialog && selectedProduct != null) {
+        com.example.groceyapp.ui.components.dialogs.EditProductDialog(
+            currentName = selectedProduct!!.name,
+            onDismiss = {
+                showEditProductDialog = false
+                selectedProduct = null
+            },
+            onUpdate = { newName ->
+                selectedProduct?.id?.let { productId ->
+                    onProductUpdate(productId, newName)
+                }
+                showEditProductDialog = false
                 selectedProduct = null
             }
         )

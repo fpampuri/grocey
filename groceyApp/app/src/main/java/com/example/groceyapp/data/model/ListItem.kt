@@ -22,7 +22,7 @@ data class ListItem(
     val purchased: Boolean? = null,
     
     @SerializedName("product")
-    val product: Product,
+    val product: Product? = null,
     
     @SerializedName("lastPurchasedAt")
     val lastPurchasedAt: String? = null,

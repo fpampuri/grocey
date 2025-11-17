@@ -66,8 +66,9 @@ class PantryViewModel : ViewModel() {
                     countTracker.warmUp(
                         result.data.mapNotNull { it.id }
                     ) { pantryId ->
-                        when (val itemsResult = repository.getPantryItemCount(pantryId)) {
-                            is ApiResult.Success -> itemsResult.data
+                        // Get actual items and count only those with valid products
+                        when (val itemsResult = repository.getAllPantryItems(pantryId)) {
+                            is ApiResult.Success -> itemsResult.data.count { it.product != null }
                             else -> 0
                         }
                     }
@@ -144,7 +145,9 @@ class PantryViewModel : ViewModel() {
                         Log.d("PantryViewModel", "  Item ${item.id}: ${item.product?.name}, quantity=${item.quantity}")
                     }
                     _pantryItems.value = result.data
-                    countTracker.set(pantryId, result.data.size)
+                    // Count only items with valid products (filter out deleted products)
+                    val validItemCount = result.data.count { it.product != null }
+                    countTracker.set(pantryId, validItemCount)
                 }
                 is ApiResult.Error -> {
                     Log.e("PantryViewModel", "Error loading pantry items: ${result.message}")

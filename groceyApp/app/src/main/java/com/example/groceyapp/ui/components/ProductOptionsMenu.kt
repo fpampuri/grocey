@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Kitchen
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
@@ -26,6 +27,7 @@ import com.example.groceyapp.R
 
 @Composable
 fun ProductOptionsMenu(
+    onEdit: () -> Unit,
     onMoveToCategory: () -> Unit,
     onAddToList: () -> Unit,
     onAddToPantry: () -> Unit,
@@ -47,6 +49,27 @@ fun ProductOptionsMenu(
             onDismissRequest = { expanded = false },
             offset = DpOffset(x = 0.dp, y = 4.dp)
         ) {
+            // Edit Product Name
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        text = stringResource(id = R.string.edit),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Filled.Edit,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                onClick = {
+                    expanded = false
+                    onEdit()
+                }
+            )
+
             // Move to Category
             DropdownMenuItem(
                 text = {

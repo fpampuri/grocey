@@ -19,7 +19,7 @@ data class PantryItem(
     val metadata: Map<String, Any>? = null,
     
     @SerializedName("product")
-    val product: Product,
+    val product: Product? = null,
     
     @SerializedName("createdAt")
     val createdAt: String? = null,

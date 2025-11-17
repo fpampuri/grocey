@@ -118,4 +118,7 @@
     <string name="cancel">Cancelar</string>
     <string name="add">Agregar</string>
     <string name="miscellaneous">Varios</string>
+    <string name="edit_product">Editar Producto</string>
+    <string name="product_updated">Producto "%1$s" actualizado exitosamente</string>
+    <string name="edit">Editar</string>
 </resources>

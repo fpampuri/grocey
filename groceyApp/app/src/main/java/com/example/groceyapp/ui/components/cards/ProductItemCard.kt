@@ -70,6 +70,7 @@ fun ProductItemCard(
     onToggleBought: () -> Unit = {},
     onQuantityChange: (Int) -> Unit = {},
     mode: ProductCardMode = ProductCardMode.LIST,
+    onEdit: () -> Unit = {},
     onMoveToCategory: () -> Unit = {},
     onAddToList: () -> Unit = {},
     onAddToPantry: () -> Unit = {},
@@ -204,6 +205,7 @@ fun ProductItemCard(
             } else {
                 // Three-dot menu (only in CATEGORY mode)
                 ProductOptionsMenu(
+                    onEdit = onEdit,
                     onMoveToCategory = onMoveToCategory,
                     onAddToList = onAddToList,
                     onAddToPantry = onAddToPantry,

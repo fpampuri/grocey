@@ -427,22 +427,26 @@ fun ListsApp() {
                             onSuccess = { createdProduct ->
                                 val listIdInt = selectedList.id.toIntOrNull()
                                 if (listIdInt != null && createdProduct.id != null) {
-                                    shoppingListViewModel.addItemToList(
-                                        listId = listIdInt,
-                                        productId = createdProduct.id,
-                                        onSuccess = {
-                                            // Show success feedback
-                                            coroutineScope.launch {
-                                                lastSnackbarIsSuccess = true
-                                                val msg = context.getString(R.string.product_created, createdProduct.name)
-                                                snackbarHostState.showSnackbar(
-                                                    message = msg,
-                                                    duration = SnackbarDuration.Short
-                                                )
-                                                lastSnackbarIsSuccess = false
+                                    // Add a small delay to ensure the product is fully persisted in the backend
+                                    coroutineScope.launch {
+                                        kotlinx.coroutines.delay(100) // 100ms delay
+                                        shoppingListViewModel.addItemToList(
+                                            listId = listIdInt,
+                                            productId = createdProduct.id,
+                                            onSuccess = {
+                                                // Show success feedback
+                                                coroutineScope.launch {
+                                                    lastSnackbarIsSuccess = true
+                                                    val msg = context.getString(R.string.product_created, createdProduct.name)
+                                                    snackbarHostState.showSnackbar(
+                                                        message = msg,
+                                                        duration = SnackbarDuration.Short
+                                                    )
+                                                    lastSnackbarIsSuccess = false
+                                                }
                                             }
-                                        }
-                                    )
+                                        )
+                                    }
                                 }
                             }
                         )
@@ -459,6 +463,29 @@ fun ListsApp() {
                 pantries = pantries,
                 isTablet = isTablet,
                 onBackClick = { selectedCategoryId = null },
+                onProductUpdate = { productId, newName ->
+                    // Find the product to get its current category
+                    val product = products.find { it.id == productId }
+                    product?.let {
+                        productViewModel.updateProduct(
+                            id = productId,
+                            name = newName,
+                            categoryId = it.category?.id,
+                            onSuccess = {
+                                productViewModel.loadProducts()
+                                // Show success feedback
+                                coroutineScope.launch {
+                                    lastSnackbarIsSuccess = true
+                                    snackbarHostState.showSnackbar(
+                                        message = context.getString(R.string.product_updated, newName),
+                                        duration = SnackbarDuration.Short
+                                    )
+                                    lastSnackbarIsSuccess = false
+                                }
+                            }
+                        )
+                    }
+                },
                 onProductMoveToCategory = { productId, newCategoryId ->
                     // Find the product to get its current name
                     val product = products.find { it.id == productId }
@@ -604,6 +631,18 @@ fun ListsApp() {
                         // Find the item to get its product ID and current quantity
                         val item = pantryItems.find { it.id == itemId }
                         item?.let {
+                            // Check if product still exists
+                            if (it.product == null) {
+                                coroutineScope.launch {
+                                    lastSnackbarIsSuccess = false
+                                    snackbarHostState.showSnackbar(
+                                        message = "Cannot move item: product no longer exists",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
+                                return@let
+                            }
+                            
                             // Remove from current pantry
                             pantryViewModel.removeItemFromPantry(currentPantryId, itemId) {
                                 // Add to new pantry

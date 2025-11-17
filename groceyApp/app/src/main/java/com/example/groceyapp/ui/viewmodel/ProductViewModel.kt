@@ -5,10 +5,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.groceyapp.data.model.*
 import com.example.groceyapp.data.repository.CategoryRepository
 import com.example.groceyapp.data.repository.ProductRepository
+import com.example.groceyapp.data.repository.ShoppingListRepository
+import com.example.groceyapp.data.repository.PantryRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import android.util.Log
 
 /**
  * Product ViewModel
@@ -18,6 +21,8 @@ class ProductViewModel : ViewModel() {
     
     private val productRepository = ProductRepository()
     private val categoryRepository = CategoryRepository()
+    private val shoppingListRepository = ShoppingListRepository()
+    private val pantryRepository = PantryRepository()
     
     // Products state
     private val _products = MutableStateFlow<List<Product>>(emptyList())
@@ -289,23 +294,86 @@ class ProductViewModel : ViewModel() {
     
     /**
      * Delete a product
+     * First removes the product from all shopping lists and pantries, then deletes the product
      */
     fun deleteProduct(id: Int, onSuccess: () -> Unit = {}) {
         viewModelScope.launch {
             _isLoading.value = true
             _errorMessage.value = null
             
-            val result = productRepository.deleteProduct(id)
-            
-            when (result) {
-                is ApiResult.Success -> {
-                    loadProducts()
-                    onSuccess()
+            try {
+                // Step 1: Get all shopping lists and remove product from them
+                val listsResult = shoppingListRepository.getAllShoppingLists(null)
+                
+                if (listsResult is ApiResult.Success) {
+                    val lists = listsResult.data
+                    
+                    // For each list, get items and remove items with this product
+                    for (list in lists) {
+                        list.id?.let { listId ->
+                            val itemsResult = shoppingListRepository.getAllListItems(listId)
+                            
+                            if (itemsResult is ApiResult.Success) {
+                                val items = itemsResult.data
+                                
+                                // Find and delete items that reference this product
+                                for (item in items) {
+                                    if (item.product?.id == id) {
+                                        item.id?.let { itemId ->
+                                            Log.d("ProductViewModel", "Removing product $id from list $listId, item $itemId")
+                                            shoppingListRepository.deleteListItem(listId, itemId)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
-                is ApiResult.Error -> {
-                    _errorMessage.value = result.message
+                
+                // Step 2: Get all pantries and remove product from them
+                val pantriesResult = pantryRepository.getAllPantries()
+                
+                if (pantriesResult is ApiResult.Success) {
+                    val pantries = pantriesResult.data
+                    
+                    // For each pantry, get items and remove items with this product
+                    for (pantry in pantries) {
+                        pantry.id?.let { pantryId ->
+                            val itemsResult = pantryRepository.getAllPantryItems(pantryId)
+                            
+                            if (itemsResult is ApiResult.Success) {
+                                val items = itemsResult.data
+                                
+                                // Find and delete items that reference this product
+                                for (item in items) {
+                                    if (item.product?.id == id) {
+                                        item.id?.let { itemId ->
+                                            Log.d("ProductViewModel", "Removing product $id from pantry $pantryId, item $itemId")
+                                            pantryRepository.deletePantryItem(pantryId, itemId)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
-                is ApiResult.Loading -> {}
+                
+                // Step 3: Now delete the product itself
+                val result = productRepository.deleteProduct(id)
+                
+                when (result) {
+                    is ApiResult.Success -> {
+                        loadProducts()
+                        onSuccess()
+                    }
+                    is ApiResult.Error -> {
+                        _errorMessage.value = result.message
+                    }
+                    is ApiResult.Loading -> {}
+                }
+            } catch (e: Exception) {
+                Log.e("ProductViewModel", "Error deleting product: ${e.message}")
+                _errorMessage.value = "Error deleting product: ${e.message}"
             }
             
             _isLoading.value = false

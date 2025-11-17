@@ -142,8 +142,11 @@ fun ListDetailScreen(
             }
         }
     ) { paddingValues ->
-        // Map API list items to UI card data
-        val productsUi = listItems.map { item ->
+        // Map API list items to UI card data, filtering out items with deleted products
+        val productsUi = listItems.mapNotNull { item ->
+            // Skip items where the product has been deleted
+            if (item.product == null) return@mapNotNull null
+            
             ProductItemData(
                 id = (item.id ?: 0).toString(),
                 name = item.product.name,
