@@ -159,6 +159,8 @@
     <string name="delete_product_message">Are you sure you want to delete this product?</string>
     
     <!-- Success messages -->
+    <string name="item_moved_to_pantry">Item moved to pantry</string>
+    <string name="error_cannot_move_item">Cannot move item: product no longer exists</string>
     <string name="product_created">Product "%1$s" created successfully</string>
     <string name="product_updated">Product "%1$s" updated successfully</string>
     <string name="category_created">Category "%1$s" created successfully</string>

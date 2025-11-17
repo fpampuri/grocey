@@ -369,7 +369,7 @@ fun ListsApp() {
                                 coroutineScope.launch {
                                     lastSnackbarIsSuccess = false
                                     snackbarHostState.showSnackbar(
-                                        message = "Item removed",
+                                        message = context.getString(R.string.item_removed),
                                         duration = SnackbarDuration.Short
                                     )
                                 }
@@ -500,7 +500,7 @@ fun ListsApp() {
                                 coroutineScope.launch {
                                     lastSnackbarIsSuccess = true
                                     snackbarHostState.showSnackbar(
-                                        message = "Product moved successfully",
+                                        message = context.getString(R.string.product_moved),
                                         duration = SnackbarDuration.Short
                                     )
                                     lastSnackbarIsSuccess = false
@@ -636,7 +636,7 @@ fun ListsApp() {
                                 coroutineScope.launch {
                                     lastSnackbarIsSuccess = false
                                     snackbarHostState.showSnackbar(
-                                        message = "Cannot move item: product no longer exists",
+                                        message = context.getString(R.string.error_cannot_move_item),
                                         duration = SnackbarDuration.Short
                                     )
                                 }
@@ -654,7 +654,7 @@ fun ListsApp() {
                                         coroutineScope.launch {
                                             lastSnackbarIsSuccess = true
                                             snackbarHostState.showSnackbar(
-                                                message = "Item moved to pantry",
+                                                message = context.getString(R.string.item_moved_to_pantry),
                                                 duration = SnackbarDuration.Short
                                             )
                                             lastSnackbarIsSuccess = false

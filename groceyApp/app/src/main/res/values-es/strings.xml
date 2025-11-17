@@ -121,4 +121,62 @@
     <string name="edit_product">Editar Producto</string>
     <string name="product_updated">Producto "%1$s" actualizado exitosamente</string>
     <string name="edit">Editar</string>
+
+    <!-- Pantry strings -->
+    <string name="add_pantry">Agregar Despensa</string>
+    <string name="pantry_name_hint">Nombre de la Despensa</string>
+    <string name="add_pantry_product">Agregar Producto a Despensa</string>
+    <string name="quantity_label">Cantidad</string>
+    <string name="quantity_hint">Ingresar cantidad</string>
+    <string name="edit_pantry">Editar Despensa</string>
+    <string name="delete_pantry">Eliminar Despensa</string>
+    <string name="delete_pantry_message">¿Estás seguro de que quieres eliminar "%1$s"?</string>
+    <string name="empty_pantry_detail_message">Esta despensa está vacía</string>
+    <string name="empty_pantry_detail_hint">Toca el botón + para agregar productos</string>
+    <string name="select_pantry">Seleccionar Despensa</string>
+    <string name="move_to_pantry">Mover a Despensa</string>
+    
+    <!-- Category actions -->
+    <string name="edit_category">Editar Categoría</string>
+    <string name="delete_category">Eliminar Categoría</string>
+    <string name="delete_category_message">¿Estás seguro de que quieres eliminar "%1$s"?</string>
+    <string name="add_product_to_category">Agregar Producto a Categoría</string>
+    <string name="move_product_to_category">Mover Producto a Categoría</string>
+    <string name="empty_category_message">No hay productos en esta categoría</string>
+    <string name="empty_category_hint">Toca el botón + para agregar productos</string>
+    <string name="move_to_category">Mover a Categoría</string>
+    
+    <!-- List actions -->
+    <string name="edit_list">Editar Lista</string>
+    <string name="delete_list_message">¿Estás seguro de que quieres eliminar esta lista?</string>
+    <string name="delete_list_item_message">¿Estás seguro de que quieres eliminar este artículo?</string>
+    <string name="add_to_list">Agregar a Lista</string>
+    
+    <!-- Product actions -->
+    <string name="delete_product">Eliminar Producto</string>
+    <string name="delete_product_message">¿Estás seguro de que quieres eliminar este producto?</string>
+    <string name="add_to_pantry">Agregar a Despensa</string>
+    
+    <!-- Success messages -->
+    <string name="item_moved_to_pantry">Artículo movido a la despensa</string>
+    <string name="error_cannot_move_item">No se puede mover el artículo: el producto ya no existe</string>
+    <string name="product_created">Producto "%1$s" creado exitosamente</string>
+    <string name="category_created">Categoría "%1$s" creada exitosamente</string>
+    <string name="category_updated">Categoría "%1$s" actualizada exitosamente</string>
+    <string name="category_deleted">Categoría "%1$s" eliminada exitosamente</string>
+    <string name="list_created">Lista "%1$s" creada exitosamente</string>
+    <string name="list_updated">Lista "%1$s" actualizada exitosamente</string>
+    <string name="list_deleted">Lista eliminada exitosamente</string>
+    <string name="pantry_created">Despensa "%1$s" creada exitosamente</string>
+    <string name="pantry_updated">Despensa "%1$s" actualizada exitosamente</string>
+    <string name="pantry_deleted">Despensa eliminada exitosamente</string>
+    <string name="pantry_item_added">Artículo agregado a la despensa exitosamente</string>
+    <string name="item_removed">Artículo eliminado exitosamente</string>
+    <string name="product_moved">Producto movido exitosamente</string>
+    
+    <!-- General strings -->
+    <string name="save">Guardar</string>
+    <string name="back">Atrás</string>
+    <string name="size">Tamaño</string>
+    <string name="delete">Eliminar</string>
 </resources>
